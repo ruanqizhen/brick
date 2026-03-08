@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
 export const DESIGN_WIDTH = 1080;
-export const DESIGN_HEIGHT = 1920;
+export const DESIGN_HEIGHT = 1440; // 1080 * (4/3) = 1440, 实现高比宽 4:3
 export const ASPECT_RATIO = DESIGN_WIDTH / DESIGN_HEIGHT;
 
 export const GameConfig = {
