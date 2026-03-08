@@ -25,6 +25,7 @@ export class GameScene extends Phaser.Scene {
     private starfield!: Starfield;
     private lives: number = 3;
     private currentLevelIndex: number = 0;
+    private activeSpeedMultipliers: number[] = []; // 追踪当前所有激活的速度倍数
 
     constructor() {
         super('GameScene');
@@ -294,17 +295,16 @@ export class GameScene extends Phaser.Scene {
             const newBall = new Ball(this, ball.x, ball.y);
             this.balls.add(newBall);
 
-            const parentSpeed = ball.getData('targetSpeed') || this.getBaseSpeedForLevel(this.currentLevelIndex);
             newBall.setBallRadius(ball.displayWidth / 2);
             newBall.isFireball = ball.isFireball;
             newBall.setTint(ball.isFireball ? 0xffaa00 : 0xffffff);
+
+            // 继承当前小球的目标速度（已包含所有倍数）
             newBall.setData('targetSpeed', ball.getData('targetSpeed'));
 
-            // Give it a slightly different velocity to differentiate
             newBall.launch();
             if (ball.body && newBall.body) {
                 const vel = ball.body.velocity;
-                // Reverse X to create a V-split
                 newBall.body.velocity.set(vel.x * -1, vel.y);
             }
         });
@@ -328,21 +328,38 @@ export class GameScene extends Phaser.Scene {
     }
 
     private updateBallsSpeed(multiplier: number, duration: number) {
+        // 记录新倍数
+        this.activeSpeedMultipliers.push(multiplier);
+        this.applyCurrentSpeedModifiers();
+
+        // 到时后移除并恢复
+        this.time.delayedCall(duration, () => {
+            const index = this.activeSpeedMultipliers.indexOf(multiplier);
+            if (index !== -1) {
+                this.activeSpeedMultipliers.splice(index, 1);
+                this.applyCurrentSpeedModifiers();
+            }
+        });
+    }
+
+    private applyCurrentSpeedModifiers() {
+        // 计算当前总倍数
+        const totalMultiplier = this.activeSpeedMultipliers.reduce((acc, m) => acc * m, 1);
+        const baseSpeed = this.getBaseSpeedForLevel(this.currentLevelIndex);
+        const targetValue = baseSpeed * totalMultiplier;
+
         this.balls.getChildren().forEach(b => {
             const ball = b as Ball;
-            const originalSpeed = ball.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED;
-            ball.setData('targetSpeed', originalSpeed * multiplier);
+            const currentTarget = ball.getData('targetSpeed') || baseSpeed;
 
-            this.time.delayedCall(duration, () => {
-                // 逐步减慢逻辑（PRD: 8秒后逐步恢复）
-                this.tweens.addCounter({
-                    from: originalSpeed * multiplier,
-                    to: originalSpeed,
-                    duration: 2000,
-                    onUpdate: (tween) => {
-                        ball.setData('targetSpeed', tween.getValue());
-                    }
-                });
+            // 使用 Tween 逐步过渡到新速度，手感更丝滑
+            this.tweens.addCounter({
+                from: currentTarget,
+                to: targetValue,
+                duration: 2000,
+                onUpdate: (tween) => {
+                    ball.setData('targetSpeed', tween.getValue());
+                }
             });
         });
     }
@@ -508,8 +525,11 @@ export class GameScene extends Phaser.Scene {
             }
             else {
                 const baseSpeed = this.getBaseSpeedForLevel(this.currentLevelIndex);
+                const totalMultiplier = this.activeSpeedMultipliers.reduce((acc, m) => acc * m, 1);
+
                 const b = new Ball(this, this.paddle.x, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION - 50);
-                b.setData('targetSpeed', baseSpeed);
+                // 确保新球也应用当前所有倍数
+                b.setData('targetSpeed', baseSpeed * totalMultiplier);
                 this.balls.add(b);
                 this.showLaunchInstruction();
             }

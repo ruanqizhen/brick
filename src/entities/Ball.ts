@@ -6,6 +6,8 @@ import { audioManager } from '../audio/AudioManager';
 export class Ball extends Phaser.Physics.Arcade.Sprite {
     public isFireball: boolean = false;
     private trailEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+    private trailScale: number = 1.0;
+    private lastPaddleHitTime: number = 0;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, 'ball');
@@ -22,13 +24,21 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
 
         // 创建拖尾粒子发射器
         this.trailEmitter = scene.add.particles(0, 0, 'particle', {
-            lifespan: 300, //
-            scale: { start: 1.0, end: 0 },
-            alpha: { start: 0.5, end: 0 },
+            lifespan: 200,
+            // 使用回调函数确保粒子在发射瞬间获取最新的缩放值
+            scale: {
+                onEmit: () => this.trailScale,
+                // 使用平方根衰减，让颗粒在生命周期的大部分时间内保持较大的尺寸
+                onUpdate: (p: any, k: string, t: number) => this.trailScale * Math.sqrt(1 - t)
+            } as any,
+            alpha: { start: 0.6, end: 0 }, // 满透明度开始，让拖尾更凝实
             blendMode: 'ADD',
-            frequency: 16,
+            frequency: 10,
             follow: this
         });
+        // 确保发射器本身不缩放，这样 follow 逻辑就不会产生坐标偏移
+        this.trailEmitter.setDepth(this.depth - 1);
+        this.trailEmitter.setScale(1);
 
         this.setData('state', 'READY');
         if (this.body) {
@@ -92,15 +102,14 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     setBallRadius(radius: number) {
         this.setDisplaySize(radius * 2, radius * 2);
 
-        // 重要：显式更新物理圆周半径。
-        // Arcade Physics 默认不一定随 displaySize 自动同步 Circular Body 且保持中心。
+        // 修复：始终基于基准半径设置圆周，由 Sprite 的 Scale 机制处理最终碰撞尺寸。
+        // 不传递偏移量，允许 Phaser 自动居中。
         if (this.body) {
-            this.setCircle(radius);
+            this.setCircle(GameConfig.BALL_RADIUS);
         }
 
-        // 动态调整粒子大小：随球体半径同步缩放
-        const baseScale = 0.5 * (radius / GameConfig.BALL_RADIUS);
-        (this.trailEmitter as any).setParticleScale(baseScale, 0);
+        // 动态调整粒子缩放系数
+        this.trailScale = radius / GameConfig.BALL_RADIUS;
     }
 
     private normalizeSpeed() {
@@ -122,6 +131,11 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     }
 
     onPaddleHit(paddle: Paddle) {
+        // 碰撞 CD：适当加长 CD，防止巨型球体在高频刷新率（如 120Hz）下产生多次判定闪烁
+        const now = this.scene.time.now;
+        if (now - this.lastPaddleHitTime < 150) return;
+        this.lastPaddleHitTime = now;
+
         const hitFactor = (this.x - paddle.x) / (paddle.displayWidth / 2);
         const speed = (this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED) * 60;
 
@@ -137,11 +151,17 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         const finalAngle = Phaser.Math.DegToRad(deg);
         this.setVelocity(speed * Math.cos(finalAngle), -Math.abs(speed * Math.sin(finalAngle)));
 
-        // 修正位置：确保大球在碰撞后被强行置于挡板上方，防止穿透闪烁
-        // 使用 displayWidth / 2 作为最稳健的视觉半径真值
+        // 修正位置：当球体底部（y + radius）深入挡板上平面下方时，进行纠偏
         const visualRadius = this.displayWidth / 2;
-        this.y = paddle.y - paddle.displayHeight / 2 - visualRadius;
-        if (this.body) this.body.updateFromGameObject();
+        const paddleTop = paddle.y - paddle.displayHeight / 2;
+
+        if (this.y + visualRadius > paddleTop && this.y < paddle.y) {
+            this.y = paddleTop - visualRadius - 1;
+        }
+
+        if (this.body) {
+            this.body.updateFromGameObject();
+        }
 
         // Play paddle hit sound
         audioManager.play('paddle');
