@@ -32,19 +32,46 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
         this.prevX = this.x;
 
         // 1. 处理鼠标/触摸相对位移 (PRD 2.2, 7.3: 全域追踪)
-        if (pointer.isDown && pointer.event) {
-            const event = pointer.event as PointerEvent;
+        if (pointer.isDown) {
+            // 鲁棒性坐标提取：尝试从不同来源获取 clientX (支持 PointerEvent, TouchEvent, MouseEvent)
+            const anyPointer = pointer as any;
+            const event = pointer.event as any;
+
+            let currentClientX: number | undefined = anyPointer.clientX;
+
+            if (currentClientX === undefined && event) {
+                if (event.clientX !== undefined) {
+                    currentClientX = event.clientX;
+                } else if (event.touches && event.touches[0]) {
+                    currentClientX = event.touches[0].clientX;
+                } else if (event.changedTouches && event.changedTouches[0]) {
+                    currentClientX = event.changedTouches[0].clientX;
+                }
+            }
+
+            // 如果依然无法获取（极端情况），回退到 clamped 的 pointer.x
+            if (currentClientX === undefined || isNaN(currentClientX)) {
+                currentClientX = pointer.x;
+            }
+
             if (!this.wasPointerDown) {
-                this.lastClientX = event.clientX;
+                this.lastClientX = currentClientX;
                 this.wasPointerDown = true;
             } else {
-                // 使用原生 clientX 以实现即使滑出 Canvas 也能追踪
-                const clientDeltaX = event.clientX - this.lastClientX;
-                // 必须除以缩放系数，将屏幕位移转回游戏世界位移
-                const gameDeltaX = clientDeltaX / this.scene.scale.displayScale.x;
+                const clientDeltaX = currentClientX - this.lastClientX;
 
-                this.x += gameDeltaX;
-                this.lastClientX = event.clientX;
+                // 安全获取缩放系数，防止除以 0 或 undefined 导致 NaN
+                const scaleX = this.scene.scale.displayScale.x || 1;
+                const gameDeltaX = clientDeltaX / scaleX;
+
+                // 最终防御：确保不是 NaN 才应用位移，防止挡板消失
+                if (!isNaN(gameDeltaX)) {
+                    this.x += gameDeltaX;
+                    this.lastClientX = currentClientX;
+                } else {
+                    // 如果发生异常，重新校准起始点以防阻塞
+                    this.lastClientX = currentClientX;
+                }
             }
         } else {
             this.wasPointerDown = false;
