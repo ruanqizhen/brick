@@ -90,9 +90,11 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     }
 
     setBallRadius(radius: number) {
+        // 重要：Arcade Physics 3.60+ 中，物理 Body 会随 GameObject 的缩放自动缩放。
+        // 我们在构造函数中已经定义了一个半径为 10 的标准圆体。
+        // 通过 setDisplaySize 改变显示大小即改变了 scale，物理圆体会自动同步缩放。
+        // 手动再次调用 setCircle(radius) 会导致在已缩放的基础上再次叠加半径，造成判定范围巨大。
         this.setDisplaySize(radius * 2, radius * 2);
-        this.setCircle(radius);
-        if (this.body) this.body.updateFromGameObject();
 
         // 动态调整粒子大小：随球体半径同步缩放
         const baseScale = 0.5 * (radius / GameConfig.BALL_RADIUS);
@@ -133,8 +135,9 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         const finalAngle = Phaser.Math.DegToRad(deg);
         this.setVelocity(speed * Math.cos(finalAngle), -Math.abs(speed * Math.sin(finalAngle)));
 
-        // 修正位置
-        this.y = paddle.y - paddle.displayHeight / 2 - this.displayHeight / 2;
+        // 修正位置：确保大球在碰撞后被强行置于挡板上方，防止穿透闪烁
+        const radius = this.body ? (this.body as Phaser.Physics.Arcade.Body).radius : this.displayWidth / 2;
+        this.y = paddle.y - paddle.displayHeight / 2 - radius;
         if (this.body) this.body.updateFromGameObject();
 
         // Play paddle hit sound
