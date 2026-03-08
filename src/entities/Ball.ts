@@ -16,12 +16,14 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         this.setCollideWorldBounds(true);
         (this.body as Phaser.Physics.Arcade.Body).onWorldBounds = true;
         this.setBounce(1, 1);
+
+        // 初始化尺寸
         this.setCircle(GameConfig.BALL_RADIUS);
 
         // 创建拖尾粒子发射器
         this.trailEmitter = scene.add.particles(0, 0, 'particle', {
-            lifespan: 300,
-            scale: { start: 0.6, end: 0 },
+            lifespan: 300, //
+            scale: { start: 1.0, end: 0 },
             alpha: { start: 0.5, end: 0 },
             blendMode: 'ADD',
             frequency: 16,
@@ -84,15 +86,17 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
-        (this.trailEmitter as any).setConfig({
-            tint: color
-        });
+        this.trailEmitter.setParticleTint(color);
     }
 
     setBallRadius(radius: number) {
         this.setDisplaySize(radius * 2, radius * 2);
         this.setCircle(radius);
         if (this.body) this.body.updateFromGameObject();
+
+        // 动态调整粒子大小：随球体半径同步缩放
+        const baseScale = 0.5 * (radius / GameConfig.BALL_RADIUS);
+        (this.trailEmitter as any).setParticleScale(baseScale, 0);
     }
 
     private normalizeSpeed() {
@@ -132,7 +136,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         // 修正位置
         this.y = paddle.y - paddle.displayHeight / 2 - this.displayHeight / 2;
         if (this.body) this.body.updateFromGameObject();
-        
+
         // Play paddle hit sound
         audioManager.play('paddle');
     }

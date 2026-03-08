@@ -21,9 +21,7 @@ export class ParticleSystem {
 
     spawnBrickParticles(x: number, y: number, color: number) {
         // 在 Phaser 3.60+ 中，推荐直接在 setConfig 或使用特定的 tint 属性
-        (this.emitter as any).setConfig({
-            tint: color
-        });
+        this.emitter.setParticleTint(color);
         this.emitter.explode(Phaser.Math.Between(8, 12), x, y);
     }
 }
