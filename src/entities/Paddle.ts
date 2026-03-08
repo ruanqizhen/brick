@@ -8,7 +8,7 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
     private aKey: Phaser.Input.Keyboard.Key | undefined;
     private dKey: Phaser.Input.Keyboard.Key | undefined;
     private keyboardSpeed: number = 18; // 键盘移动速度 (像素/帧)
-    private lastPointerX: number = 0;
+    private lastClientX: number = 0;
     private wasPointerDown: boolean = false;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
@@ -31,17 +31,20 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
         const pointer = this.scene.input.activePointer;
         this.prevX = this.x;
 
-        // 1. 处理鼠标/触摸相对位移 (PRD 2.2, 7.3: 避免手指遮挡)
-        if (pointer.isDown) {
+        // 1. 处理鼠标/触摸相对位移 (PRD 2.2, 7.3: 全域追踪)
+        if (pointer.isDown && pointer.event) {
+            const event = pointer.event as PointerEvent;
             if (!this.wasPointerDown) {
-                // 刚刚按下：记录初始位置
-                this.lastPointerX = pointer.x;
+                this.lastClientX = event.clientX;
                 this.wasPointerDown = true;
             } else {
-                // 持续滑动：计算相对增量并应用
-                const deltaX = pointer.x - this.lastPointerX;
-                this.x += deltaX;
-                this.lastPointerX = pointer.x;
+                // 使用原生 clientX 以实现即使滑出 Canvas 也能追踪
+                const clientDeltaX = event.clientX - this.lastClientX;
+                // 必须除以缩放系数，将屏幕位移转回游戏世界位移
+                const gameDeltaX = clientDeltaX / this.scene.scale.displayScale.x;
+
+                this.x += gameDeltaX;
+                this.lastClientX = event.clientX;
             }
         } else {
             this.wasPointerDown = false;
