@@ -9,6 +9,7 @@ import { LEVELS } from '../config/LevelData';
 import { ParticleSystem } from '../systems/ParticleSystem';
 import { ScreenShake } from '../systems/ScreenShake';
 import { audioManager } from '../audio/AudioManager';
+import { GameOverScene } from './GameOverScene';
 
 import { Starfield } from '../systems/Starfield';
 
@@ -208,28 +209,39 @@ export class GameScene extends Phaser.Scene {
         switch (type) {
             case 'PADDLE_EXPAND':
                 this.updatePaddleWidth(1.5);
+                this.hud.addPowerUp(type); // Permanent until replaced
                 break;
             case 'PADDLE_SHRINK':
                 this.updatePaddleWidth(0.6);
+                this.hud.addPowerUp(type); // Permanent until replaced
                 break;
             case 'FIREBALL':
                 this.setFireball(true);
-                this.time.delayedCall(8000, () => this.setFireball(false));
+                this.hud.addPowerUp(type, 8000);
+                this.time.delayedCall(8000, () => {
+                    this.setFireball(false);
+                    this.hud.removePowerUp(type);
+                });
                 break;
             case 'MULTI_BALL':
                 this.spawnMultiBalls(3);
+                this.hud.addPowerUp(type); // Permanent until life lost
                 break;
             case 'BALL_ENLARGE':
                 this.updateBallsRadius(1.4);
+                this.hud.addPowerUp(type); // Permanent
                 break;
             case 'BALL_SHRINK':
                 this.updateBallsRadius(0.7);
+                this.hud.addPowerUp(type); // Permanent
                 break;
             case 'SPEED_UP':
                 this.updateBallsSpeed(1.3, 8000);
+                this.hud.addPowerUp(type, 8000);
                 break;
             case 'SPEED_DOWN':
                 this.updateBallsSpeed(0.7, 8000);
+                this.hud.addPowerUp(type, 8000);
                 break;
         }
     }
@@ -320,21 +332,41 @@ export class GameScene extends Phaser.Scene {
         this.add.text(DESIGN_WIDTH / 2, DESIGN_HEIGHT / 2, 'CLEAR!', { fontSize: '64px', color: '#00ff00' }).setOrigin(0.5);
         this.time.delayedCall(2000, () => {
             this.currentLevelIndex++;
-            if (this.currentLevelIndex < LEVELS.length) this.scene.restart();
-            else this.scene.start('MenuScene');
+            if (this.currentLevelIndex < LEVELS.length) {
+                this.scene.restart();
+            } else {
+                // Completed all levels - show victory in GameOverScene
+                const finalScore = this.hud.getScore;
+                const isNewHighScore = GameOverScene.saveHighScore(finalScore);
+                this.scene.start('GameOverScene', {
+                    score: finalScore,
+                    level: this.currentLevelIndex,
+                    isNewHighScore
+                });
+            }
         });
     }
 
     private handleBallLost(ball: Ball) {
         ball.destroy();
         audioManager.play('ballLost');
-        
+
         if (this.balls.countActive() === 0) {
             this.lives--;
             this.hud.updateLives(this.lives);
+            // Clear all powerups when life is lost
+            this.hud.clearAllPowerUps();
+            
             if (this.lives <= 0) {
                 audioManager.play('lose');
-                this.scene.start('MenuScene');
+                // Save high score and transition to GameOverScene
+                const finalScore = this.hud.getScore;
+                const isNewHighScore = GameOverScene.saveHighScore(finalScore);
+                this.scene.start('GameOverScene', {
+                    score: finalScore,
+                    level: this.currentLevelIndex + 1,
+                    isNewHighScore
+                });
             }
             else {
                 const b = new Ball(this, this.paddle.x, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION - 50);
