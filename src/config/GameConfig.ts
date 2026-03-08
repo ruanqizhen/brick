@@ -38,8 +38,7 @@ export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
         width: DESIGN_WIDTH,
         height: DESIGN_HEIGHT,
         scale: {
-            mode: Phaser.Scale.FIT,
-            autoCenter: Phaser.Scale.CENTER_BOTH
+            mode: Phaser.Scale.FIT
         },
         physics: {
             default: 'arcade',

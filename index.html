@@ -22,20 +22,29 @@
         }
 
         #game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100vw;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background-color: #000;
+            overflow: hidden;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
         #game-wrapper {
-            position: relative;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             display: flex;
             align-items: center;
             justify-content: center;
             max-width: 100%;
             max-height: 100%;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
         #game-wrapper canvas {
