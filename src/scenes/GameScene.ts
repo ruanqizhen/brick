@@ -75,7 +75,9 @@ export class GameScene extends Phaser.Scene {
 
         this.paddle = new Paddle(this, DESIGN_WIDTH / 2, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION);
 
+        const baseSpeed = this.getBaseSpeedForLevel(this.currentLevelIndex);
         const mainBall = new Ball(this, DESIGN_WIDTH / 2, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION - 55);
+        mainBall.setData('targetSpeed', baseSpeed);
         this.balls.add(mainBall);
 
         // 碰撞绑定
@@ -190,15 +192,51 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
+    private getBaseSpeedForLevel(levelIndex: number): number {
+        // 第 20 关 (index 19) 时达到初始速度的两倍
+        const multiplier = 1 + (levelIndex / 19);
+        return GameConfig.BALL_BASE_SPEED * multiplier;
+    }
+
     private spawnPowerUp(x: number, y: number) {
-        const types: PowerUpType[] = [
-            'PADDLE_EXPAND', 'PADDLE_SHRINK',
-            'FIREBALL', 'MULTI_BALL',
-            'BALL_ENLARGE', 'BALL_SHRINK',
-            'SPEED_UP', 'SPEED_DOWN'
-        ];
-        const t = types[Math.floor(Math.random() * types.length)];
-        const pu = new PowerUp(this, x, y, t);
+        const positives: PowerUpType[] = ['PADDLE_EXPAND', 'FIREBALL', 'MULTI_BALL', 'BALL_ENLARGE', 'SPEED_DOWN'];
+        const negatives: PowerUpType[] = ['PADDLE_SHRINK', 'BALL_SHRINK', 'SPEED_UP'];
+
+        // 计算当前关卡的权重偏移 (0.0 到 1.0)
+        // 0关: 正面极高, 负面极低
+        // 19关: 正面降低, 负面提升
+        const progress = Math.min(this.currentLevelIndex / 19, 1);
+
+        // 权重设计：
+        // 初始：Pos=5, Neg=0.5
+        // 20关：Pos=1, Neg=4
+        const posWeight = Phaser.Math.Linear(5, 1, progress);
+        const negWeight = Phaser.Math.Linear(0.5, 4, progress);
+
+        const totalWeight = (positives.length * posWeight) + (negatives.length * negWeight);
+        let rand = Math.random() * totalWeight;
+        let selectedType: PowerUpType = 'MULTI_BALL';
+
+        // 顺序累加概率进行加权选择
+        for (const type of positives) {
+            if (rand < posWeight) {
+                selectedType = type;
+                break;
+            }
+            rand -= posWeight;
+        }
+
+        if (selectedType === 'MULTI_BALL' && rand > 0) {
+            for (const type of negatives) {
+                if (rand < negWeight) {
+                    selectedType = type;
+                    break;
+                }
+                rand -= negWeight;
+            }
+        }
+
+        const pu = new PowerUp(this, x, y, selectedType);
         this.powerUps.add(pu);
     }
 
@@ -267,7 +305,7 @@ export class GameScene extends Phaser.Scene {
             const newBall = new Ball(this, ball.x, ball.y);
             this.balls.add(newBall);
 
-            // Inherit attributes from parent
+            const parentSpeed = ball.getData('targetSpeed') || this.getBaseSpeedForLevel(this.currentLevelIndex);
             newBall.setBallRadius(ball.displayWidth / 2);
             newBall.isFireball = ball.isFireball;
             newBall.setTint(ball.isFireball ? 0xffaa00 : 0xffffff);
@@ -480,7 +518,9 @@ export class GameScene extends Phaser.Scene {
                 });
             }
             else {
+                const baseSpeed = this.getBaseSpeedForLevel(this.currentLevelIndex);
                 const b = new Ball(this, this.paddle.x, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION - 50);
+                b.setData('targetSpeed', baseSpeed);
                 this.balls.add(b);
                 this.showLaunchInstruction();
             }
