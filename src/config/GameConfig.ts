@@ -26,7 +26,8 @@ export const GameConfig = {
     // 道具
     POWERUPS: {
         DROP_CHANCE: 0.2,
-        MAX_PADDLE_WIDTH_PERCENT: 0.7
+        MAX_PADDLE_WIDTH_PERCENT: 0.7,
+        MAX_BALL_DIAMETER_PERCENT: 0.2
     }
 };
 
@@ -49,7 +50,7 @@ export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
         },
         fps: {
             min: 60,
-            target: 120,
+            smoothStep: true,
             forceSetTimeOut: false // 使用 requestAnimationFrame
         },
         backgroundColor: GameConfig.COLORS.BG

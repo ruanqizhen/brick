@@ -113,9 +113,9 @@ export class GameScene extends Phaser.Scene {
         });
     }
 
-    update() {
+    update(time: number, delta: number) {
         if (this.starfield) this.starfield.update();
-        if (this.paddle) this.paddle.update();
+        if (this.paddle) this.paddle.update(time, delta);
         this.balls.getChildren().forEach(b => (b as Ball).update());
         this.powerUps.getChildren().forEach(p => (p as PowerUp).update());
     }
@@ -226,7 +226,7 @@ export class GameScene extends Phaser.Scene {
                 this.doubleBalls();
                 break;
             case 'BALL_ENLARGE':
-                this.updateBallsRadius(1.4);
+                this.updateBallsRadius(1.5);
                 break;
             case 'BALL_SHRINK':
                 this.updateBallsRadius(0.7);
@@ -283,9 +283,20 @@ export class GameScene extends Phaser.Scene {
         });
     }
 
-    private updateBallsRadius(scale: number) {
+    private updateBallsRadius(scaleFactor: number) {
+        const maxRadius = (DESIGN_WIDTH * GameConfig.POWERUPS.MAX_BALL_DIAMETER_PERCENT) / 2;
+
         this.balls.getChildren().forEach(b => {
-            (b as Ball).setBallRadius(GameConfig.BALL_RADIUS * scale);
+            const ball = b as Ball;
+            const currentRadius = ball.displayWidth / 2;
+            let newRadius = currentRadius * scaleFactor;
+
+            // Apply limit
+            if (newRadius > maxRadius) {
+                newRadius = maxRadius;
+            }
+
+            ball.setBallRadius(newRadius);
         });
     }
 
