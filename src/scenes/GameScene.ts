@@ -100,19 +100,8 @@ export class GameScene extends Phaser.Scene {
         // Pause functionality
         this.setupPause();
 
-        // 增强版发射监听
-        this.input.on('pointerdown', () => {
-            let launched = false;
-            this.balls.getChildren().forEach(b => {
-                const ball = b as Ball;
-                if (ball.getData('state') === 'READY') {
-                    ball.launch();
-                    audioManager.play('launch');
-                    launched = true;
-                }
-            });
-            if (launched) this.clearLaunchInstruction();
-        });
+        // 增强版发射监听 (点击/触摸)
+        this.input.on('pointerdown', () => this.handleBallLaunch());
     }
 
     update(time: number, delta: number) {
@@ -542,6 +531,9 @@ export class GameScene extends Phaser.Scene {
         this.input.keyboard?.on('keydown-ESC', () => this.togglePause());
         this.input.keyboard?.on('keydown-P', () => this.togglePause());
 
+        // Spacebar to launch ball
+        this.input.keyboard?.on('keydown-SPACE', () => this.handleBallLaunch());
+
         // Listen for resume/restart/menu events from PauseMenu
         this.events.on('resumeGame', () => this.resumeGame());
         this.events.on('restartGame', () => this.restartGame());
@@ -584,6 +576,19 @@ export class GameScene extends Phaser.Scene {
 
     private restartGame(): void {
         this.scene.restart();
+    }
+
+    private handleBallLaunch() {
+        let launched = false;
+        this.balls.getChildren().forEach(b => {
+            const ball = b as Ball;
+            if (ball.getData('state') === 'READY') {
+                ball.launch();
+                audioManager.play('launch');
+                launched = true;
+            }
+        });
+        if (launched) this.clearLaunchInstruction();
     }
 
     private loadLevel(idx: number) {

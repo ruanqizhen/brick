@@ -32,7 +32,7 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
         this.prevX = this.x;
 
         // 1. 处理鼠标/触摸相对位移 (PRD 2.2, 7.3: 避免手指遮挡)
-        if (pointer.active || pointer.isDown) {
+        if (pointer.isDown) {
             if (!this.wasPointerDown) {
                 // 刚刚按下：记录初始位置
                 this.lastPointerX = pointer.x;
@@ -45,18 +45,18 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
             }
         } else {
             this.wasPointerDown = false;
+        }
 
-            // 2. 只有在非触摸状态下才处理键盘输入
-            if (this.cursors || this.aKey || this.dKey) {
-                // 使用 (1000 / 60) 作为基准，delta 是当前帧经过的毫秒数
-                // 如果是 60Hz，delta 约为 16.6ms -> ratio 为 1.0
-                // 如果是 120Hz，delta 约为 8.3ms -> ratio 为 0.5
-                const frameRatio = delta / (1000 / 60);
-                if (this.cursors?.left.isDown || this.aKey?.isDown) {
-                    this.x -= this.keyboardSpeed * frameRatio;
-                } else if (this.cursors?.right.isDown || this.dKey?.isDown) {
-                    this.x += this.keyboardSpeed * frameRatio;
-                }
+        // 2. 键盘输入 (独立处理，允许共存)
+        if (this.cursors || this.aKey || this.dKey) {
+            // 使用 (1000 / 60) 作为基准，delta 是当前帧经过的毫秒数
+            // 如果是 60Hz，delta 约为 16.6ms -> ratio 为 1.0
+            // 如果是 120Hz，delta 约为 8.3ms -> ratio 为 0.5
+            const frameRatio = delta / (1000 / 60);
+            if (this.cursors?.left.isDown || this.aKey?.isDown) {
+                this.x -= this.keyboardSpeed * frameRatio;
+            } else if (this.cursors?.right.isDown || this.dKey?.isDown) {
+                this.x += this.keyboardSpeed * frameRatio;
             }
         }
 
