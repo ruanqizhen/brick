@@ -1,22 +1,11 @@
 import Phaser from 'phaser';
 import { PowerUpType } from '../entities/PowerUp';
 
-interface ActivePowerUp {
-    type: PowerUpType;
-    icon: Phaser.GameObjects.Text;
-    bg: Phaser.GameObjects.Arc;
-    timer?: Phaser.Time.TimerEvent;
-    timeLeft: number;
-}
-
 export class HUD extends Phaser.GameObjects.Container {
     private scoreText!: Phaser.GameObjects.Text;
     private livesText!: Phaser.GameObjects.Text;
     private score: number = 0;
     private lives: number = 3;
-    private pauseBtn!: Phaser.GameObjects.Container;
-    private onPauseCallback?: () => void;
-    private pauseButtonClicked: boolean = false;
     private scoreContainer!: Phaser.GameObjects.Container;
 
     constructor(scene: Phaser.Scene) {
@@ -39,9 +28,6 @@ export class HUD extends Phaser.GameObjects.Container {
                 offsetY: 2
             }
         }).setOrigin(1, 0.5);
-
-        // Pause button (top right)
-        this.createPauseButton(scene, scene.cameras.main.width - 30, 75);
 
         this.add([this.livesText]);
         scene.add.existing(this);
@@ -123,91 +109,11 @@ export class HUD extends Phaser.GameObjects.Container {
         }
     }
 
-    /**
-     * Create pause button with modern style
-     */
-    private createPauseButton(scene: Phaser.Scene, x: number, y: number): void {
-        const btnSize = 45;
-        this.pauseBtn = scene.add.container(x, y);
-        this.pauseBtn.setDepth(100);
-
-        // Circle background with glow effect
-        const bg = this.scene.add.circle(0, 0, btnSize / 2, 0x2a2a4e, 0.9);
-        bg.setInteractive({ useHandCursor: true });
-        bg.setStrokeStyle(2, 0x00d4ff, 0.6);
-
-        // Pause icon (two vertical bars)
-        const pauseIcon1 = scene.add.rectangle(-10, 0, 5, 22, 0xffffff);
-        pauseIcon1.setOrigin(0.5);
-        const pauseIcon2 = scene.add.rectangle(10, 0, 5, 22, 0xffffff);
-        pauseIcon2.setOrigin(0.5);
-
-        this.pauseBtn.add([bg, pauseIcon1, pauseIcon2]);
-
-        // Hover effects
-        bg.on('pointerover', () => {
-            this.scene.tweens.add({
-                targets: bg,
-                scaleX: 1.15,
-                scaleY: 1.15,
-                duration: 150,
-                ease: 'Back.out'
-            });
-            bg.setFillStyle(0x3a3a5e);
-        });
-
-        bg.on('pointerout', () => {
-            this.scene.tweens.add({
-                targets: bg,
-                scaleX: 1,
-                scaleY: 1,
-                duration: 150,
-                ease: 'Back.out'
-            });
-            bg.setFillStyle(0x2a2a4e);
-        });
-
-        bg.on('pointerdown', () => {
-            this.scene.tweens.add({
-                targets: bg,
-                scaleX: 0.9,
-                scaleY: 0.9,
-                duration: 100
-            });
-            this.pauseButtonClicked = true;
-            if (this.onPauseCallback) {
-                this.onPauseCallback();
-            }
-        });
-    }
-
-    /**
-     * Register callback for pause button click
-     */
-    onPauseButtonClicked(callback: () => void): void {
-        this.onPauseCallback = callback;
-    }
-
-    /**
-     * Check if pause button was clicked
-     */
-    isPauseButtonClicked(): boolean {
-        return this.pauseButtonClicked;
-    }
-
-    /**
-     * Reset pause button clicked state
-     */
-    resetPauseButtonClicked(): void {
-        this.pauseButtonClicked = false;
-    }
-
     private handleResize(gameSize: Phaser.Structs.Size): void {
         const width = gameSize.width;
 
         // Reposition elements
         this.livesText.x = width - 30;
-        this.pauseBtn.x = width - 30;
     }
 
     get getScore(): number {

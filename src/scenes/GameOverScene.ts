@@ -284,7 +284,7 @@ export class GameOverScene extends Phaser.Scene {
         bg.setStrokeStyle(2, 0xffffff, 0.5);
 
         // Inner highlight
-        const highlight = this.add.rectangle(-btnWidth/2 + 10, -btnHeight/2 + 10, btnWidth - 20, btnHeight/2 - 10, 0xffffff, 0.15);
+        const highlight = this.add.rectangle(-btnWidth / 2 + 10, -btnHeight / 2 + 10, btnWidth - 20, btnHeight / 2 - 10, 0xffffff, 0.15);
         highlight.setOrigin(0);
 
         const text = this.add.text(0, 0, label, {
@@ -303,9 +303,11 @@ export class GameOverScene extends Phaser.Scene {
 
         container.add([bg, highlight, text]);
         container.setSize(btnWidth, btnHeight);
-        container.setInteractive(new Phaser.Geom.Rectangle(-btnWidth/2, -btnHeight/2, btnWidth, btnHeight), Phaser.Geom.Rectangle.Contains);
 
-        // Hover effects
+        // Move interactivity to bg for better stability
+        bg.setInteractive({ useHandCursor: true });
+
+        // Hover effects targeting the container
         bg.on('pointerover', () => {
             this.tweens.add({
                 targets: container,
@@ -339,6 +341,9 @@ export class GameOverScene extends Phaser.Scene {
                 scaleY: 0.97,
                 duration: 80
             });
+        });
+
+        bg.on('pointerup', () => {
             callback();
         });
 
@@ -351,11 +356,11 @@ export class GameOverScene extends Phaser.Scene {
 
         this.overlay.setSize(width, height);
         this.titleText.setPosition(width / 2, height * 0.18);
-        
+
         if (this.newHighScoreText) {
             this.newHighScoreText.setPosition(width / 2, height * 0.27);
         }
-        
+
         this.scoreContainer.setPosition(width / 2, height * 0.42);
         this.restartBtn.setPosition(width / 2 - 160, height * 0.72);
         this.menuBtn.setPosition(width / 2 + 160, height * 0.72);
@@ -373,7 +378,7 @@ export class GameOverScene extends Phaser.Scene {
             const eased = 1 - (1 - progress) * (1 - progress);
 
             const currentScore = Math.floor(from + (to - from) * eased);
-            
+
             // Check if text still exists before updating
             if (text && text.active) {
                 text.setText(currentScore.toLocaleString());

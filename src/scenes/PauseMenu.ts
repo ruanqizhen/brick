@@ -76,7 +76,7 @@ export class PauseMenu extends Phaser.Scene {
         // Animate menu appearance
         this.pauseContainer.setScale(0.8);
         this.pauseContainer.setAlpha(0);
-        
+
         this.tweens.add({
             targets: this.pauseContainer,
             scale: 1,
@@ -88,11 +88,11 @@ export class PauseMenu extends Phaser.Scene {
         // Stagger animation for buttons
         this.tweens.add({
             targets: [this.resumeBtn, this.restartBtn, this.menuBtn],
-            alpha: 0,
-            from: 1,
-            duration: 200,
-            delay: 100,
-            stagger: 100
+            alpha: 1,
+            from: 0,
+            duration: 250,
+            delay: 150,
+            stagger: 120
         });
 
         // Listen for resize
@@ -149,7 +149,7 @@ export class PauseMenu extends Phaser.Scene {
         bg.setStrokeStyle(2, 0xffffff, 0.5);
 
         // Inner highlight
-        const highlight = this.add.rectangle(-btnWidth/2 + 8, -btnHeight/2 + 8, btnWidth - 16, btnHeight/2 - 8, 0xffffff, 0.12);
+        const highlight = this.add.rectangle(-btnWidth / 2 + 8, -btnHeight / 2 + 8, btnWidth - 16, btnHeight / 2 - 8, 0xffffff, 0.12);
         highlight.setOrigin(0);
 
         const text = this.add.text(0, 0, label, {
@@ -168,9 +168,11 @@ export class PauseMenu extends Phaser.Scene {
 
         container.add([bg, highlight, text]);
         container.setSize(btnWidth, btnHeight);
-        container.setInteractive(new Phaser.Geom.Rectangle(-btnWidth/2, -btnHeight/2, btnWidth, btnHeight), Phaser.Geom.Rectangle.Contains);
 
-        // Hover effects
+        // Move interactivity to bg for better stability
+        bg.setInteractive({ useHandCursor: true });
+
+        // Hover effects targeting the container
         bg.on('pointerover', () => {
             this.tweens.add({
                 targets: container,
@@ -204,6 +206,9 @@ export class PauseMenu extends Phaser.Scene {
                 scaleY: 0.97,
                 duration: 80
             });
+        });
+
+        bg.on('pointerup', () => {
             callback();
         });
 
@@ -221,7 +226,7 @@ export class PauseMenu extends Phaser.Scene {
     private resumeGame(): void {
         if (this.isPaused) {
             this.isPaused = false;
-            
+
             // Animate out
             this.tweens.add({
                 targets: this.pauseContainer,
@@ -243,7 +248,7 @@ export class PauseMenu extends Phaser.Scene {
     private restartGame(): void {
         this.isPaused = false;
         this.scene.stop('PauseMenu');
-        
+
         const gameScene = this.scene.get('GameScene') as Phaser.Scene;
         gameScene.events.emit('restartGame');
     }
@@ -251,7 +256,7 @@ export class PauseMenu extends Phaser.Scene {
     private goToMenu(): void {
         this.isPaused = false;
         this.scene.stop('PauseMenu');
-        
+
         const gameScene = this.scene.get('GameScene') as Phaser.Scene;
         gameScene.events.emit('goToMenu');
     }

@@ -100,12 +100,6 @@ export class GameScene extends Phaser.Scene {
 
         // 增强版发射监听
         this.input.on('pointerdown', () => {
-            // Don't launch if clicking pause button
-            if (this.hud.isPauseButtonClicked()) {
-                this.hud.resetPauseButtonClicked();
-                return;
-            }
-
             let launched = false;
             this.balls.getChildren().forEach(b => {
                 const ball = b as Ball;
@@ -273,11 +267,18 @@ export class GameScene extends Phaser.Scene {
             const newBall = new Ball(this, ball.x, ball.y);
             this.balls.add(newBall);
 
+            // Inherit attributes from parent
+            newBall.setBallRadius(ball.displayWidth / 2);
+            newBall.isFireball = ball.isFireball;
+            newBall.setTint(ball.isFireball ? 0xffaa00 : 0xffffff);
+            newBall.setData('targetSpeed', ball.getData('targetSpeed'));
+
             // Give it a slightly different velocity to differentiate
             newBall.launch();
             if (ball.body && newBall.body) {
                 const vel = ball.body.velocity;
-                newBall.body.velocity.set(vel.x * -0.9, vel.y);
+                // Reverse X to create a V-split
+                newBall.body.velocity.set(vel.x * -1, vel.y);
             }
         });
     }
@@ -486,9 +487,6 @@ export class GameScene extends Phaser.Scene {
     }
 
     private setupPause(): void {
-        // Listen for pause button click from HUD
-        this.hud.onPauseButtonClicked(() => this.togglePause());
-
         // Keyboard input for pause
         this.input.keyboard?.on('keydown-ESC', () => this.togglePause());
         this.input.keyboard?.on('keydown-P', () => this.togglePause());
