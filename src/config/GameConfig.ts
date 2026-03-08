@@ -25,7 +25,8 @@ export const GameConfig = {
 
     // 道具
     POWERUPS: {
-        DROP_CHANCE: 0.2
+        DROP_CHANCE: 0.2,
+        MAX_PADDLE_WIDTH_PERCENT: 0.7
     }
 };
 

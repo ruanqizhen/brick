@@ -213,52 +213,50 @@ export class GameScene extends Phaser.Scene {
         pu.destroy();
         audioManager.play('powerup');
 
+        const DURATION = 15000; // PRD: 15 seconds
+
         switch (type) {
             case 'PADDLE_EXPAND':
                 this.updatePaddleWidth(1.5);
-                this.hud.addPowerUp(type); // Permanent until replaced
                 break;
             case 'PADDLE_SHRINK':
                 this.updatePaddleWidth(0.6);
-                this.hud.addPowerUp(type); // Permanent until replaced
                 break;
             case 'FIREBALL':
                 this.setFireball(true);
-                this.hud.addPowerUp(type, 8000);
-                this.time.delayedCall(8000, () => {
+                this.time.delayedCall(DURATION, () => {
                     this.setFireball(false);
-                    this.hud.removePowerUp(type);
                 });
                 break;
             case 'MULTI_BALL':
-                this.spawnMultiBalls(3);
-                this.hud.addPowerUp(type); // Permanent until life lost
+                this.doubleBalls();
                 break;
             case 'BALL_ENLARGE':
                 this.updateBallsRadius(1.4);
-                this.hud.addPowerUp(type); // Permanent
                 break;
             case 'BALL_SHRINK':
                 this.updateBallsRadius(0.7);
-                this.hud.addPowerUp(type); // Permanent
                 break;
             case 'SPEED_UP':
-                this.updateBallsSpeed(1.3, 8000);
-                this.hud.addPowerUp(type, 8000);
+                this.updateBallsSpeed(1.3, DURATION);
                 break;
             case 'SPEED_DOWN':
-                this.updateBallsSpeed(0.7, 8000);
-                this.hud.addPowerUp(type, 8000);
+                this.updateBallsSpeed(0.7, DURATION);
                 break;
         }
     }
 
-    private updatePaddleWidth(scale: number) {
-        const targetWidth = Math.min(DESIGN_WIDTH * 0.7, GameConfig.PADDLE_WIDTH * scale);
-        // 这里只是简单设置，PRD 说是永久，但并没有说能否继续叠加，暂定允许
-        this.paddle.scaleX = scale;
+    private updatePaddleWidth(scaleFactor: number) {
+        const currentScale = this.paddle.scaleX;
+        const newScale = currentScale * scaleFactor;
+        const maxScale = (DESIGN_WIDTH * GameConfig.POWERUPS.MAX_PADDLE_WIDTH_PERCENT) / GameConfig.PADDLE_WIDTH;
+
+        // Apply limit
+        const finalScale = Math.min(newScale, maxScale);
+
+        this.paddle.scaleX = finalScale;
         const body = this.paddle.body as Phaser.Physics.Arcade.StaticBody;
-        body.setSize(GameConfig.PADDLE_WIDTH * scale, GameConfig.PADDLE_HEIGHT);
+        body.setSize(GameConfig.PADDLE_WIDTH * finalScale, GameConfig.PADDLE_HEIGHT);
         body.updateFromGameObject();
     }
 
@@ -269,14 +267,19 @@ export class GameScene extends Phaser.Scene {
         });
     }
 
-    private spawnMultiBalls(count: number) {
-        const main = this.balls.getFirstAlive() as Ball;
-        if (!main) return;
-        for (let i = 0; i < count - 1; i++) {
-            const ball = new Ball(this, main.x, main.y);
-            this.balls.add(ball);
-            ball.launch();
-        }
+    private doubleBalls() {
+        const currentBalls = this.balls.getChildren() as Ball[];
+        currentBalls.forEach(ball => {
+            const newBall = new Ball(this, ball.x, ball.y);
+            this.balls.add(newBall);
+
+            // Give it a slightly different velocity to differentiate
+            newBall.launch();
+            if (ball.body && newBall.body) {
+                const vel = ball.body.velocity;
+                newBall.body.velocity.set(vel.x * -0.9, vel.y);
+            }
+        });
     }
 
     private updateBallsRadius(scale: number) {
@@ -454,8 +457,6 @@ export class GameScene extends Phaser.Scene {
         if (this.balls.countActive() === 0) {
             this.lives--;
             this.hud.updateLives(this.lives);
-            // Clear all powerups when life is lost
-            this.hud.clearAllPowerUps();
 
             if (this.lives <= 0) {
                 audioManager.play('lose');
