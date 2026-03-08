@@ -72,16 +72,14 @@ export class MenuScene extends Phaser.Scene {
         });
 
         // Start button with modern gradient effect
-        this.startBtn = this.createModernButton(width / 2, height * 0.5, '开始游戏', 0x00d4ff, 0x0099cc);
-        this.startBtn.on('pointerup', async () => {
+        this.startBtn = this.createModernButton(width / 2, height * 0.5, '开始游戏', 0x00d4ff, 0x0099cc, () => {
             // Immediate feedback: disable and slightly dim
-            this.startBtn.disableInteractive();
             this.startBtn.setAlpha(0.8);
 
-            // Play launch sound (it will handle if not unlocked yet gracefuly, but we try to wait a tiny bit)
+            // Play launch sound
             audioManager.play('launch');
 
-            // Give a tiny moment for the visual feedback to "sink in" and audio to start
+            // Transition to game
             this.time.delayedCall(100, () => {
                 this.scene.start('GameScene');
             });
@@ -129,7 +127,7 @@ export class MenuScene extends Phaser.Scene {
         });
     }
 
-    private createModernButton(x: number, y: number, text: string, color1: number, color2: number): Phaser.GameObjects.Container {
+    private createModernButton(x: number, y: number, text: string, color1: number, color2: number, onClick: () => void): Phaser.GameObjects.Container {
         const container = this.add.container(x, y);
         const btnWidth = 280;
         const btnHeight = 70;
@@ -160,10 +158,13 @@ export class MenuScene extends Phaser.Scene {
 
         container.add([bg, highlight, btnText]);
         container.setSize(btnWidth, btnHeight);
-        container.setInteractive(new Phaser.Geom.Rectangle(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight), Phaser.Geom.Rectangle.Contains);
+        container.setDepth(100);
 
-        // Hover effects with tween
-        container.on('pointerover', () => {
+        // Set interaction on the background instead of the container for better stability
+        bg.setInteractive({ useHandCursor: true });
+
+        // Hover effects targeting the container for visual consistency
+        bg.on('pointerover', () => {
             this.tweens.add({
                 targets: container,
                 scaleX: 1.05,
@@ -171,10 +172,10 @@ export class MenuScene extends Phaser.Scene {
                 duration: 200,
                 ease: 'Back.out'
             });
-            bg.setFillStyle(Phaser.Display.Color.GetColor(0, 0xe0, 0xff));
+            bg.setFillStyle(0x00e0ff); // Modern cyan hover
         });
 
-        container.on('pointerout', () => {
+        bg.on('pointerout', () => {
             this.tweens.add({
                 targets: container,
                 scaleX: 1,
@@ -185,13 +186,17 @@ export class MenuScene extends Phaser.Scene {
             bg.setFillStyle(color1);
         });
 
-        container.on('pointerdown', () => {
+        bg.on('pointerdown', () => {
             this.tweens.add({
                 targets: container,
                 scaleX: 0.98,
                 scaleY: 0.98,
                 duration: 100
             });
+        });
+
+        bg.on('pointerup', () => {
+            onClick();
         });
 
         return container;
