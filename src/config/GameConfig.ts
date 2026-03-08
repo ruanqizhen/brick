@@ -47,6 +47,11 @@ export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
                 debug: false
             }
         },
+        fps: {
+            min: 60,
+            target: 120,
+            forceSetTimeOut: false // 使用 requestAnimationFrame
+        },
         backgroundColor: GameConfig.COLORS.BG
     };
 }

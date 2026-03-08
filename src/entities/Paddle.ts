@@ -25,7 +25,7 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    override update() {
+    override update(time: number, delta: number) {
         const pointer = this.scene.input.activePointer;
         this.prevX = this.x;
 
@@ -33,12 +33,13 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
         if ((pointer.active || pointer.isDown) && pointer.x !== pointer.prevPosition.x) {
             this.x = pointer.x;
         }
-        // 2. 处理键盘输入
+        // 2. 处理键盘输入 (引入 delta time 补偿，16.666ms 为 60fps 基准)
         else if (this.cursors || this.aKey || this.dKey) {
+            const frameRatio = delta / 16.666;
             if (this.cursors?.left.isDown || this.aKey?.isDown) {
-                this.x -= this.keyboardSpeed;
+                this.x -= this.keyboardSpeed * frameRatio;
             } else if (this.cursors?.right.isDown || this.dKey?.isDown) {
-                this.x += this.keyboardSpeed;
+                this.x += this.keyboardSpeed * frameRatio;
             }
         }
 

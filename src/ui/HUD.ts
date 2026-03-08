@@ -45,14 +45,14 @@ export class HUD extends Phaser.GameObjects.Container {
         bg.setOrigin(0);
 
         // Score label
-        const label = scene.add.text(15, 8, '得分', {
+        const label = scene.add.text(15, 30, '得分', {
             fontSize: '18px',
             fontFamily: '"Microsoft YaHei", sans-serif',
             color: '#88aaff'
-        });
+        }).setOrigin(0, 0.5);
 
         // Score value
-        const scoreValue = scene.add.text(15, 32, '0', {
+        const scoreValue = scene.add.text(65, 30, '0', {
             fontSize: '32px',
             fontFamily: '"Microsoft YaHei", sans-serif',
             color: '#00d4ff',
@@ -64,7 +64,7 @@ export class HUD extends Phaser.GameObjects.Container {
                 offsetX: 0,
                 offsetY: 0
             }
-        });
+        }).setOrigin(0, 0.5);
 
         container.add([bg, label, scoreValue]);
         container.setSize(220, 60);
