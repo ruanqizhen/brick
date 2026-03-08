@@ -25,58 +25,43 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
             this.aKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
             this.dKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         }
+
+        // 全局全域追踪
+        window.addEventListener('pointerdown', this.handleWindowPointerDown);
+        window.addEventListener('pointermove', this.handleWindowPointerMove);
+        window.addEventListener('pointerup', this.handleWindowPointerUp);
+        window.addEventListener('pointercancel', this.handleWindowPointerUp);
     }
 
+    private handleWindowPointerDown = (event: PointerEvent) => {
+        this.wasPointerDown = true;
+        this.lastClientX = event.clientX;
+    };
+
+    private handleWindowPointerMove = (event: PointerEvent) => {
+        if (!this.wasPointerDown) return;
+
+        const currentClientX = event.clientX;
+        const clientDeltaX = currentClientX - this.lastClientX;
+
+        // 重要修正：使用 CSS 层级的缩放比例来保持 1:1 的手感
+        const cssScale = this.scene.scale.displaySize.width / DESIGN_WIDTH;
+        const gameDeltaX = clientDeltaX / (cssScale || 1);
+
+        if (!isNaN(gameDeltaX)) {
+            this.x += gameDeltaX;
+            this.lastClientX = currentClientX;
+        }
+    };
+
+    private handleWindowPointerUp = () => {
+        this.wasPointerDown = false;
+    };
+
     override update(time: number, delta: number) {
-        const pointer = this.scene.input.activePointer;
         this.prevX = this.x;
 
-        // 1. 处理鼠标/触摸相对位移 (PRD 2.2, 7.3: 全域追踪)
-        if (pointer.isDown) {
-            // 鲁棒性坐标提取：尝试从不同来源获取 clientX (支持 PointerEvent, TouchEvent, MouseEvent)
-            const anyPointer = pointer as any;
-            const event = pointer.event as any;
-
-            let currentClientX: number | undefined = anyPointer.clientX;
-
-            if (currentClientX === undefined && event) {
-                if (event.clientX !== undefined) {
-                    currentClientX = event.clientX;
-                } else if (event.touches && event.touches[0]) {
-                    currentClientX = event.touches[0].clientX;
-                } else if (event.changedTouches && event.changedTouches[0]) {
-                    currentClientX = event.changedTouches[0].clientX;
-                }
-            }
-
-            // 如果依然无法获取（极端情况），回退到 clamped 的 pointer.x
-            if (currentClientX === undefined || isNaN(currentClientX)) {
-                currentClientX = pointer.x;
-            }
-
-            if (!this.wasPointerDown) {
-                this.lastClientX = currentClientX;
-                this.wasPointerDown = true;
-            } else {
-                const clientDeltaX = currentClientX - this.lastClientX;
-
-                // 重要修正：在高分屏 (Retina) 下，displayScale.x 追踪的是物理像素，而 clientX 是 CSS 像素。
-                // 我们需要使用 CSS 层次的缩放比例来保持 1:1 的手感。
-                const cssScale = this.scene.scale.displaySize.width / DESIGN_WIDTH;
-                const gameDeltaX = clientDeltaX / (cssScale || 1);
-
-                // 最终防御：确保不是 NaN 才应用位移，防止挡板消失
-                if (!isNaN(gameDeltaX)) {
-                    this.x += gameDeltaX;
-                    this.lastClientX = currentClientX;
-                } else {
-                    // 如果发生异常，重新校准起始点以防阻塞
-                    this.lastClientX = currentClientX;
-                }
-            }
-        } else {
-            this.wasPointerDown = false;
-        }
+        // 1. 无需在 update 中处理 Phaser 指针，改用 window 全局事件捕获 (已在成员方法中实现)
 
         // 2. 键盘输入 (独立处理，允许共存)
         if (this.cursors || this.aKey || this.dKey) {
@@ -101,14 +86,27 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
         // 必须同步物理体（StaticBody 不会自动跟随 GameObject 移动）
         if (this.body) {
             const body = this.body as Phaser.Physics.Arcade.StaticBody;
-            // 物理体比视觉精灵宽 10 像素（左右各 5），确保与世界边界无缝对接
-            body.setSize(this.displayWidth + 10, GameConfig.PADDLE_HEIGHT);
-            body.setOffset(-5, 0);
+
+            // 鲁棒性检查：仅在宽度发生物理变化时更新 Body 尺寸，避免每帧重设导致碰撞丢失
+            const targetWidth = this.displayWidth + 10;
+            if (body.width !== targetWidth) {
+                body.setSize(targetWidth, GameConfig.PADDLE_HEIGHT);
+                body.setOffset(-5, 0);
+            }
+
             body.updateFromGameObject();
         }
     }
 
     get velocityX(): number {
         return this._velocityX;
+    }
+
+    override destroy(fromScene?: boolean) {
+        window.removeEventListener('pointerdown', this.handleWindowPointerDown);
+        window.removeEventListener('pointermove', this.handleWindowPointerMove);
+        window.removeEventListener('pointerup', this.handleWindowPointerUp);
+        window.removeEventListener('pointercancel', this.handleWindowPointerUp);
+        super.destroy(fromScene);
     }
 }
