@@ -23,20 +23,84 @@ export class BootScene extends Phaser.Scene {
             graphics.generateTexture('particle', 16, 16);
         }
 
-        // 2. Paddle texture
+        // 2. Paddle texture (Light Wood / Beige with Curved Grain)
         if (!this.textures.exists('paddle')) {
+            const pW = GameConfig.PADDLE_WIDTH;
+            const pH = GameConfig.PADDLE_HEIGHT;
             graphics.clear();
-            graphics.fillStyle(0xffffff);
-            graphics.fillRoundedRect(0, 0, GameConfig.PADDLE_WIDTH, GameConfig.PADDLE_HEIGHT, 10);
-            graphics.generateTexture('paddle', GameConfig.PADDLE_WIDTH, GameConfig.PADDLE_HEIGHT);
+
+            // Base wood color (Warm Yellow / Golden Oak)
+            graphics.fillStyle(0xFAD55C);
+            graphics.fillRoundedRect(0, 0, pW, pH, 8);
+
+            // Curved Wood Grain Lines
+            graphics.lineStyle(1, 0x8B4513, 0.25);
+            for (let i = 0; i < 12; i++) {
+                const y = Phaser.Math.Between(4, pH - 4);
+                graphics.beginPath();
+                graphics.moveTo(2, y);
+
+                // Increased waviness for "curved" look
+                for (let x = 20; x < pW; x += 30) {
+                    const wave = Phaser.Math.Between(-3, 3);
+                    graphics.lineTo(x, y + wave);
+                }
+                graphics.lineTo(pW - 2, y);
+                graphics.strokePath();
+            }
+
+            // Subtle Knots
+            graphics.fillStyle(0x8B4513, 0.1);
+            for (let i = 0; i < 2; i++) {
+                const kX = Phaser.Math.Between(pW * 0.1, pW * 0.9);
+                const kY = Phaser.Math.Between(pH * 0.2, pH * 0.8);
+                graphics.fillEllipse(kX, kY, 12, 5);
+            }
+
+            // High-quality Bevel/Highlights for light theme
+            // Top highlight
+            graphics.lineStyle(2, 0xFFFFFF, 0.5);
+            graphics.strokeLineShape(new Phaser.Geom.Line(5, 1, pW - 5, 1));
+
+            // Bottom shadow (Soft brown)
+            graphics.lineStyle(2, 0xA0522D, 0.3);
+            graphics.strokeLineShape(new Phaser.Geom.Line(5, pH - 1, pW - 5, pH - 1));
+
+            graphics.generateTexture('paddle', pW, pH);
         }
 
-        // 3. Ball texture
+        // 3. Ball texture (Tennis Ball)
         if (!this.textures.exists('ball')) {
+            const radius = GameConfig.BALL_RADIUS;
+            const size = radius * 2;
             graphics.clear();
-            graphics.fillStyle(0xffffff);
-            graphics.fillCircle(GameConfig.BALL_RADIUS, GameConfig.BALL_RADIUS, GameConfig.BALL_RADIUS);
-            graphics.generateTexture('ball', GameConfig.BALL_RADIUS * 2, GameConfig.BALL_RADIUS * 2);
+
+            // Base shadow (subtle)
+            graphics.fillStyle(0x000000, 0.2);
+            graphics.fillCircle(radius + 1, radius + 1, radius);
+
+            // Fluorescent Yellow Base
+            graphics.fillStyle(0xCCFF00);
+            graphics.fillCircle(radius, radius, radius);
+
+            // Tennis Ball Seams (White S-curves)
+            graphics.lineStyle(2, 0xFFFFFF, 0.8);
+
+            // Top-left curve
+            graphics.beginPath();
+            graphics.arc(0, 0, radius * 1.1, Phaser.Math.DegToRad(0), Phaser.Math.DegToRad(90), false);
+            graphics.strokePath();
+
+            // Bottom-right curve
+            graphics.beginPath();
+            graphics.arc(size, size, radius * 1.1, Phaser.Math.DegToRad(180), Phaser.Math.DegToRad(270), false);
+            graphics.strokePath();
+
+            // Highlight (Volume)
+            graphics.fillStyle(0xFFFFFF, 0.3);
+            graphics.fillCircle(radius * 0.6, radius * 0.6, radius * 0.3);
+
+            graphics.generateTexture('ball', size, size);
         }
 
         // 4. Standard Brick texture (with bevel for texture)
