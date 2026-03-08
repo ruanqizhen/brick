@@ -60,9 +60,10 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
             } else {
                 const clientDeltaX = currentClientX - this.lastClientX;
 
-                // 安全获取缩放系数，防止除以 0 或 undefined 导致 NaN
-                const scaleX = this.scene.scale.displayScale.x || 1;
-                const gameDeltaX = clientDeltaX / scaleX;
+                // 重要修正：在高分屏 (Retina) 下，displayScale.x 追踪的是物理像素，而 clientX 是 CSS 像素。
+                // 我们需要使用 CSS 层次的缩放比例来保持 1:1 的手感。
+                const cssScale = this.scene.scale.displaySize.width / DESIGN_WIDTH;
+                const gameDeltaX = clientDeltaX / (cssScale || 1);
 
                 // 最终防御：确保不是 NaN 才应用位移，防止挡板消失
                 if (!isNaN(gameDeltaX)) {
