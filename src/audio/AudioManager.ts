@@ -20,7 +20,7 @@ export class AudioManager {
 
         try {
             this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-            
+
             // Create audio pipeline: sources -> compressor -> master -> destination
             this.compressor = this.ctx.createDynamicsCompressor();
             this.compressor.threshold.value = -24;
@@ -34,7 +34,7 @@ export class AudioManager {
 
             this.compressor.connect(this.masterGain);
             this.masterGain.connect(this.ctx.destination);
-            
+
             this.isUnlocked = true;
 
             // Create reverb impulse response
@@ -54,20 +54,20 @@ export class AudioManager {
      */
     private createReverbBuffer(): void {
         if (!this.ctx) return;
-        
+
         const duration = 1.5;
         const decay = 2.0;
         const sampleRate = this.ctx.sampleRate;
         const length = sampleRate * duration;
         const impulse = this.ctx.createBuffer(2, length, sampleRate);
-        
+
         for (let channel = 0; channel < 2; channel++) {
             const channelData = impulse.getChannelData(channel);
             for (let i = 0; i < length; i++) {
                 channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
             }
         }
-        
+
         this.reverbBuffer = impulse;
     }
 
@@ -128,8 +128,8 @@ export class AudioManager {
                 break;
 
             case 'indestructible':
-                // Metallic clang with ring modulation effect
-                this.playSynthNote(1000, 700, 'triangle', now, 0.15, [1, 0.5, 0.3], 0.25);
+                // Sharper metallic clang with high-frequency ring modulation
+                this.playSynthNote(1200, 800, 'triangle', now, 0.2, [1, 0.8, 0.6, 0.4, 0.2], 0.2);
                 break;
         }
     }
@@ -138,17 +138,17 @@ export class AudioManager {
      * Generic synth note player with harmonics
      */
     private playSynthNote(
-        freq: number, 
-        endFreq: number, 
-        type: OscillatorType, 
-        time: number, 
+        freq: number,
+        endFreq: number,
+        type: OscillatorType,
+        time: number,
         duration: number,
         harmonics: number[] = [1],
         distortion: number = 0
     ): void {
         const osc = this.ctx!.createOscillator();
         const gain = this.ctx!.createGain();
-        
+
         osc.type = type;
         osc.frequency.setValueAtTime(freq, time);
         osc.frequency.exponentialRampToValueAtTime(endFreq, time + duration);
@@ -174,7 +174,7 @@ export class AudioManager {
 
         osc.connect(gain);
         gain.connect(this.compressor!);
-        
+
         osc.start(time);
         osc.stop(time + duration);
     }
@@ -200,7 +200,7 @@ export class AudioManager {
 
         osc.connect(gain);
         gain.connect(this.compressor!);
-        
+
         osc.start(now);
         osc.stop(now + 0.12);
     }
@@ -255,7 +255,7 @@ export class AudioManager {
 
         osc.connect(gain);
         gain.connect(this.compressor!);
-        
+
         osc.start(now);
         osc.stop(now + 0.5);
     }
@@ -280,7 +280,7 @@ export class AudioManager {
 
         osc.connect(gain);
         gain.connect(this.compressor!);
-        
+
         osc.start(now);
         osc.stop(now + 0.18);
     }
@@ -303,7 +303,7 @@ export class AudioManager {
 
         chordProgression.forEach((chord, i) => {
             const startTime = now + i * 0.15;
-            
+
             chord.forEach((freq, j) => {
                 const osc = this.ctx!.createOscillator();
                 const gain = this.ctx!.createGain();

@@ -45,7 +45,7 @@ src/
 │   ├── HUD.ts               # 分数/生命显示
 │   └── PauseMenu.ts         # 暂停菜单
 ├── audio/
-│   └── AudioManager.ts      # 音效/BGM 管理
+│   └── AudioManager.ts      # 音效 管理
 ├── storage/
 │   └── SaveManager.ts       # IndexedDB 存储
 └── utils/
@@ -467,8 +467,6 @@ class AudioManager {
   playPaddleHit(): void { /* 挡板弹击音 */ }
   playPowerUpCollect(): void { /* 道具拾取音 */ }
   playBallLost(): void { /* 失球音效 */ }
-  playBGM(): void { /* 循环背景音乐，含循环点优化 */ }
-  stopBGM(): void {}
   setVolume(v: number): void {}
 }
 ```
@@ -477,26 +475,6 @@ class AudioManager {
 
 - 所有音效使用 Web Audio API 程序化生成（振荡器 + 滤波器）或加载 `.ogg`/`.mp3` 文件
 - 移动端音频需在用户首次触摸后解锁（`AudioContext.resume()`）
-
----
-
-## 九、存储系统
-
-```typescript
-// SaveManager.ts
-interface GameSave {
-  currentLevel: number;
-  highScore: number;
-  lives: number;
-  unlockedLevels: number[];
-}
-
-class SaveManager {
-  async save(data: GameSave): Promise { /* IndexedDB write */ }
-  async load(): Promise { /* IndexedDB read */ }
-  async clear(): Promise { /* 清档 */ }
-}
-```
 
 ---
 

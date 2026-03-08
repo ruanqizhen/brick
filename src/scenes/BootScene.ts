@@ -39,12 +39,69 @@ export class BootScene extends Phaser.Scene {
             graphics.generateTexture('ball', GameConfig.BALL_RADIUS * 2, GameConfig.BALL_RADIUS * 2);
         }
 
-        // 4. Brick texture
+        // 4. Standard Brick texture (with bevel for texture)
         if (!this.textures.exists('brick')) {
+            const bW = 80;
+            const bH = 30;
             graphics.clear();
+
+            // Base fill
             graphics.fillStyle(0xffffff);
-            graphics.fillRect(0, 0, 80, 30);
-            graphics.generateTexture('brick', 80, 30);
+            graphics.fillRect(0, 0, bW, bH);
+
+            // Bevel - lighter top and left
+            graphics.lineStyle(2, 0xffffff, 0.5);
+            graphics.strokeLineShape(new Phaser.Geom.Line(1, 1, bW - 1, 1));
+            graphics.strokeLineShape(new Phaser.Geom.Line(1, 1, 1, bH - 1));
+
+            // Bevel - darker bottom and right
+            graphics.lineStyle(2, 0x000000, 0.3);
+            graphics.strokeLineShape(new Phaser.Geom.Line(1, bH - 1, bW - 1, bH - 1));
+            graphics.strokeLineShape(new Phaser.Geom.Line(bW - 1, 1, bW - 1, bH - 1));
+
+            // Inner texture pattern (subtle pinstripes)
+            graphics.lineStyle(1, 0xffffff, 0.1);
+            for (let i = 5; i < bW; i += 10) {
+                graphics.strokeLineShape(new Phaser.Geom.Line(i, 3, i, bH - 3));
+            }
+
+            graphics.generateTexture('brick', bW, bH);
+        }
+
+        // 5. Metal Brick texture (Stainless Steel look)
+        if (!this.textures.exists('brick_metal')) {
+            const bW = 80;
+            const bH = 30;
+            graphics.clear();
+
+            // Metallic gradient base (simulated)
+            graphics.fillStyle(0xdddddd);
+            graphics.fillRect(0, 0, bW, bH);
+
+            // Brushed metal lines (horizontal)
+            graphics.lineStyle(1, 0x999999, 0.4);
+            for (let i = 2; i < bH; i += 2) {
+                const offset = (i % 4 === 0) ? 0 : 5;
+                graphics.strokeLineShape(new Phaser.Geom.Line(offset, i, bW - offset, i));
+            }
+
+            // Diagonal shine/highlight
+            graphics.fillStyle(0xffffff, 0.3);
+            graphics.beginPath();
+            graphics.moveTo(bW * 0.2, 0);
+            graphics.lineTo(bW * 0.5, 0);
+            graphics.lineTo(bW * 0.3, bH);
+            graphics.lineTo(0, bH);
+            graphics.fillPath();
+
+            // Sharp bevel
+            graphics.lineStyle(2, 0xffffff, 0.8);
+            graphics.strokeRect(0, 0, bW, bH);
+            graphics.lineStyle(1, 0x444444, 1);
+            graphics.strokeLineShape(new Phaser.Geom.Line(0, bH, bW, bH));
+            graphics.strokeLineShape(new Phaser.Geom.Line(bW, 0, bW, bH));
+
+            graphics.generateTexture('brick_metal', bW, bH);
         }
 
         graphics.destroy();

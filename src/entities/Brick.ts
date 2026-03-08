@@ -7,7 +7,8 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
     private _hp: number;
 
     constructor(scene: Phaser.Scene, x: number, y: number, type: BrickType) {
-        super(scene, x, y, 'brick');
+        const texture = type === 'INDESTRUCTIBLE' ? 'brick_metal' : 'brick';
+        super(scene, x, y, texture);
         this.brickType = type;
 
         // 设置初始 HP
@@ -45,7 +46,8 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
 
         switch (this.brickType) {
             case 'INDESTRUCTIBLE':
-                color = GameConfig.COLORS.BRICK_INDESTRUCTIBLE;
+                // Use a very light silver/white to show off the metal texture details
+                color = 0xEEEEEE;
                 break;
             case 'HARD_3':
                 color = this._hp === 3 ? GameConfig.COLORS.BRICK_HARD_3 : (this._hp === 2 ? GameConfig.COLORS.BRICK_HARD_2 : 0xF9A825);
