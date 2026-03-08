@@ -1,11 +1,11 @@
 import Phaser from 'phaser';
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../config/GameConfig';
 import { audioManager } from '../audio/AudioManager';
+import { saveManager } from '../storage/SaveManager';
 
 interface GameOverData {
     score: number;
     level: number;
-    isNewHighScore: boolean;
 }
 
 export class GameOverScene extends Phaser.Scene {
@@ -18,17 +18,24 @@ export class GameOverScene extends Phaser.Scene {
         super('GameOverScene');
     }
 
-    init(data: GameOverData) {
+    async init(data: GameOverData) {
         this.score = data.score || 0;
         this.level = data.level || 1;
-        this.isNewHighScore = data.isNewHighScore || false;
-        this.highScore = this.loadHighScore();
+        
+        // Load high score and check if new high score
+        this.highScore = await saveManager.getHighScore();
+        this.isNewHighScore = this.score > this.highScore;
+        
+        // Save high score if beaten
+        if (this.isNewHighScore) {
+            await saveManager.saveHighScore(this.score);
+        }
+        
+        // Record game played
+        await saveManager.recordGame(false); // Default to lost, update if win
     }
 
     create() {
-        // Stop game BGM
-        audioManager.stopBGM();
-
         // Darken background
         const overlay = this.add.rectangle(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT, 0x000000, 0.8);
         overlay.setOrigin(0);
@@ -220,32 +227,5 @@ export class GameOverScene extends Phaser.Scene {
         });
 
         return container;
-    }
-
-    private loadHighScore(): number {
-        try {
-            const saved = localStorage.getItem('brick_highscore');
-            return saved ? parseInt(saved, 10) : 0;
-        } catch {
-            return 0;
-        }
-    }
-
-    /**
-     * Save high score if current score is higher
-     */
-    static saveHighScore(score: number): boolean {
-        try {
-            const saved = localStorage.getItem('brick_highscore');
-            const currentHigh = saved ? parseInt(saved, 10) : 0;
-            
-            if (score > currentHigh) {
-                localStorage.setItem('brick_highscore', score.toString());
-                return true;
-            }
-            return false;
-        } catch {
-            return false;
-        }
     }
 }

@@ -10,6 +10,8 @@ import { ParticleSystem } from '../systems/ParticleSystem';
 import { ScreenShake } from '../systems/ScreenShake';
 import { audioManager } from '../audio/AudioManager';
 import { GameOverScene } from './GameOverScene';
+import { PauseMenu } from './PauseMenu';
+import { saveManager } from '../storage/SaveManager';
 
 import { Starfield } from '../systems/Starfield';
 
@@ -84,8 +86,17 @@ export class GameScene extends Phaser.Scene {
 
         this.showLaunchInstruction();
 
+        // Pause functionality
+        this.setupPause();
+
         // 增强版发射监听
         this.input.on('pointerdown', () => {
+            // Don't launch if clicking pause button
+            if (this.hud.isPauseButtonClicked()) {
+                this.hud.resetPauseButtonClicked();
+                return;
+            }
+
             let launched = false;
             this.balls.getChildren().forEach(b => {
                 const ball = b as Ball;
@@ -337,11 +348,11 @@ export class GameScene extends Phaser.Scene {
             } else {
                 // Completed all levels - show victory in GameOverScene
                 const finalScore = this.hud.getScore;
-                const isNewHighScore = GameOverScene.saveHighScore(finalScore);
+                // Save level progress
+                saveManager.saveLevel(this.currentLevelIndex);
                 this.scene.start('GameOverScene', {
                     score: finalScore,
-                    level: this.currentLevelIndex,
-                    isNewHighScore
+                    level: this.currentLevelIndex
                 });
             }
         });
@@ -356,16 +367,14 @@ export class GameScene extends Phaser.Scene {
             this.hud.updateLives(this.lives);
             // Clear all powerups when life is lost
             this.hud.clearAllPowerUps();
-            
+
             if (this.lives <= 0) {
                 audioManager.play('lose');
                 // Save high score and transition to GameOverScene
                 const finalScore = this.hud.getScore;
-                const isNewHighScore = GameOverScene.saveHighScore(finalScore);
                 this.scene.start('GameOverScene', {
                     score: finalScore,
-                    level: this.currentLevelIndex + 1,
-                    isNewHighScore
+                    level: this.currentLevelIndex + 1
                 });
             }
             else {
@@ -384,6 +393,58 @@ export class GameScene extends Phaser.Scene {
     private clearLaunchInstruction() {
         const inst = this.children.getByName('instruction');
         if (inst) inst.destroy();
+    }
+
+    private setupPause(): void {
+        // Listen for pause button click from HUD
+        this.hud.onPauseButtonClicked(() => this.togglePause());
+
+        // Keyboard input for pause
+        this.input.keyboard?.on('keydown-ESC', () => this.togglePause());
+        this.input.keyboard?.on('keydown-P', () => this.togglePause());
+
+        // Listen for resume/restart/menu events from PauseMenu
+        this.events.on('resumeGame', () => this.resumeGame());
+        this.events.on('restartGame', () => this.restartGame());
+        this.events.on('goToMenu', () => this.scene.start('MenuScene'));
+    }
+
+    private togglePause(): void {
+        if (this.scene.isActive('PauseMenu')) {
+            this.resumeGame();
+        } else {
+            this.pauseGame();
+        }
+    }
+
+    private pauseGame(): void {
+        // Pause physics
+        this.physics.world.isPaused = true;
+        
+        // Stop starfield animation
+        if (this.starfield) {
+            this.starfield.setEnabled(false);
+        }
+
+        // Launch pause menu
+        this.scene.launch('PauseMenu');
+    }
+
+    private resumeGame(): void {
+        // Resume physics
+        this.physics.world.isPaused = false;
+        
+        // Resume starfield animation
+        if (this.starfield) {
+            this.starfield.setEnabled(true);
+        }
+
+        // Stop pause menu
+        this.scene.stop('PauseMenu');
+    }
+
+    private restartGame(): void {
+        this.scene.restart();
     }
 
     private loadLevel(idx: number) {

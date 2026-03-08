@@ -16,6 +16,9 @@ export class HUD extends Phaser.GameObjects.Container {
     private lives: number = 3;
     private powerUpContainer!: Phaser.GameObjects.Container;
     private activePowerUps: Map<PowerUpType, ActivePowerUp> = new Map();
+    private pauseBtn!: Phaser.GameObjects.Container;
+    private onPauseCallback?: () => void;
+    private pauseButtonClicked: boolean = false;
 
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
@@ -28,6 +31,9 @@ export class HUD extends Phaser.GameObjects.Container {
         // Power-up display container (top center)
         this.powerUpContainer = scene.add.container(scene.cameras.main.width / 2, 20);
         this.powerUpContainer.setDepth(100);
+
+        // Pause button (top right, below lives)
+        this.createPauseButton(scene, scene.cameras.main.width - 60, 70);
 
         this.add([this.scoreText, this.livesText]);
         scene.add.existing(this);
@@ -181,5 +187,66 @@ export class HUD extends Phaser.GameObjects.Container {
 
     get getScore(): number {
         return this.score;
+    }
+
+    /**
+     * Create pause button
+     */
+    private createPauseButton(scene: Phaser.Scene, x: number, y: number): void {
+        this.pauseBtn = scene.add.container(x, y);
+        this.pauseBtn.setDepth(100);
+
+        // Circle background
+        const bg = scene.add.circle(0, 0, 28, 0x333333, 0.9);
+        bg.setInteractive({ useHandCursor: true });
+        bg.setStrokeStyle(2, 0xffffff, 0.6);
+
+        // Pause icon (two vertical bars)
+        const pauseIcon = scene.add.rectangle(-8, 0, 6, 20, 0xffffff);
+        pauseIcon.setOrigin(0.5);
+        const pauseIcon2 = scene.add.rectangle(8, 0, 6, 20, 0xffffff);
+        pauseIcon2.setOrigin(0.5);
+
+        this.pauseBtn.add([bg, pauseIcon, pauseIcon2]);
+
+        // Hover effects
+        bg.on('pointerover', () => {
+            bg.setFillStyle(0x555555, 0.9);
+            bg.setScale(1.1);
+        });
+
+        bg.on('pointerout', () => {
+            bg.setFillStyle(0x333333, 0.9);
+            bg.setScale(1);
+        });
+
+        bg.on('pointerdown', () => {
+            bg.setScale(0.9);
+            this.pauseButtonClicked = true;
+            if (this.onPauseCallback) {
+                this.onPauseCallback();
+            }
+        });
+    }
+
+    /**
+     * Register callback for pause button click
+     */
+    onPauseButtonClicked(callback: () => void): void {
+        this.onPauseCallback = callback;
+    }
+
+    /**
+     * Check if pause button was clicked
+     */
+    isPauseButtonClicked(): boolean {
+        return this.pauseButtonClicked;
+    }
+
+    /**
+     * Reset pause button clicked state
+     */
+    resetPauseButtonClicked(): void {
+        this.pauseButtonClicked = false;
     }
 }

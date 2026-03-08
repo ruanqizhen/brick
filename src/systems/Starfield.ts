@@ -4,6 +4,7 @@ export class Starfield {
     private scene: Phaser.Scene;
     private stars: Phaser.GameObjects.Group;
     private speed: number = 2;
+    private enabled: boolean = true;
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
@@ -29,7 +30,13 @@ export class Starfield {
         }
     }
 
+    setEnabled(enabled: boolean): void {
+        this.enabled = enabled;
+    }
+
     update() {
+        if (!this.enabled) return;
+
         const height = this.scene.cameras.main.height;
         this.stars.getChildren().forEach(s => {
             const star = s as Phaser.GameObjects.Rectangle;
