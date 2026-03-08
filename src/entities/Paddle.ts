@@ -4,6 +4,10 @@ import { DESIGN_WIDTH, GameConfig } from '../config/GameConfig';
 export class Paddle extends Phaser.Physics.Arcade.Sprite {
     private prevX: number = 0;
     private _velocityX: number = 0;
+    private cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
+    private aKey: Phaser.Input.Keyboard.Key | undefined;
+    private dKey: Phaser.Input.Keyboard.Key | undefined;
+    private keyboardSpeed: number = 18; // 键盘移动速度 (像素/帧)
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, 'paddle');
@@ -12,28 +16,46 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
 
         this.setOrigin(0.5);
         this.prevX = x;
+
+        // 设置键盘控制
+        if (scene.input.keyboard) {
+            this.cursors = scene.input.keyboard.createCursorKeys();
+            this.aKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+            this.dKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+        }
     }
 
     override update() {
         const pointer = this.scene.input.activePointer;
         this.prevX = this.x;
 
-        // 无论移动端还是桌面端，直接跟随指针 X 坐标是最灵敏的
-        // 只有当指针处于激活状态（按下或在移动）时更新
-        if (pointer.active || pointer.isDown) {
+        // 1. 优先处理鼠标/触摸跟随 (灵敏度最高)
+        if ((pointer.active || pointer.isDown) && pointer.x !== pointer.prevPosition.x) {
             this.x = pointer.x;
         }
+        // 2. 处理键盘输入
+        else if (this.cursors || this.aKey || this.dKey) {
+            if (this.cursors?.left.isDown || this.aKey?.isDown) {
+                this.x -= this.keyboardSpeed;
+            } else if (this.cursors?.right.isDown || this.dKey?.isDown) {
+                this.x += this.keyboardSpeed;
+            }
+        }
 
-        // 约束边界
+        // 约束边界：允许 5 像素的重叠以防止小球从极端边缘漏过
         const halfWidth = this.displayWidth / 2;
-        this.x = Phaser.Math.Clamp(this.x, halfWidth, DESIGN_WIDTH - halfWidth);
+        this.x = Phaser.Math.Clamp(this.x, halfWidth - 5, DESIGN_WIDTH - halfWidth + 5);
 
         // 计算速度用于球的摩擦力反弹
         this._velocityX = this.x - this.prevX;
 
         // 必须同步物理体（StaticBody 不会自动跟随 GameObject 移动）
         if (this.body) {
-            (this.body as Phaser.Physics.Arcade.StaticBody).updateFromGameObject();
+            const body = this.body as Phaser.Physics.Arcade.StaticBody;
+            // 物理体比视觉精灵宽 10 像素（左右各 5），确保与世界边界无缝对接
+            body.setSize(this.displayWidth + 10, GameConfig.PADDLE_HEIGHT);
+            body.setOffset(-5, 0);
+            body.updateFromGameObject();
         }
     }
 
