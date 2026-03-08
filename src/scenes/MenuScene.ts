@@ -13,14 +13,9 @@ export class MenuScene extends Phaser.Scene {
         super('MenuScene');
     }
 
-    async create() {
+    create() {
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
-
-        // Unlock audio on first interaction
-        this.input.once('pointerdown', () => {
-            audioManager.unlock();
-        });
 
         // Create animated background gradient
         this.createBackground(width, height);
@@ -50,10 +45,8 @@ export class MenuScene extends Phaser.Scene {
             letterSpacing: 15
         }).setOrigin(0.5);
 
-        // High score display with modern style
-        const highScore = await saveManager.getHighScore();
-        this.highScoreText = this.add.text(width / 2, height * 0.36, 
-            `🏆 最高分：${highScore.toLocaleString()}`, {
+        // High score display with modern style - load async but don't block
+        this.highScoreText = this.add.text(width / 2, height * 0.36, '🏆 最高分：0', {
             fontSize: '28px',
             fontFamily: '"Microsoft YaHei", sans-serif',
             color: '#ffd700',
@@ -67,14 +60,21 @@ export class MenuScene extends Phaser.Scene {
             }
         }).setOrigin(0.5);
 
+        saveManager.getHighScore().then(highScore => {
+            if (this.highScoreText.active) {
+                this.highScoreText.setText(`🏆 最高分：${highScore.toLocaleString()}`);
+            }
+        });
+
         // Start button with modern gradient effect
         this.startBtn = this.createModernButton(width / 2, height * 0.5, '开始游戏', 0x00d4ff, 0x0099cc);
         this.startBtn.on('pointerdown', () => {
+            audioManager.play('launch');
             this.scene.start('GameScene');
         });
 
         // Instructions with modern styling
-        this.instructions = this.add.text(width / 2, height * 0.75, 
+        this.instructions = this.add.text(width / 2, height * 0.75,
             '鼠标 / 触摸移动 • 点击发射\nESC / P 暂停游戏', {
             fontSize: '22px',
             fontFamily: '"Microsoft YaHei", sans-serif',
@@ -102,7 +102,7 @@ export class MenuScene extends Phaser.Scene {
         );
 
         // Create floating particles
-        this.particles = this.add.particles(0, 0, 'ball', {
+        this.particles = this.add.particles(0, 0, 'particle', {
             x: { min: 0, max: width },
             y: { min: 0, max: height },
             lifespan: 5000,
@@ -126,7 +126,7 @@ export class MenuScene extends Phaser.Scene {
         bg.setStrokeStyle(3, 0xffffff, 0.8);
 
         // Inner highlight
-        const highlight = this.add.rectangle(-btnWidth/2 + 10, -btnHeight/2 + 10, btnWidth - 20, btnHeight/2 - 10, 0xffffff, 0.15);
+        const highlight = this.add.rectangle(-btnWidth / 2 + 10, -btnHeight / 2 + 10, btnWidth - 20, btnHeight / 2 - 10, 0xffffff, 0.15);
         highlight.setOrigin(0);
 
         // Button text with shadow
@@ -146,7 +146,7 @@ export class MenuScene extends Phaser.Scene {
 
         container.add([bg, highlight, btnText]);
         container.setSize(btnWidth, btnHeight);
-        container.setInteractive(new Phaser.Geom.Rectangle(-btnWidth/2, -btnHeight/2, btnWidth, btnHeight), Phaser.Geom.Rectangle.Contains);
+        container.setInteractive(new Phaser.Geom.Rectangle(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight), Phaser.Geom.Rectangle.Contains);
 
         // Hover effects with tween
         container.on('pointerover', () => {

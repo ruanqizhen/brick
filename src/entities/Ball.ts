@@ -19,7 +19,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         this.setCircle(GameConfig.BALL_RADIUS);
 
         // 创建拖尾粒子发射器
-        this.trailEmitter = scene.add.particles(0, 0, 'ball', {
+        this.trailEmitter = scene.add.particles(0, 0, 'particle', {
             lifespan: 300,
             scale: { start: 0.6, end: 0 },
             alpha: { start: 0.5, end: 0 },

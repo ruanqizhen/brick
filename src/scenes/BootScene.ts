@@ -1,5 +1,7 @@
-import Phaser from 'phaser';
+import { DESIGN_WIDTH, DESIGN_HEIGHT, GameConfig } from '../config/GameConfig';
+import { saveManager } from '../storage/SaveManager';
 import { audioManager } from '../audio/AudioManager';
+import Phaser from 'phaser'; // Re-add Phaser for type safety if needed, though usually standard
 
 export class BootScene extends Phaser.Scene {
     constructor() {
@@ -9,6 +11,46 @@ export class BootScene extends Phaser.Scene {
     preload() {
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
+
+        // Create all procedural textures once
+        const graphics = this.make.graphics({ x: 0, y: 0 });
+
+        // 1. Particle texture
+        if (!this.textures.exists('particle')) {
+            graphics.clear();
+            graphics.fillStyle(0xffffff, 1);
+            graphics.fillCircle(8, 8, 8);
+            graphics.generateTexture('particle', 16, 16);
+        }
+
+        // 2. Paddle texture
+        if (!this.textures.exists('paddle')) {
+            graphics.clear();
+            graphics.fillStyle(0xffffff);
+            graphics.fillRoundedRect(0, 0, GameConfig.PADDLE_WIDTH, GameConfig.PADDLE_HEIGHT, 10);
+            graphics.generateTexture('paddle', GameConfig.PADDLE_WIDTH, GameConfig.PADDLE_HEIGHT);
+        }
+
+        // 3. Ball texture
+        if (!this.textures.exists('ball')) {
+            graphics.clear();
+            graphics.fillStyle(0xffffff);
+            graphics.fillCircle(GameConfig.BALL_RADIUS, GameConfig.BALL_RADIUS, GameConfig.BALL_RADIUS);
+            graphics.generateTexture('ball', GameConfig.BALL_RADIUS * 2, GameConfig.BALL_RADIUS * 2);
+        }
+
+        // 4. Brick texture
+        if (!this.textures.exists('brick')) {
+            graphics.clear();
+            graphics.fillStyle(0xffffff);
+            graphics.fillRect(0, 0, 80, 30);
+            graphics.generateTexture('brick', 80, 30);
+        }
+
+        graphics.destroy();
+
+        // Initialize SaveManager early
+        saveManager.init();
 
         // Create animated gradient background
         const bg = this.add.rectangle(0, 0, width, height, 0x0a0a1a);
@@ -46,7 +88,7 @@ export class BootScene extends Phaser.Scene {
         }).setOrigin(0.5);
 
         // Particle effect
-        const particles = this.add.particles(0, 0, 'ball', {
+        const particles = this.add.particles(0, 0, 'particle', {
             x: { min: 0, max: width },
             y: { min: 0, max: height },
             lifespan: 3000,

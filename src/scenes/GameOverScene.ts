@@ -51,7 +51,7 @@ export class GameOverScene extends Phaser.Scene {
         this.overlay.setOrigin(0);
 
         // Create animated background particles
-        this.particles = this.add.particles(0, 0, 'ball', {
+        this.particles = this.add.particles(0, 0, 'particle', {
             x: { min: 0, max: width },
             y: { min: 0, max: height },
             lifespan: 5000,
@@ -117,7 +117,7 @@ export class GameOverScene extends Phaser.Scene {
             });
 
             // Add sparkle particles
-            const sparkle = this.add.particles(width / 2, height * 0.27, 'ball', {
+            const sparkle = this.add.particles(width / 2, height * 0.27, 'particle', {
                 speed: { min: 50, max: 100 },
                 scale: { start: 0.4, end: 0 },
                 alpha: { start: 1, end: 0 },
@@ -373,11 +373,15 @@ export class GameOverScene extends Phaser.Scene {
             const eased = 1 - (1 - progress) * (1 - progress);
 
             const currentScore = Math.floor(from + (to - from) * eased);
-            text.setText(currentScore.toLocaleString());
+            
+            // Check if text still exists before updating
+            if (text && text.active) {
+                text.setText(currentScore.toLocaleString());
+            }
 
-            if (progress < 1) {
+            if (progress < 1 && text && text.active) {
                 requestAnimationFrame(updateScore);
-            } else {
+            } else if (text && text.active) {
                 text.setText(to.toLocaleString());
             }
         };

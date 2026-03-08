@@ -82,9 +82,9 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
     static getIcon(type: PowerUpType): string {
         switch (type) {
             case 'PADDLE_EXPAND': return '↔️';
-            case 'PADDLE_SHRINK': return '↕️';
-            case 'FIREBALL': return '🔥';
-            case 'MULTI_BALL': return '☄️';
+            case 'PADDLE_SHRINK': return '🔹';
+            case 'FIREBALL': return '☄️';
+            case 'MULTI_BALL': return '🧬';
             case 'BALL_ENLARGE': return '⬆️';
             case 'BALL_SHRINK': return '⬇️';
             case 'SPEED_UP': return '⚡';

@@ -101,7 +101,7 @@ export class PauseMenu extends Phaser.Scene {
 
     private createAnimatedBackground(width: number, height: number): void {
         // Floating particles
-        this.particles = this.add.particles(0, 0, 'ball', {
+        this.particles = this.add.particles(0, 0, 'particle', {
             x: { min: 0, max: width },
             y: { min: 0, max: height },
             lifespan: 4000,

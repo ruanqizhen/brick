@@ -37,8 +37,6 @@ export class GameScene extends Phaser.Scene {
         (this.physics.world as any).TILE_BIAS = 32; // 默认值 16，增加以处理高速碰撞
         (this.physics.world as any).OVERLAP_BIAS = 4; // 默认值 4
 
-        this.createTextures();
-
         this.starfield = new Starfield(this);
         this.hud = new HUD(this);
 
@@ -117,23 +115,6 @@ export class GameScene extends Phaser.Scene {
         this.powerUps.getChildren().forEach(p => (p as PowerUp).update());
     }
 
-    private createTextures() {
-        const graphics = this.make.graphics({ x: 0, y: 0 });
-        graphics.fillStyle(0xffffff);
-        graphics.fillRoundedRect(0, 0, GameConfig.PADDLE_WIDTH, GameConfig.PADDLE_HEIGHT, 10);
-        graphics.generateTexture('paddle', GameConfig.PADDLE_WIDTH, GameConfig.PADDLE_HEIGHT);
-
-        graphics.clear();
-        graphics.fillStyle(0xffffff);
-        graphics.fillCircle(GameConfig.BALL_RADIUS, GameConfig.BALL_RADIUS, GameConfig.BALL_RADIUS);
-        graphics.generateTexture('ball', GameConfig.BALL_RADIUS * 2, GameConfig.BALL_RADIUS * 2);
-
-        graphics.clear();
-        graphics.fillStyle(0xffffff);
-        graphics.fillRect(0, 0, 80, 30);
-        graphics.generateTexture('brick', 80, 30);
-    }
-
     private handleBrickHit(ball: Ball, brick: Brick) {
         try {
             const isFireball = ball.isFireball;
@@ -156,6 +137,7 @@ export class GameScene extends Phaser.Scene {
                 audioManager.play('indestructible');
                 this.hud.updateScore(500); // 奖励分
                 this.particles.spawnBrickParticles(brick.x, brick.y, 0xaaaaaa);
+                ScreenShake.shake(this.cameras.main, 0.008, 150); // 火球撞金刚砖强制震屏
                 return;
             }
 
@@ -182,7 +164,12 @@ export class GameScene extends Phaser.Scene {
                     }
                 }
 
-                ScreenShake.shake(this.cameras.main, res.destroyed ? 0.005 : 0.002, 100);
+                // 只有大球才产生震屏
+                const isLargeBall = ball.displayWidth > GameConfig.BALL_RADIUS * 2.2;
+                if (isLargeBall) {
+                    ScreenShake.shake(this.cameras.main, res.destroyed ? 0.005 : 0.002, 100);
+                }
+
                 this.triggerHitstop(res.destroyed ? 60 : 30);
 
                 if (res.destroyed && Math.random() < GameConfig.POWERUPS.DROP_CHANCE) {
@@ -192,8 +179,6 @@ export class GameScene extends Phaser.Scene {
 
             if (this.checkWin()) {
                 this.handleWin();
-            } else if (this.bricks.getChildren().filter(b => !(b as Brick).isIndestructible).length === 1) {
-                this.triggerSlowMo();
             }
         } catch (error) {
             console.error('handleBrickHit error:', error);
@@ -342,17 +327,24 @@ export class GameScene extends Phaser.Scene {
         audioManager.play('win');
         this.add.text(DESIGN_WIDTH / 2, DESIGN_HEIGHT / 2, 'CLEAR!', { fontSize: '64px', color: '#00ff00' }).setOrigin(0.5);
         this.time.delayedCall(2000, () => {
-            this.currentLevelIndex++;
-            if (this.currentLevelIndex < LEVELS.length) {
-                this.scene.restart();
+            const completedLevel = this.currentLevelIndex + 1;
+
+            // Save level progress
+            saveManager.saveLevel(completedLevel);
+
+            if (completedLevel < LEVELS.length) {
+                // More levels available - go to level select
+                const finalScore = this.hud.getScore;
+                this.scene.start('LevelSelectScene', {
+                    completedLevel: completedLevel,
+                    score: finalScore
+                });
             } else {
                 // Completed all levels - show victory in GameOverScene
                 const finalScore = this.hud.getScore;
-                // Save level progress
-                saveManager.saveLevel(this.currentLevelIndex);
                 this.scene.start('GameOverScene', {
                     score: finalScore,
-                    level: this.currentLevelIndex
+                    level: completedLevel
                 });
             }
         });
@@ -420,7 +412,7 @@ export class GameScene extends Phaser.Scene {
     private pauseGame(): void {
         // Pause physics
         this.physics.world.isPaused = true;
-        
+
         // Stop starfield animation
         if (this.starfield) {
             this.starfield.setEnabled(false);
@@ -433,7 +425,7 @@ export class GameScene extends Phaser.Scene {
     private resumeGame(): void {
         // Resume physics
         this.physics.world.isPaused = false;
-        
+
         // Resume starfield animation
         if (this.starfield) {
             this.starfield.setEnabled(true);
