@@ -359,26 +359,8 @@ function spawnBrickParticles(scene: Phaser.Scene, x: number, y: number, color: n
 }
 ```
 
-### 5.4 慢动作（Slo-mo）
 
-触发条件：场景内仅剩最后一块可破坏砖块时：
-
-```typescript
-function enterSlowMotion(scene: Phaser.Scene): void {
-  scene.tweens.add({
-    targets: scene,
-    timeScale: 0.2,     // 降速到 20%
-    duration: 200,
-    onComplete: () => {
-      // 击碎后恢复
-    }
-  });
-  // 同时触发屏幕抖动
-  screenShake.shake(scene.cameras.main, 5, 200);
-}
-```
-
-### 5.5 渲染层级
+### 5.4 渲染层级
 
 ```
 Layer 0: 动态星空背景（Shader / TileSprite 滚动）
@@ -494,7 +476,6 @@ class AudioManager {
 ### 8.2 音效规格
 
 - 所有音效使用 Web Audio API 程序化生成（振荡器 + 滤波器）或加载 `.ogg`/`.mp3` 文件
-- BGM 设置精确循环点，避免循环间隙
 - 移动端音频需在用户首次触摸后解锁（`AudioContext.resume()`）
 
 ---

@@ -17,6 +17,11 @@ export class MenuScene extends Phaser.Scene {
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
 
+        // Unlock audio on first interaction in this scene
+        this.input.once('pointerdown', () => {
+            audioManager.unlock();
+        });
+
         // Create animated background gradient
         this.createBackground(width, height);
 
@@ -68,9 +73,18 @@ export class MenuScene extends Phaser.Scene {
 
         // Start button with modern gradient effect
         this.startBtn = this.createModernButton(width / 2, height * 0.5, '开始游戏', 0x00d4ff, 0x0099cc);
-        this.startBtn.on('pointerdown', () => {
+        this.startBtn.on('pointerup', async () => {
+            // Immediate feedback: disable and slightly dim
+            this.startBtn.disableInteractive();
+            this.startBtn.setAlpha(0.8);
+
+            // Play launch sound (it will handle if not unlocked yet gracefuly, but we try to wait a tiny bit)
             audioManager.play('launch');
-            this.scene.start('GameScene');
+
+            // Give a tiny moment for the visual feedback to "sink in" and audio to start
+            this.time.delayedCall(100, () => {
+                this.scene.start('GameScene');
+            });
         });
 
         // Instructions with modern styling

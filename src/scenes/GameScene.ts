@@ -30,6 +30,17 @@ export class GameScene extends Phaser.Scene {
         super('GameScene');
     }
 
+    init(data?: { level?: number }) {
+        if (data && typeof data.level === 'number') {
+            this.currentLevelIndex = data.level;
+        } else {
+            this.currentLevelIndex = 0;
+        }
+
+        // Reset lives when starting fresh or specified
+        this.lives = 3;
+    }
+
     create() {
         // 重置物理环境
         this.physics.world.timeScale = 1.0;
@@ -333,20 +344,106 @@ export class GameScene extends Phaser.Scene {
             saveManager.saveLevel(completedLevel);
 
             if (completedLevel < LEVELS.length) {
-                // More levels available - go to level select
-                const finalScore = this.hud.getScore;
-                this.scene.start('LevelSelectScene', {
-                    completedLevel: completedLevel,
-                    score: finalScore
-                });
+                // More levels available - show win overlay
+                this.showWinOverlay(completedLevel, this.hud.getScore);
             } else {
-                // Completed all levels - show victory in GameOverScene
+                // Completed all levels - show final victory in GameOverScene
                 const finalScore = this.hud.getScore;
                 this.scene.start('GameOverScene', {
                     score: finalScore,
                     level: completedLevel
                 });
             }
+        });
+    }
+
+    private showWinOverlay(completedLevel: number, score: number) {
+        // Pause physics and ball trails
+        this.physics.world.isPaused = true;
+        this.balls.getChildren().forEach(b => (b as Ball).body!.stop());
+
+        const width = DESIGN_WIDTH;
+        const height = DESIGN_HEIGHT;
+
+        // Semi-transparent dimming overlay
+        const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.75)
+            .setOrigin(0)
+            .setDepth(2000)
+            .setInteractive();
+
+        const container = this.add.container(width / 2, height / 2).setDepth(2001);
+
+        // Glassmorphism panel
+        const panel = this.add.rectangle(0, 0, 650, 480, 0x1a1a3e, 0.95);
+        panel.setStrokeStyle(4, 0x00d4ff, 1);
+
+        const titleText = this.add.text(0, -140, '关卡完成!', {
+            fontSize: '84px',
+            fontFamily: '"Microsoft YaHei", sans-serif',
+            color: '#ffd700',
+            fontStyle: 'bold',
+            shadow: { blur: 20, color: '#ffd700', fill: true }
+        }).setOrigin(0.5);
+
+        const levelText = this.add.text(0, -30, `第 ${completedLevel} 关`, {
+            fontSize: '48px',
+            fontFamily: '"Microsoft YaHei", sans-serif',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        const scoreText = this.add.text(0, 40, `当前得分: ${score.toLocaleString()}`, {
+            fontSize: '42px',
+            fontFamily: '"Microsoft YaHei", sans-serif',
+            color: '#00d4ff'
+        }).setOrigin(0.5);
+
+        // Modern Continue Button
+        const btnWidth = 320;
+        const btnHeight = 84;
+        const btn = this.add.container(0, 160);
+
+        const btnBg = this.add.rectangle(0, 0, btnWidth, btnHeight, 0x00cc66);
+        btnBg.setStrokeStyle(3, 0xffffff, 0.8);
+        btnBg.setOrigin(0.5);
+
+        const btnText = this.add.text(0, 0, '下一关', {
+            fontSize: '42px',
+            fontFamily: '"Microsoft YaHei", sans-serif',
+            color: '#ffffff',
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        btn.add([btnBg, btnText]);
+        btn.setSize(btnWidth, btnHeight);
+        btn.setInteractive({ useHandCursor: true });
+
+        btn.on('pointerover', () => {
+            this.tweens.add({ targets: btn, scale: 1.05, duration: 150 });
+            btnBg.setFillStyle(0x00ee77);
+        });
+
+        btn.on('pointerout', () => {
+            this.tweens.add({ targets: btn, scale: 1, duration: 150 });
+            btnBg.setFillStyle(0x00cc66);
+        });
+
+        btn.on('pointerdown', () => {
+            audioManager.play('launch');
+            this.currentLevelIndex++;
+            this.scene.restart({ level: this.currentLevelIndex });
+        });
+
+        container.add([panel, titleText, levelText, scoreText, btn]);
+
+        // Entry Animation
+        container.setScale(0.5);
+        container.setAlpha(0);
+        this.tweens.add({
+            targets: container,
+            scale: 1,
+            alpha: 1,
+            duration: 600,
+            ease: 'Back.out'
         });
     }
 

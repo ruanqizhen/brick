@@ -121,12 +121,7 @@ export class BootScene extends Phaser.Scene {
     }
 
     create() {
-        // Unlock audio on first interaction
-        this.input.once('pointerdown', () => {
-            audioManager.unlock();
-        });
-
-        // Brief delay before transitioning
+        // Brief delay before transitioning to allow fade outs and data prep
         this.time.delayedCall(200, () => {
             this.scene.start('MenuScene');
         });
