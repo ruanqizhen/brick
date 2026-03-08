@@ -7,48 +7,86 @@ export class BootScene extends Phaser.Scene {
     }
 
     preload() {
-        // 创建简单的加载进度条
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
 
-        const progressBar = this.add.graphics();
-        const progressBox = this.add.graphics();
-        progressBox.fillStyle(0x222222, 0.8);
-        progressBox.fillRect(width / 4, height / 2 - 25, width / 2, 50);
+        // Create animated gradient background
+        const bg = this.add.rectangle(0, 0, width, height, 0x0a0a1a);
+        bg.setOrigin(0);
+
+        // Create loading text with modern style
+        const loadingText = this.add.text(width / 2, height * 0.45, '正在加载', {
+            fontSize: '36px',
+            fontFamily: '"Microsoft YaHei", sans-serif',
+            color: '#00d4ff',
+            fontStyle: 'bold',
+            shadow: {
+                blur: 15,
+                color: '#00d4ff',
+                fill: true,
+                offsetX: 0,
+                offsetY: 0
+            }
+        }).setOrigin(0.5);
+
+        // Loading bar background
+        const barBg = this.add.rectangle(width / 2, height * 0.52, 400, 12, 0x1a1a3e);
+        barBg.setOrigin(0.5);
+        barBg.setStrokeStyle(2, 0x00d4ff, 0.5);
+
+        // Loading bar fill
+        const barFill = this.add.rectangle(width / 2 - 195, height * 0.52, 0, 8, 0x00d4ff);
+        barFill.setOrigin(0, 0.5);
+
+        // Loading percentage
+        const percentText = this.add.text(width / 2, height * 0.58, '0%', {
+            fontSize: '24px',
+            fontFamily: '"Microsoft YaHei", sans-serif',
+            color: '#88aaff'
+        }).setOrigin(0.5);
+
+        // Particle effect
+        const particles = this.add.particles(0, 0, 'ball', {
+            x: { min: 0, max: width },
+            y: { min: 0, max: height },
+            lifespan: 3000,
+            speed: { min: 20, max: 50 },
+            scale: { start: 0.3, end: 0 },
+            alpha: { start: 0.5, end: 0 },
+            blendMode: 'ADD',
+            quantity: 2,
+            frequency: 100,
+            tint: [0x00d4ff, 0x0099ff]
+        });
 
         this.load.on('progress', (value: number) => {
-            progressBar.clear();
-            progressBar.fillStyle(0xffffff, 1);
-            progressBar.fillRect(width / 4 + 10, height / 2 - 15, (width / 2 - 20) * value, 30);
+            const percent = Math.floor(value * 100);
+            barFill.width = 390 * value;
+            percentText.setText(`${percent}%`);
         });
 
         this.load.on('complete', () => {
-            progressBar.destroy();
-            progressBox.destroy();
+            // Fade out effect
+            this.tweens.add({
+                targets: [bg, loadingText, barBg, barFill, percentText],
+                alpha: 0,
+                duration: 300,
+                onComplete: () => {
+                    particles.destroy();
+                }
+            });
         });
-
-        // 暂时使用占位图形，不加载实际资源
-        // 后续会在 GameScene 中动态生成纹理
     }
 
     create() {
-        // 点击任意位置解锁音频（移动端必需）
+        // Unlock audio on first interaction
         this.input.once('pointerdown', () => {
             audioManager.unlock();
         });
 
-        // 显示提示
-        const tapText = this.add.text(
-            this.cameras.main.width / 2,
-            this.cameras.main.height - 100,
-            'Tap to enable sound',
-            { fontSize: '24px', color: '#888888' }
-        ).setOrigin(0.5);
-
-        this.input.once('pointerdown', () => {
-            tapText.destroy();
+        // Brief delay before transitioning
+        this.time.delayedCall(200, () => {
+            this.scene.start('MenuScene');
         });
-
-        this.scene.start('MenuScene');
     }
 }

@@ -11,7 +11,7 @@ export const GameConfig = {
     PADDLE_WIDTH: 200,
     PADDLE_HEIGHT: 24,
     PADDLE_Y_POSITION: 0.9, // 底部向上 10%
-    
+
     // 颜色
     COLORS: {
         BG: '#000010',
@@ -22,28 +22,30 @@ export const GameConfig = {
         BRICK_HARD_3: 0xB71C1C,
         BRICK_INDESTRUCTIBLE: 0xC0C0C0
     },
-    
+
     // 道具
     POWERUPS: {
         DROP_CHANCE: 0.2
     }
 };
 
-export const PhaserConfig: Phaser.Types.Core.GameConfig = {
-    type: Phaser.AUTO,
-    parent: 'game-container',
-    width: DESIGN_WIDTH,
-    height: DESIGN_HEIGHT,
-    scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
-    },
-    physics: {
-        default: 'arcade',
-        arcade: {
-            gravity: { x: 0, y: 0 },
-            debug: false
-        }
-    },
-    backgroundColor: GameConfig.COLORS.BG
-};
+export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
+    return {
+        type: Phaser.AUTO,
+        parent: 'game-wrapper',
+        width: DESIGN_WIDTH,
+        height: DESIGN_HEIGHT,
+        scale: {
+            mode: Phaser.Scale.FIT,
+            autoCenter: Phaser.Scale.CENTER_BOTH
+        },
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { x: 0, y: 0 },
+                debug: false
+            }
+        },
+        backgroundColor: GameConfig.COLORS.BG
+    };
+}

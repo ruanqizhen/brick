@@ -10,8 +10,8 @@ interface ActivePowerUp {
 }
 
 export class HUD extends Phaser.GameObjects.Container {
-    private scoreText: Phaser.GameObjects.Text;
-    private livesText: Phaser.GameObjects.Text;
+    private scoreText!: Phaser.GameObjects.Text;
+    private livesText!: Phaser.GameObjects.Text;
     private score: number = 0;
     private lives: number = 3;
     private powerUpContainer!: Phaser.GameObjects.Container;
@@ -19,34 +19,114 @@ export class HUD extends Phaser.GameObjects.Container {
     private pauseBtn!: Phaser.GameObjects.Container;
     private onPauseCallback?: () => void;
     private pauseButtonClicked: boolean = false;
+    private scoreContainer!: Phaser.GameObjects.Container;
 
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
 
-        const style = { fontSize: '32px', color: '#ffffff' };
-
-        this.scoreText = scene.add.text(20, 20, 'SCORE: 0', style);
-        this.livesText = scene.add.text(scene.cameras.main.width - 200, 20, 'LIVES: 3', style);
+        // Score container with modern styling
+        this.scoreContainer = this.createScorePanel(scene, 20, 20);
+        
+        // Lives display
+        this.livesText = scene.add.text(scene.cameras.main.width - 30, 35, '❤️ 生命：3', {
+            fontSize: '28px',
+            fontFamily: '"Microsoft YaHei", sans-serif',
+            color: '#ff6b6b',
+            fontStyle: 'bold',
+            shadow: {
+                blur: 8,
+                color: '#ff0000',
+                fill: true,
+                offsetX: 2,
+                offsetY: 2
+            }
+        }).setOrigin(1, 0.5);
 
         // Power-up display container (top center)
         this.powerUpContainer = scene.add.container(scene.cameras.main.width / 2, 20);
         this.powerUpContainer.setDepth(100);
 
-        // Pause button (top right, below lives)
-        this.createPauseButton(scene, scene.cameras.main.width - 60, 70);
+        // Pause button (top right)
+        this.createPauseButton(scene, scene.cameras.main.width - 30, 75);
 
-        this.add([this.scoreText, this.livesText]);
+        this.add([this.livesText]);
         scene.add.existing(this);
+        
+        // Listen for camera resize
+        scene.scale.on('resize', this.handleResize, this);
+    }
+
+    private createScorePanel(scene: Phaser.Scene, x: number, y: number): Phaser.GameObjects.Container {
+        const container = scene.add.container(x, y);
+
+        // Background with gradient effect
+        const bg = scene.add.rectangle(0, 0, 220, 60, 0x1a1a3e, 0.9);
+        bg.setStrokeStyle(2, 0x00d4ff, 0.6);
+        bg.setOrigin(0);
+
+        // Score label
+        const label = scene.add.text(15, 8, '得分', {
+            fontSize: '18px',
+            fontFamily: '"Microsoft YaHei", sans-serif',
+            color: '#88aaff'
+        });
+
+        // Score value
+        const scoreValue = scene.add.text(15, 32, '0', {
+            fontSize: '32px',
+            fontFamily: '"Microsoft YaHei", sans-serif',
+            color: '#00d4ff',
+            fontStyle: 'bold',
+            shadow: {
+                blur: 10,
+                color: '#00d4ff',
+                fill: true,
+                offsetX: 0,
+                offsetY: 0
+            }
+        });
+
+        container.add([bg, label, scoreValue]);
+        container.setSize(220, 60);
+
+        // Store reference for updates
+        (container as any).scoreValue = scoreValue;
+
+        return container;
     }
 
     updateScore(points: number) {
         this.score += points;
-        this.scoreText.setText(`SCORE: ${this.score}`);
+        const scoreValue = (this.scoreContainer as any).scoreValue as Phaser.GameObjects.Text;
+        if (scoreValue) {
+            scoreValue.setText(this.score.toLocaleString());
+            
+            // Animate on score update
+            this.scene.tweens.add({
+                targets: scoreValue,
+                scaleX: 1.2,
+                scaleY: 1.2,
+                duration: 100,
+                yoyo: true,
+                ease: 'Back.out'
+            });
+        }
     }
 
     updateLives(lives: number) {
         this.lives = lives;
-        this.livesText.setText(`LIVES: ${this.lives}`);
+        this.livesText.setText(`❤️ 生命：${lives}`);
+        
+        // Flash effect when life lost
+        if (lives < 3) {
+            this.scene.tweens.add({
+                targets: this.livesText,
+                alpha: 0.3,
+                duration: 100,
+                yoyo: true,
+                repeat: 3
+            });
+        }
     }
 
     /**
@@ -69,21 +149,24 @@ export class HUD extends Phaser.GameObjects.Container {
             return;
         }
 
-        // Create new powerup display (circle background, subtle)
+        // Create new powerup display (modern circular style)
         const index = this.activePowerUps.size;
         const x = (index - Math.min(this.activePowerUps.size, 4)) * 65;
         
-        // Circle background (small, light color)
-        const bg = this.scene.add.circle(x, 0, 22, color, 0.35);
-        bg.setStrokeStyle(2, color, 0.6);
+        // Glowing circle background
+        const bg = this.scene.add.circle(x, 0, 26, color, 0.3);
+        bg.setStrokeStyle(2, color, 0.8);
+        
+        // Inner glow
+        const innerGlow = this.scene.add.circle(x, 0, 18, color, 0.2);
         
         // Large icon in center
-        const iconText = this.scene.add.text(x, 0, icon, {
-            fontSize: '36px',
+        const iconText = this.scene.add.text(x, 2, icon, {
+            fontSize: '32px',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        this.powerUpContainer.add([bg, iconText]);
+        this.powerUpContainer.add([bg, innerGlow, iconText]);
 
         const powerUp: ActivePowerUp = {
             type,
@@ -185,43 +268,57 @@ export class HUD extends Phaser.GameObjects.Container {
         return colors[type] || 0x9E9E9E;
     }
 
-    get getScore(): number {
-        return this.score;
-    }
-
     /**
-     * Create pause button
+     * Create pause button with modern style
      */
     private createPauseButton(scene: Phaser.Scene, x: number, y: number): void {
+        const btnSize = 45;
         this.pauseBtn = scene.add.container(x, y);
         this.pauseBtn.setDepth(100);
 
-        // Circle background
-        const bg = scene.add.circle(0, 0, 28, 0x333333, 0.9);
+        // Circle background with glow effect
+        const bg = this.scene.add.circle(0, 0, btnSize / 2, 0x2a2a4e, 0.9);
         bg.setInteractive({ useHandCursor: true });
-        bg.setStrokeStyle(2, 0xffffff, 0.6);
+        bg.setStrokeStyle(2, 0x00d4ff, 0.6);
 
         // Pause icon (two vertical bars)
-        const pauseIcon = scene.add.rectangle(-8, 0, 6, 20, 0xffffff);
-        pauseIcon.setOrigin(0.5);
-        const pauseIcon2 = scene.add.rectangle(8, 0, 6, 20, 0xffffff);
+        const pauseIcon1 = scene.add.rectangle(-10, 0, 5, 22, 0xffffff);
+        pauseIcon1.setOrigin(0.5);
+        const pauseIcon2 = scene.add.rectangle(10, 0, 5, 22, 0xffffff);
         pauseIcon2.setOrigin(0.5);
 
-        this.pauseBtn.add([bg, pauseIcon, pauseIcon2]);
+        this.pauseBtn.add([bg, pauseIcon1, pauseIcon2]);
 
         // Hover effects
         bg.on('pointerover', () => {
-            bg.setFillStyle(0x555555, 0.9);
-            bg.setScale(1.1);
+            this.scene.tweens.add({
+                targets: bg,
+                scaleX: 1.15,
+                scaleY: 1.15,
+                duration: 150,
+                ease: 'Back.out'
+            });
+            bg.setFillStyle(0x3a3a5e);
         });
 
         bg.on('pointerout', () => {
-            bg.setFillStyle(0x333333, 0.9);
-            bg.setScale(1);
+            this.scene.tweens.add({
+                targets: bg,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 150,
+                ease: 'Back.out'
+            });
+            bg.setFillStyle(0x2a2a4e);
         });
 
         bg.on('pointerdown', () => {
-            bg.setScale(0.9);
+            this.scene.tweens.add({
+                targets: bg,
+                scaleX: 0.9,
+                scaleY: 0.9,
+                duration: 100
+            });
             this.pauseButtonClicked = true;
             if (this.onPauseCallback) {
                 this.onPauseCallback();
@@ -248,5 +345,18 @@ export class HUD extends Phaser.GameObjects.Container {
      */
     resetPauseButtonClicked(): void {
         this.pauseButtonClicked = false;
+    }
+
+    private handleResize(gameSize: Phaser.Structs.Size): void {
+        const width = gameSize.width;
+        
+        // Reposition elements
+        this.livesText.x = width - 30;
+        this.powerUpContainer.x = width / 2;
+        this.pauseBtn.x = width - 30;
+    }
+
+    get getScore(): number {
+        return this.score;
     }
 }
