@@ -46,8 +46,8 @@ export class GameScene extends Phaser.Scene {
         // 重置物理环境
         this.physics.world.timeScale = 1.0;
         this.physics.world.isPaused = false;
-        (this.physics.world as any).TILE_BIAS = 32; // 默认值 16，增加以处理高速碰撞
-        (this.physics.world as any).OVERLAP_BIAS = 4; // 默认值 4
+        (this.physics.world as any).TILE_BIAS = 64; // 增加以处理极高速碰撞和窄缝隙穿透
+        (this.physics.world as any).OVERLAP_BIAS = 10; // 增加重叠容差
 
         this.starfield = new Starfield(this);
         this.hud = new HUD(this);
@@ -119,14 +119,26 @@ export class GameScene extends Phaser.Scene {
             const isFireball = ball.isFireball;
             const isIndestructible = brick.isIndestructible;
 
-            // 1. 处理反弹逻辑 (因为现在使用 Overlap)
+            // 1. 处理反弹逻辑 (基于重叠深度，比中心距更准确)
             if (!isFireball || isIndestructible) {
-                // 如果不是火球，或者撞到了金刚砖，就需要反弹
-                if (Math.abs(ball.y - brick.y) < brick.displayHeight / 2) {
+                const overlapX = (ball.displayWidth / 2 + brick.displayWidth / 2) - Math.abs(ball.x - brick.x);
+                const overlapY = (ball.displayHeight / 2 + brick.displayHeight / 2) - Math.abs(ball.y - brick.y);
+
+                if (overlapX < overlapY) {
+                    // 左右侧碰撞：重叠厚度在 X 轴更窄，说明是侧撞
                     ball.body!.velocity.x *= -1;
+                    // 强制分离，防止在下一帧由于重叠未解除而再次触发（解决滑动 Bug）
+                    const separation = (ball.x > brick.x) ? overlapX : -overlapX;
+                    ball.x += separation;
                 } else {
+                    // 上下侧碰撞
                     ball.body!.velocity.y *= -1;
+                    const separation = (ball.y > brick.y) ? overlapY : -overlapY;
+                    ball.y += separation;
                 }
+
+                // 更新物理体位置
+                if (ball.body) ball.body.updateFromGameObject();
             }
 
             // 2. 金刚砖逻辑：无论是否火球，撞击到就发出声音
