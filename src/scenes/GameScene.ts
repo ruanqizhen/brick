@@ -37,12 +37,7 @@ export class GameScene extends Phaser.Scene {
         } else {
             this.currentLevelIndex = 0; // 恢复从第一关开始
         }
-
-        // Only reset lives when starting from the first level
-        // Otherwise, preserve lives from previous level
-        if (this.currentLevelIndex === 0) {
-            this.lives = 3;
-        }
+        this.lives = 3;
     }
 
     create() {
