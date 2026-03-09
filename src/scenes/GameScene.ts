@@ -120,7 +120,6 @@ export class GameScene extends Phaser.Scene {
             // 1. 处理反弹逻辑 (因为现在使用 Overlap)
             if (!isFireball || isIndestructible) {
                 // 如果不是火球，或者撞到了金刚砖，就需要反弹
-                // 简单的反弹修正：根据球心与砖块中心的相对位置
                 if (Math.abs(ball.y - brick.y) < brick.displayHeight / 2) {
                     ball.body!.velocity.x *= -1;
                 } else {
@@ -128,14 +127,16 @@ export class GameScene extends Phaser.Scene {
                 }
             }
 
-            // 2. 特殊逻辑：火球可以击碎金刚砖
-            if (isFireball && isIndestructible) {
-                brick.destroy(); // PRD: 撞金刚砖时金刚砖碎并反弹
+            // 2. 金刚砖逻辑：无论是否火球，撞击到就发出声音
+            if (isIndestructible) {
                 audioManager.play('indestructible');
-                this.hud.updateScore(500); // 奖励分
-                this.particles.spawnBrickParticles(brick.x, brick.y, 0xaaaaaa);
-                ScreenShake.shake(this.cameras.main, 0.008, 150); // 火球撞金刚砖强制震屏
-                return;
+                if (isFireball) {
+                    brick.destroy(); // 火球可以击碎金刚砖
+                    this.hud.updateScore(500); // 奖励分
+                    this.particles.spawnBrickParticles(brick.x, brick.y, 0xaaaaaa);
+                    ScreenShake.shake(this.cameras.main, 0.008, 150); // 火球撞金刚砖强制震屏
+                }
+                return; // 金刚砖处理完直接退出，不走普通砖逻辑
             }
 
             const color = brick.tintTopLeft;
