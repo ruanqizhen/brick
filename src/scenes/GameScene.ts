@@ -35,7 +35,7 @@ export class GameScene extends Phaser.Scene {
         if (data && typeof data.level === 'number') {
             this.currentLevelIndex = data.level;
         } else {
-            this.currentLevelIndex = 0;
+            this.currentLevelIndex = 0; // 恢复从第一关开始
         }
 
         // Reset lives when starting fresh or specified
@@ -64,6 +64,8 @@ export class GameScene extends Phaser.Scene {
         } catch (e) {
             console.warn('Bloom not supported:', e);
         }
+        this.hud = new HUD(this);
+        this.hud.updateLevel(this.currentLevelIndex + 1);
         this.hud.updateLives(this.lives);
         this.particles = new ParticleSystem(this);
 

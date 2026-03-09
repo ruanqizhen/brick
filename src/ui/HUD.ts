@@ -4,6 +4,7 @@ import { PowerUpType } from '../entities/PowerUp';
 export class HUD extends Phaser.GameObjects.Container {
     private scoreText!: Phaser.GameObjects.Text;
     private livesText!: Phaser.GameObjects.Text;
+    private levelText!: Phaser.GameObjects.Text;
     private score: number = 0;
     private lives: number = 3;
     private scoreContainer!: Phaser.GameObjects.Container;
@@ -29,7 +30,22 @@ export class HUD extends Phaser.GameObjects.Container {
             }
         }).setOrigin(1, 0.5);
 
-        this.add([this.livesText]);
+        // Level display (Centered)
+        this.levelText = scene.add.text(scene.cameras.main.width / 2, 35, '第 1 关', {
+            fontSize: '32px',
+            fontFamily: '"Microsoft YaHei", sans-serif',
+            color: '#ffd700',
+            fontStyle: 'bold',
+            shadow: {
+                blur: 15,
+                color: '#ffd700',
+                fill: true,
+                offsetX: 0,
+                offsetY: 0
+            }
+        }).setOrigin(0.5, 0.5);
+
+        this.add([this.livesText, this.levelText]);
         scene.add.existing(this);
 
         // Listen for camera resize
@@ -109,11 +125,25 @@ export class HUD extends Phaser.GameObjects.Container {
         }
     }
 
+    updateLevel(level: number) {
+        this.levelText.setText(`第 ${level} 关`);
+
+        // Slight scale effect on level change
+        this.scene.tweens.add({
+            targets: this.levelText,
+            scale: 1.2,
+            duration: 200,
+            yoyo: true,
+            ease: 'Back.out'
+        });
+    }
+
     private handleResize(gameSize: Phaser.Structs.Size): void {
         const width = gameSize.width;
 
         // Reposition elements
         this.livesText.x = width - 30;
+        this.levelText.x = width / 2;
     }
 
     get getScore(): number {
