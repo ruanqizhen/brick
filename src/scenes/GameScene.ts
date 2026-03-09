@@ -38,8 +38,11 @@ export class GameScene extends Phaser.Scene {
             this.currentLevelIndex = 0; // 恢复从第一关开始
         }
 
-        // Reset lives when starting fresh or specified
-        this.lives = 3;
+        // Only reset lives when starting from the first level
+        // Otherwise, preserve lives from previous level
+        if (this.currentLevelIndex === 0) {
+            this.lives = 3;
+        }
     }
 
     create() {
@@ -211,7 +214,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     private spawnPowerUp(x: number, y: number) {
-        const positives: PowerUpType[] = ['PADDLE_EXPAND', 'FIREBALL', 'MULTI_BALL', 'BALL_ENLARGE', 'SPEED_DOWN'];
+        const positives: PowerUpType[] = ['PADDLE_EXPAND', 'FIREBALL', 'MULTI_BALL', 'BALL_ENLARGE', 'SPEED_DOWN', 'EXTRA_LIFE'];
         const negatives: PowerUpType[] = ['PADDLE_SHRINK', 'BALL_SHRINK', 'SPEED_UP'];
 
         // 计算当前关卡的权重偏移 (0.0 到 1.0)
@@ -227,7 +230,7 @@ export class GameScene extends Phaser.Scene {
 
         const totalWeight = (positives.length * posWeight) + (negatives.length * negWeight);
         let rand = Math.random() * totalWeight;
-        let selectedType: PowerUpType = 'MULTI_BALL';
+        let selectedType: PowerUpType = 'EXTRA_LIFE';
 
         // 顺序累加概率进行加权选择
         for (const type of positives) {
@@ -238,7 +241,7 @@ export class GameScene extends Phaser.Scene {
             rand -= posWeight;
         }
 
-        if (selectedType === 'MULTI_BALL' && rand > 0) {
+        if (selectedType === 'EXTRA_LIFE' && rand > 0) {
             for (const type of negatives) {
                 if (rand < negWeight) {
                     selectedType = type;
@@ -246,6 +249,12 @@ export class GameScene extends Phaser.Scene {
                 }
                 rand -= negWeight;
             }
+        }
+
+        // 额外生命道具：独立判定，极低掉落率 (5%)
+        // 只有当已经选中一个道具时才有机会额外出现
+        if (selectedType === 'EXTRA_LIFE' && Math.random() < 0.95) {
+            selectedType = 'SPEED_UP';
         }
 
         const pu = new PowerUp(this, x, y, selectedType);
@@ -286,6 +295,10 @@ export class GameScene extends Phaser.Scene {
                 break;
             case 'SPEED_DOWN':
                 this.updateBallsSpeed(0.7, DURATION);
+                break;
+            case 'EXTRA_LIFE':
+                this.lives++;
+                this.hud.updateLives(this.lives);
                 break;
         }
     }

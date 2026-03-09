@@ -4,7 +4,8 @@ export type PowerUpType =
     'PADDLE_EXPAND' | 'PADDLE_SHRINK' |
     'FIREBALL' | 'MULTI_BALL' |
     'BALL_ENLARGE' | 'BALL_SHRINK' |
-    'SPEED_UP' | 'SPEED_DOWN';
+    'SPEED_UP' | 'SPEED_DOWN' |
+    'EXTRA_LIFE';
 
 export class PowerUp extends Phaser.Physics.Arcade.Sprite {
     public powerUpType: PowerUpType;
@@ -105,6 +106,7 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
             case 'BALL_SHRINK': return '➖';
             case 'SPEED_UP': return '⚡';
             case 'SPEED_DOWN': return '🐌';
+            case 'EXTRA_LIFE': return '❤️';
             default: return '❓';
         }
     }
@@ -122,6 +124,7 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
             case 'BALL_SHRINK': return 0xFF00FF;      // Magenta/Pink
             case 'SPEED_UP': return 0xFF0000;         // High-Voltage Red
             case 'SPEED_DOWN': return 0x00BFFF;       // Deep Sky Blue
+            case 'EXTRA_LIFE': return 0xFF0000;       // Heart Red
             default: return 0xFFFFFF;
         }
     }

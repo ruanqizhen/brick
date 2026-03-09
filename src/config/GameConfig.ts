@@ -6,7 +6,7 @@ export const ASPECT_RATIO = DESIGN_WIDTH / DESIGN_HEIGHT;
 
 export const GameConfig = {
     // 物理参数
-    BALL_BASE_SPEED: 24,
+    BALL_BASE_SPEED: 20,
     BALL_RADIUS: 10,
     PADDLE_WIDTH: 200,
     PADDLE_HEIGHT: 24,
