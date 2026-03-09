@@ -130,33 +130,65 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
+    /**
+     * 为小球当前速度注入一个细微的随机角度偏差（默认 ±0.5度）
+     * 用于防止进入物理死循环，并增加真实感
+     */
+    public applyJitter(degrees: number = 1.0) {
+        const body = this.body as Phaser.Physics.Arcade.Body;
+        if (!body) return;
+
+        const currentSpeed = body.velocity.length();
+        if (currentSpeed === 0) return;
+
+        const jitterRad = Phaser.Math.DegToRad(Phaser.Math.FloatBetween(-degrees, degrees));
+        const currentAngle = Math.atan2(body.velocity.y, body.velocity.x);
+        const newAngle = currentAngle + jitterRad;
+
+        body.velocity.x = Math.cos(newAngle) * currentSpeed;
+        body.velocity.y = Math.sin(newAngle) * currentSpeed;
+    }
+
     onPaddleHit(paddle: Paddle) {
-        // 碰撞 CD：适当加长 CD，防止巨型球体在高频刷新率（如 120Hz）下产生多次判定闪烁
+        const body = this.body as Phaser.Physics.Arcade.Body;
+        if (!body) return;
+
+        // // 1. 安全检查：只有当球正在向下运动（即将撞向挡板）时才处理反弹
+        // // 解决“在撞击物表面振动/卡住”的问题
+        if (body.velocity.y > 0) return;
+
+        // 碰撞 CD
         const now = this.scene.time.now;
         if (now - this.lastPaddleHitTime < 150) return;
         this.lastPaddleHitTime = now;
 
-        const hitFactor = (this.x - paddle.x) / (paddle.displayWidth / 2);
+        const hitFactor = Phaser.Math.Clamp((this.x - paddle.x) / (paddle.displayWidth / 2), -1, 1);
         const speed = (this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED) * 60;
 
+        // 设置击中位置的基本偏移（用户偏好的 10 度）
         let angle = Phaser.Math.DegToRad(-90 + (hitFactor * 60));
 
-        // 加入挡板移动速度影响
-        const angleModifier = Math.atan(0.005 * paddle.velocityX);
+        // 2. 极大增强挡板移动速度的影响 (使用 0.1 系数代替之前的 0.003)
+        // atan(0.1 * velocityX) 在速度为 10px/frame 时约提供 45 度的偏移，力度极大
+        const angleModifier = Math.atan(0.1 * paddle.velocityX);
         angle += angleModifier;
 
         let deg = Phaser.Math.RadToDeg(angle);
-        deg = Phaser.Math.Clamp(deg, -160, -20);
+        // 限制角度，防止反弹得太水平导致球飞不起来
+        deg = Phaser.Math.Clamp(deg, -170, -10);
 
         const finalAngle = Phaser.Math.DegToRad(deg);
         this.setVelocity(speed * Math.cos(finalAngle), -Math.abs(speed * Math.sin(finalAngle)));
 
-        // 修正位置：当球体底部（y + radius）深入挡板上平面下方时，进行纠偏
+        // 2. 注入 1 度以内的随机偏差，防止死循环
+        this.applyJitter(1.0);
+
+        // 3. 修正位置：确保球体底部刚好接触挡板上平面，不留视觉间隙
         const visualRadius = this.displayWidth / 2;
         const paddleTop = paddle.y - paddle.displayHeight / 2;
 
         if (this.y + visualRadius > paddleTop && this.y < paddle.y) {
-            this.y = paddleTop - visualRadius - 1;
+            this.y = paddleTop - visualRadius; // 移除 -1 偏移，实现贴合撞击
         }
 
         if (this.body) {

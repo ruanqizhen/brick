@@ -46,11 +46,10 @@ export class GameScene extends Phaser.Scene {
         // 重置物理环境
         this.physics.world.timeScale = 1.0;
         this.physics.world.isPaused = false;
-        (this.physics.world as any).TILE_BIAS = 64; // 增加以处理极高速碰撞和窄缝隙穿透
-        (this.physics.world as any).OVERLAP_BIAS = 10; // 增加重叠容差
+        (this.physics.world as any).TILE_BIAS = 40; // 优化后的平衡值，兼顾防穿透与视觉精准
+        (this.physics.world as any).OVERLAP_BIAS = 4; // 恢复标准重叠容差，修复“虚空反弹”
 
         this.starfield = new Starfield(this);
-        this.hud = new HUD(this);
 
         // 启用相机辉光 (Phaser 3.60+)
         // 注意：Bloom 可能会影响性能，如果用户设备较弱，后续可改为可选
@@ -119,20 +118,28 @@ export class GameScene extends Phaser.Scene {
             const isFireball = ball.isFireball;
             const isIndestructible = brick.isIndestructible;
 
-            // 1. 处理反弹逻辑 (基于重叠深度，比中心距更准确)
+            // 1. 处理反弹逻辑 (基于重叠深度，并增加方向性检查防止表面震动)
             if (!isFireball || isIndestructible) {
                 const overlapX = (ball.displayWidth / 2 + brick.displayWidth / 2) - Math.abs(ball.x - brick.x);
                 const overlapY = (ball.displayHeight / 2 + brick.displayHeight / 2) - Math.abs(ball.y - brick.y);
 
                 if (overlapX < overlapY) {
                     // 左右侧碰撞：重叠厚度在 X 轴更窄，说明是侧撞
-                    ball.body!.velocity.x *= -1;
-                    // 强制分离，防止在下一帧由于重叠未解除而再次触发（解决滑动 Bug）
+                    // 安全检查：只有当小球正向砖块移动时才反弹（解决在内部振动/卡住问题）
+                    if ((ball.x < brick.x && ball.body!.velocity.x > 0) ||
+                        (ball.x > brick.x && ball.body!.velocity.x < 0)) {
+                        ball.body!.velocity.x *= -1;
+                        ball.applyJitter(1.0); // 同步为你修改后的 1.0 度偏差
+                    }
                     const separation = (ball.x > brick.x) ? overlapX : -overlapX;
                     ball.x += separation;
                 } else {
                     // 上下侧碰撞
-                    ball.body!.velocity.y *= -1;
+                    if ((ball.y < brick.y && ball.body!.velocity.y > 0) ||
+                        (ball.y > brick.y && ball.body!.velocity.y < 0)) {
+                        ball.body!.velocity.y *= -1;
+                        ball.applyJitter(1.0);
+                    }
                     const separation = (ball.y > brick.y) ? overlapY : -overlapY;
                     ball.y += separation;
                 }
