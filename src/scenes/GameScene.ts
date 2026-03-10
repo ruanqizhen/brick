@@ -391,11 +391,13 @@ export class GameScene extends Phaser.Scene {
     }
 
     private setFireball(active: boolean) {
-        this.balls.getChildren().forEach(b => {
-            const ball = b as Ball;
+        const balls = this.balls.getChildren();
+        const ballCount = balls.length;
+        for (let i = 0; i < ballCount; i++) {
+            const ball = balls[i] as Ball;
             ball.activeFire(active);
             ball.setTint(active ? 0xffaa00 : 0xffffff);
-        });
+        }
     }
 
     private doubleBalls() {
@@ -423,19 +425,20 @@ export class GameScene extends Phaser.Scene {
 
     private updateBallsRadius(scaleFactor: number) {
         const maxRadius = (DESIGN_WIDTH * GameConfig.POWERUPS.MAX_BALL_DIAMETER_PERCENT) / 2;
+        const balls = this.balls.getChildren();
+        const ballCount = balls.length;
 
-        this.balls.getChildren().forEach(b => {
-            const ball = b as Ball;
+        for (let i = 0; i < ballCount; i++) {
+            const ball = balls[i] as Ball;
             const currentRadius = ball.displayWidth / 2;
             let newRadius = currentRadius * scaleFactor;
 
-            // Apply limit
             if (newRadius > maxRadius) {
                 newRadius = maxRadius;
             }
 
             ball.setBallRadius(newRadius);
-        });
+        }
     }
 
     private updateBallsSpeed(multiplier: number, duration: number) {
@@ -454,16 +457,16 @@ export class GameScene extends Phaser.Scene {
     }
 
     private applyCurrentSpeedModifiers() {
-        // 计算当前总倍数
         const totalMultiplier = this.activeSpeedMultipliers.reduce((acc, m) => acc * m, 1);
         const baseSpeed = this.getBaseSpeedForLevel(this.currentLevelIndex);
         const targetValue = baseSpeed * totalMultiplier;
+        const balls = this.balls.getChildren();
+        const ballCount = balls.length;
 
-        this.balls.getChildren().forEach(b => {
-            const ball = b as Ball;
+        for (let i = 0; i < ballCount; i++) {
+            const ball = balls[i] as Ball;
             const currentTarget = ball.getData('targetSpeed') || baseSpeed;
 
-            // 使用 Tween 逐步过渡到新速度，手感更丝滑
             this.tweens.addCounter({
                 from: currentTarget,
                 to: targetValue,
@@ -472,7 +475,7 @@ export class GameScene extends Phaser.Scene {
                     ball.setData('targetSpeed', tween.getValue());
                 }
             });
-        });
+        }
     }
 
     private triggerHitstop(duration: number) {
@@ -705,14 +708,16 @@ export class GameScene extends Phaser.Scene {
 
     private handleBallLaunch() {
         let launched = false;
-        this.balls.getChildren().forEach(b => {
-            const ball = b as Ball;
+        const balls = this.balls.getChildren();
+        const ballCount = balls.length;
+        for (let i = 0; i < ballCount; i++) {
+            const ball = balls[i] as Ball;
             if (ball.getData('state') === 'READY') {
                 ball.launch();
                 audioManager.play('launch');
                 launched = true;
             }
-        });
+        }
         if (launched) this.clearLaunchInstruction();
     }
 

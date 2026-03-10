@@ -9,7 +9,7 @@ export type PowerUpType =
 
 export class PowerUp extends Phaser.Physics.Arcade.Sprite {
     public powerUpType: PowerUpType;
-    private iconText!: Phaser.GameObjects.Text;
+    private iconText: Phaser.GameObjects.Text | null = null;
     private isPooledActive: boolean = false;
     private sceneRef: Phaser.Scene;
 
@@ -71,7 +71,7 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
             // Destroy icon text when returning to pool
             if (this.iconText) {
                 this.iconText.destroy();
-                this.iconText = null as any;
+                this.iconText = null;
             }
         }
         // Don't set velocity here - it will be set by the scene after position is set
@@ -86,7 +86,7 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
         // Destroy icon text to prevent memory leaks and visual artifacts
         if (this.iconText) {
             this.iconText.destroy();
-            this.iconText = null as any;
+            this.iconText = null;
         }
     }
 
