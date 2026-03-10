@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
 export const DESIGN_WIDTH = 1080;
-export const DESIGN_HEIGHT = 1440; // 1080 * (4/3) = 1440, 实现高比宽 4:3
+export const DESIGN_HEIGHT = 1440;
 export const ASPECT_RATIO = DESIGN_WIDTH / DESIGN_HEIGHT;
 
 export const GameConfig = {
@@ -10,7 +10,31 @@ export const GameConfig = {
     BALL_RADIUS: 10,
     PADDLE_WIDTH: 200,
     PADDLE_HEIGHT: 24,
-    PADDLE_Y_POSITION: 0.9, // 底部向上 10%
+    PADDLE_Y_POSITION: 0.9,
+
+    // 道具
+    POWERUPS: {
+        DROP_CHANCE: 0.3,
+        MAX_PADDLE_WIDTH_PERCENT: 0.7,
+        MAX_BALL_DIAMETER_PERCENT: 0.2
+    },
+
+    // 关卡难度配置
+    LEVELS: {
+        EASY_COUNT: 5,
+        MEDIUM_COUNT: 10,
+        HARD_COUNT: 5,
+        SPEED_MULTIPLIER_MAX_LEVEL: 19, // Level at which ball speed reaches 2x
+    },
+
+    // 道具持续时间 (毫秒)
+    POWERUP_DURATION: 15000,
+
+    // 碰撞 CD (毫秒)
+    PADDLE_HIT_COOLDOWN: 150,
+
+    // 速度限制
+    BALL_MAX_SAFE_SPEED: 2500,
 
     // 颜色
     COLORS: {
@@ -21,13 +45,6 @@ export const GameConfig = {
         BRICK_HARD_2: 0xEF6C00,
         BRICK_HARD_3: 0xB71C1C,
         BRICK_INDESTRUCTIBLE: 0xC0C0C0
-    },
-
-    // 道具
-    POWERUPS: {
-        DROP_CHANCE: 0.3,
-        MAX_PADDLE_WIDTH_PERCENT: 0.7,
-        MAX_BALL_DIAMETER_PERCENT: 0.2
     }
 };
 
@@ -45,14 +62,14 @@ export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
             arcade: {
                 gravity: { x: 0, y: 0 },
                 debug: false,
-                fps: 120, // Increase sampling rate to prevent tunneling at high speeds
-                fixedStep: true // Use fixed timestep for deterministic physics
+                fps: 120,
+                fixedStep: true
             }
         },
         fps: {
             min: 60,
             smoothStep: true,
-            forceSetTimeOut: false // 使用 requestAnimationFrame
+            forceSetTimeOut: false
         },
         backgroundColor: GameConfig.COLORS.BG
     };

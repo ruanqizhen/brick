@@ -149,4 +149,9 @@ export class HUD extends Phaser.GameObjects.Container {
     get getScore(): number {
         return this.score;
     }
+
+    shutdown(): void {
+        // Clean up resize listener to prevent memory leaks
+        this.scene.scale.off('resize', this.handleResize, this);
+    }
 }

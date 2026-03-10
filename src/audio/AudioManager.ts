@@ -10,7 +10,6 @@ export class AudioManager {
     private masterGain: GainNode | null = null;
     private compressor: DynamicsCompressorNode | null = null;
     private isUnlocked: boolean = false;
-    private reverbBuffer: AudioBuffer | null = null;
 
     /**
      * Initialize the audio context with enhanced audio pipeline
@@ -37,9 +36,6 @@ export class AudioManager {
 
             this.isUnlocked = true;
 
-            // Create reverb impulse response
-            this.createReverbBuffer();
-
             // Resume context if suspended (mobile requirement)
             if (this.ctx.state === 'suspended') {
                 await this.ctx.resume();
@@ -47,28 +43,6 @@ export class AudioManager {
         } catch (error) {
             console.warn('AudioManager: Web Audio API not supported:', error);
         }
-    }
-
-    /**
-     * Create reverb impulse response for spatial effect
-     */
-    private createReverbBuffer(): void {
-        if (!this.ctx) return;
-
-        const duration = 1.5;
-        const decay = 2.0;
-        const sampleRate = this.ctx.sampleRate;
-        const length = sampleRate * duration;
-        const impulse = this.ctx.createBuffer(2, length, sampleRate);
-
-        for (let channel = 0; channel < 2; channel++) {
-            const channelData = impulse.getChannelData(channel);
-            for (let i = 0; i < length; i++) {
-                channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
-            }
-        }
-
-        this.reverbBuffer = impulse;
     }
 
     /**
@@ -352,27 +326,6 @@ export class AudioManager {
             osc.start(startTime);
             osc.stop(startTime + 0.45);
         });
-    }
-
-    /**
-     * Check if audio is unlocked and ready
-     */
-    isReady(): boolean {
-        return this.isUnlocked && this.ctx !== null;
-    }
-
-    /**
-     * Cleanup audio context
-     */
-    dispose(): void {
-        if (this.ctx && this.ctx.state !== 'closed') {
-            this.ctx.close();
-        }
-        this.ctx = null;
-        this.masterGain = null;
-        this.compressor = null;
-        this.reverbBuffer = null;
-        this.isUnlocked = false;
     }
 }
 

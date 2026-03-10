@@ -139,8 +139,7 @@ export class GameScene extends Phaser.Scene {
             const isFireball = ball.isFireball;
             const isIndestructible = brick.isIndestructible;
 
-            // 1. 处理反弹逻辑 (基于重叠深度，并增加方向性检查防止表面震动)
-            // 特殊效果：火球碰撞金属砖块产生火珠/火星
+            // 火球碰撞金属砖块产生火珠/火星
             if (ball.isFireball && (brick.texture.key === 'brick_metal' || brick.isIndestructible)) {
                 this.particles.spawnSparks(brick.x, brick.y);
             }
@@ -159,7 +158,7 @@ export class GameScene extends Phaser.Scene {
                     if ((ball.x < brick.x && ball.body!.velocity.x > 0) ||
                         (ball.x > brick.x && ball.body!.velocity.x < 0)) {
                         ball.body!.velocity.x *= -1;
-                        ball.applyJitter(1.0); // 同步为你修改后的 1.0 度偏差
+                        ball.applyJitter(1.0);
                     }
                     const separation = (ball.x > brick.x) ? overlapX : -overlapX;
                     ball.x += separation;
@@ -178,16 +177,16 @@ export class GameScene extends Phaser.Scene {
                 if (ball.body) ball.body.updateFromGameObject();
             }
 
-            // 2. 金刚砖逻辑：无论是否火球，撞击到就发出声音
+            // 金刚砖逻辑：无论是否火球，撞击到就发出声音
             if (isIndestructible) {
                 audioManager.play('indestructible');
                 if (isFireball) {
-                    brick.destroy(); // 火球可以击碎金刚砖
-                    this.hud.updateScore(500); // 奖励分
+                    brick.destroy();
+                    this.hud.updateScore(500);
                     this.particles.spawnBrickParticles(brick.x, brick.y, 0xaaaaaa);
-                    ScreenShake.shake(this.cameras.main, 0.008, 150); // 火球撞金刚砖强制震屏
+                    ScreenShake.shake(this.cameras.main, 0.008, 150);
                 }
-                return; // 金刚砖处理完直接退出，不走普通砖逻辑
+                return;
             }
 
             const color = brick.tintTopLeft;
@@ -195,15 +194,7 @@ export class GameScene extends Phaser.Scene {
 
             if (res.points > 0) {
                 this.hud.updateScore(res.points);
-
-                // Play sound based on brick type
-                if (brick.isIndestructible) {
-                    audioManager.play('indestructible');
-                } else if (brick.hp > 1) {
-                    audioManager.play('hard');
-                } else {
-                    audioManager.play('normal');
-                }
+                audioManager.play(brick.isIndestructible ? 'indestructible' : brick.hp > 1 ? 'hard' : 'normal');
 
                 if (this.particles) {
                     try {
@@ -235,8 +226,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     private getBaseSpeedForLevel(levelIndex: number): number {
-        // 第 20 关 (index 19) 时达到初始速度的两倍
-        const multiplier = 1 + (levelIndex / 19);
+        const multiplier = 1 + (levelIndex / GameConfig.LEVELS.SPEED_MULTIPLIER_MAX_LEVEL);
         return GameConfig.BALL_BASE_SPEED * multiplier;
     }
 
@@ -293,7 +283,7 @@ export class GameScene extends Phaser.Scene {
         pu.destroy();
         audioManager.play('powerup');
 
-        const DURATION = 15000; // PRD: 15 seconds
+        const DURATION = GameConfig.POWERUP_DURATION;
 
         switch (type) {
             case 'PADDLE_EXPAND':
@@ -428,26 +418,9 @@ export class GameScene extends Phaser.Scene {
     }
 
     private triggerHitstop(duration: number) {
-        this.physics.world.timeScale = 1.5; // 在 Arcade Physics 中，>1 是慢动作
+        this.physics.world.timeScale = 1.5;
         this.time.delayedCall(duration, () => {
             this.physics.world.timeScale = 1.0;
-        });
-    }
-
-    private triggerSlowMo() {
-        this.tweens.add({
-            targets: this.physics.world,
-            timeScale: 4.0, // 更慢
-            duration: 500,
-            ease: 'Power2'
-        });
-
-        this.tweens.add({
-            targets: this.cameras.main,
-            zoom: 1.1,
-            duration: 800,
-            ease: 'Cubic.easeOut',
-            yoyo: true
         });
     }
 
@@ -689,5 +662,20 @@ export class GameScene extends Phaser.Scene {
                 brick.refreshBody();
             });
         });
+    }
+
+    shutdown(): void {
+        // Clean up paddle event listeners to prevent memory leaks
+        if (this.paddle) {
+            this.paddle.cleanupEventListeners();
+        }
+        // Clean up HUD resize listener
+        if (this.hud) {
+            this.hud.shutdown();
+        }
+        // Clean up particle system
+        if (this.particles) {
+            this.particles.destroy();
+        }
     }
 }

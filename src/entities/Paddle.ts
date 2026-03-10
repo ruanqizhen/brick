@@ -103,10 +103,18 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
     }
 
     override destroy(fromScene?: boolean) {
+        this.cleanupEventListeners();
+        super.destroy(fromScene);
+    }
+
+    /**
+     * Clean up window event listeners to prevent memory leaks
+     * Should be called when scene shuts down
+     */
+    public cleanupEventListeners(): void {
         window.removeEventListener('pointerdown', this.handleWindowPointerDown);
         window.removeEventListener('pointermove', this.handleWindowPointerMove);
         window.removeEventListener('pointerup', this.handleWindowPointerUp);
         window.removeEventListener('pointercancel', this.handleWindowPointerUp);
-        super.destroy(fromScene);
     }
 }

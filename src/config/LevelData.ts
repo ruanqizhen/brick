@@ -907,25 +907,3 @@ export const LEVELS: LevelConfig[] = [
         ]
     },
 ];
-
-// Get difficulty color
-export function getDifficultyColor(difficulty: string): number {
-    switch (difficulty) {
-        case 'easy': return 0x4CAF50;
-        case 'medium': return 0xFFC107;
-        case 'hard': return 0xFF9800;
-        case 'expert': return 0xF44336;
-        default: return 0x888888;
-    }
-}
-
-// Get difficulty label in Chinese
-export function getDifficultyLabel(difficulty: string): string {
-    switch (difficulty) {
-        case 'easy': return '简单';
-        case 'medium': return '中等';
-        case 'hard': return '困难';
-        case 'expert': return '专家';
-        default: return '未知';
-    }
-}

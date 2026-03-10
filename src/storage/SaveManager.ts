@@ -176,47 +176,6 @@ export class SaveManager {
             lastPlayed: Date.now()
         });
     }
-
-    /**
-     * Get game statistics
-     */
-    async getStats(): Promise<{ totalGamesPlayed: number; totalGamesWon: number; winRate: number }> {
-        const data = await this.load();
-        const totalGamesPlayed = data?.totalGamesPlayed || 0;
-        const totalGamesWon = data?.totalGamesWon || 0;
-        const winRate = totalGamesPlayed > 0 ? (totalGamesWon / totalGamesPlayed) * 100 : 0;
-
-        return { totalGamesPlayed, totalGamesWon, winRate };
-    }
-
-    /**
-     * Clear all saved data
-     */
-    async clear(): Promise<void> {
-        await this.init();
-        if (!this.db) return;
-
-        return new Promise((resolve, reject) => {
-            const db = this.db!;
-            const transaction = db.transaction([STORE_NAME], 'readwrite');
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.clear();
-
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
-        });
-    }
-
-    /**
-     * Close database connection
-     */
-    close(): void {
-        if (this.db) {
-            this.db.close();
-            this.db = null;
-            this.initPromise = null;
-        }
-    }
 }
 
 // Global singleton instance
