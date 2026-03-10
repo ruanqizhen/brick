@@ -7,6 +7,7 @@ export class MenuScene extends Phaser.Scene {
     private titleText!: Phaser.GameObjects.Text;
     private startBtn!: Phaser.GameObjects.Container;
     private instructions!: Phaser.GameObjects.Text;
+    private homepageLink!: Phaser.GameObjects.Text;
     private particles!: Phaser.GameObjects.Particles.ParticleEmitter;
 
     constructor() {
@@ -94,6 +95,26 @@ export class MenuScene extends Phaser.Scene {
             align: 'center',
             lineSpacing: 12
         }).setOrigin(0.5);
+
+        // Homepage link
+        this.homepageLink = this.add.text(width / 2, height * 0.85, '🌐 访问我的个人主页', {
+            fontSize: '20px',
+            fontFamily: '"Microsoft YaHei", sans-serif',
+            color: '#88ccff'
+        }).setOrigin(0.5);
+
+        this.homepageLink.setInteractive({ useHandCursor: true });
+        this.homepageLink.on('pointerover', () => {
+            this.homepageLink.setColor('#ffffff');
+            this.homepageLink.setShadow(0, 0, '#00d4ff', 10, true, true);
+        });
+        this.homepageLink.on('pointerout', () => {
+            this.homepageLink.setColor('#88ccff');
+            this.homepageLink.setShadow(0, 0, '#000000', 0);
+        });
+        this.homepageLink.on('pointerdown', () => {
+            window.open('https://qizhen.xyz/', '_blank');
+        });
 
         // Listen for resize
         this.scale.on('resize', this.handleResize, this);
@@ -210,6 +231,7 @@ export class MenuScene extends Phaser.Scene {
         this.highScoreText.setPosition(width / 2, height * 0.36);
         this.startBtn.setPosition(width / 2, height * 0.5);
         this.instructions.setPosition(width / 2, height * 0.75);
+        this.homepageLink.setPosition(width / 2, height * 0.85);
     }
 
     shutdown(): void {
