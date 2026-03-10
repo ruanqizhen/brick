@@ -30,6 +30,11 @@ export class GameScene extends Phaser.Scene {
     private lives: number = 3;
     private currentLevelIndex: number = 0;
     private activeSpeedMultipliers: number[] = [];
+    
+    // Timed powerup trackers
+    private fireballTimer: Phaser.Time.TimerEvent | null = null;
+    private speedUpTimer: Phaser.Time.TimerEvent | null = null;
+    private speedDownTimer: Phaser.Time.TimerEvent | null = null;
 
     constructor() {
         super(SCENE_KEYS.GAME);
@@ -349,8 +354,14 @@ export class GameScene extends Phaser.Scene {
                 this.updatePaddleWidth(0.6);
                 break;
             case 'FIREBALL':
+                // Cancel existing fireball timer and reset
+                if (this.fireballTimer) {
+                    this.fireballTimer.remove();
+                    this.fireballTimer = null;
+                }
                 this.setFireball(true);
-                this.time.delayedCall(DURATION, () => {
+                this.fireballTimer = this.time.delayedCall(DURATION, () => {
+                    this.fireballTimer = null;
                     this.setFireball(false);
                 });
                 break;
@@ -364,9 +375,29 @@ export class GameScene extends Phaser.Scene {
                 this.updateBallsRadius(0.7);
                 break;
             case 'SPEED_UP':
+                // Cancel existing speed up timer and reset
+                if (this.speedUpTimer) {
+                    this.speedUpTimer.remove();
+                    this.speedUpTimer = null;
+                    // Remove old multiplier
+                    const index = this.activeSpeedMultipliers.indexOf(1.3);
+                    if (index !== -1) {
+                        this.activeSpeedMultipliers.splice(index, 1);
+                    }
+                }
                 this.updateBallsSpeed(1.3, DURATION);
                 break;
             case 'SPEED_DOWN':
+                // Cancel existing speed down timer and reset
+                if (this.speedDownTimer) {
+                    this.speedDownTimer.remove();
+                    this.speedDownTimer = null;
+                    // Remove old multiplier
+                    const index = this.activeSpeedMultipliers.indexOf(0.7);
+                    if (index !== -1) {
+                        this.activeSpeedMultipliers.splice(index, 1);
+                    }
+                }
                 this.updateBallsSpeed(0.7, DURATION);
                 break;
             case 'EXTRA_LIFE':
@@ -446,14 +477,27 @@ export class GameScene extends Phaser.Scene {
         this.activeSpeedMultipliers.push(multiplier);
         this.applyCurrentSpeedModifiers();
 
-        // 到时后移除并恢复
-        this.time.delayedCall(duration, () => {
+        // Create timer and store reference based on multiplier
+        const timer = this.time.delayedCall(duration, () => {
             const index = this.activeSpeedMultipliers.indexOf(multiplier);
             if (index !== -1) {
                 this.activeSpeedMultipliers.splice(index, 1);
                 this.applyCurrentSpeedModifiers();
             }
+            // Clear timer reference
+            if (multiplier === 1.3) {
+                this.speedUpTimer = null;
+            } else if (multiplier === 0.7) {
+                this.speedDownTimer = null;
+            }
         });
+        
+        // Store timer reference
+        if (multiplier === 1.3) {
+            this.speedUpTimer = timer;
+        } else if (multiplier === 0.7) {
+            this.speedDownTimer = timer;
+        }
     }
 
     private applyCurrentSpeedModifiers() {
@@ -745,6 +789,20 @@ export class GameScene extends Phaser.Scene {
     }
 
     shutdown(): void {
+        // Clean up timed powerup timers
+        if (this.fireballTimer) {
+            this.fireballTimer.remove();
+            this.fireballTimer = null;
+        }
+        if (this.speedUpTimer) {
+            this.speedUpTimer.remove();
+            this.speedUpTimer = null;
+        }
+        if (this.speedDownTimer) {
+            this.speedDownTimer.remove();
+            this.speedDownTimer = null;
+        }
+        
         // Clean up paddle event listeners
         if (this.paddle) {
             this.paddle.cleanupEventListeners();

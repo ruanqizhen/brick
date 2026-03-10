@@ -24,11 +24,11 @@ export const GameConfig = {
         EASY_COUNT: 5,
         MEDIUM_COUNT: 10,
         HARD_COUNT: 5,
-        SPEED_MULTIPLIER_MAX_LEVEL: 19, // Level at which ball speed reaches 2x
+        SPEED_MULTIPLIER_MAX_LEVEL: 30, // Level at which ball speed reaches 2x
     },
 
     // 道具持续时间 (毫秒)
-    POWERUP_DURATION: 15000,
+    POWERUP_DURATION: 10000,
 
     // 碰撞 CD (毫秒)
     PADDLE_HIT_COOLDOWN: 150,
