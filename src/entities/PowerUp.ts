@@ -68,18 +68,25 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
             if (this.body) {
                 this.body.enable = false;
             }
-        } else {
-            if (this.body) {
-                this.body.enable = true;
-                this.setVelocityY(200);
+            // Destroy icon text when returning to pool
+            if (this.iconText) {
+                this.iconText.destroy();
+                this.iconText = null as any;
             }
         }
+        // Don't set velocity here - it will be set by the scene after position is set
     }
 
     onRelease(): void {
         this.setPosition(0, -100);
+        this.setVisible(false);
         if (this.body) {
             this.body.enable = false;
+        }
+        // Destroy icon text to prevent memory leaks and visual artifacts
+        if (this.iconText) {
+            this.iconText.destroy();
+            this.iconText = null as any;
         }
     }
 
@@ -97,11 +104,13 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
             PowerUp.createPowerUpTexture(this.sceneRef, type, textureKey);
         }
         this.setTexture(textureKey);
-        
-        // Update icon text
+
+        // Destroy existing icon text if any
         if (this.iconText) {
             this.iconText.destroy();
         }
+        
+        // Create new icon text at current position
         this.createIconText(this.sceneRef);
     }
 

@@ -5,24 +5,22 @@ import { GameConfig } from '../config/GameConfig';
 export class Brick extends Phaser.Physics.Arcade.Sprite {
     private brickType: BrickType;
     private _hp: number;
+    private isPooledActive: boolean = false;
+    private sceneRef: Phaser.Scene;
 
     constructor(scene: Phaser.Scene, x: number, y: number, type: BrickType) {
         const texture = type === 'INDESTRUCTIBLE' ? 'brick_metal' : 'brick';
         super(scene, x, y, texture);
+        this.sceneRef = scene;
         this.brickType = type;
 
-        // 设置初始 HP
-        switch (type) {
-            case 'HARD_3': this._hp = 3; break;
-            case 'HARD_2': this._hp = 2; break;
-            case 'INDESTRUCTIBLE': this._hp = Infinity; break;
-            default: this._hp = 1;
-        }
+        this._hp = type === 'INDESTRUCTIBLE' ? Infinity : (type === 'HARD_3' ? 3 : type === 'HARD_2' ? 2 : 1);
 
         scene.add.existing(this);
-        scene.physics.add.existing(this, true); // 静态物体
+        scene.physics.add.existing(this, true);
 
         this.updateAppearance();
+        this.setPoolActive(false);
     }
 
     hit(): { destroyed: boolean, points: number } {
@@ -34,11 +32,25 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
         this.updateAppearance();
 
         if (this._hp <= 0) {
-            this.destroy();
+            // 隐藏砖块而非销毁
+            this.setVisible(false);
             return { destroyed: true, points: 100 };
         }
 
         return { destroyed: false, points: 50 };
+    }
+
+    /**
+     * Reset brick for reuse from pool
+     */
+    reset(x: number, y: number, type: BrickType): void {
+        this.brickType = type;
+        this._hp = type === 'INDESTRUCTIBLE' ? Infinity : (type === 'HARD_3' ? 3 : type === 'HARD_2' ? 2 : 1);
+        this.setPosition(x, y);
+        this.setTexture(type === 'INDESTRUCTIBLE' ? 'brick_metal' : 'brick');
+        this.setVisible(true);
+        this.setPoolActive(true);
+        this.updateAppearance();
     }
 
     private updateAppearance() {
@@ -46,7 +58,6 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
 
         switch (this.brickType) {
             case 'INDESTRUCTIBLE':
-                // Use a very light silver/white to show off the metal texture details
                 color = 0xEEEEEE;
                 break;
             case 'HARD_3':
@@ -68,5 +79,29 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
 
     get hp(): number {
         return this._hp;
+    }
+
+    // Pool methods
+    setPoolActive(active: boolean): void {
+        this.isPooledActive = active;
+        this.setVisible(active);
+    }
+
+    onRelease(): void {
+        this.setPosition(0, -100);
+        this.setVisible(false);
+    }
+
+    isPoolActive(): boolean {
+        return this.isPooledActive;
+    }
+
+    getScene(): Phaser.Scene {
+        return this.sceneRef;
+    }
+
+    override destroy(fromScene?: boolean): void {
+        if (!this.sceneRef) return;
+        super.destroy(fromScene);
     }
 }

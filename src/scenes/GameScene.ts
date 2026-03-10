@@ -14,11 +14,13 @@ import { PauseMenu } from './PauseMenu';
 import { saveManager } from '../storage/SaveManager';
 import { Starfield } from '../systems/Starfield';
 import { ObjectPool } from '../utils/ObjectPool';
+import { GAME_EVENTS, SCENE_KEYS } from '../config/EventConstants';
 
 export class GameScene extends Phaser.Scene {
     public paddle!: Paddle;
     private ballPool!: ObjectPool<Ball>;
     private powerUpPool!: ObjectPool<PowerUp>;
+    private brickPool!: ObjectPool<Brick>;
     private balls!: Phaser.GameObjects.Group;
     private bricks!: Phaser.Physics.Arcade.StaticGroup;
     private powerUps!: Phaser.GameObjects.Group;
@@ -30,7 +32,7 @@ export class GameScene extends Phaser.Scene {
     private activeSpeedMultipliers: number[] = [];
 
     constructor() {
-        super('GameScene');
+        super(SCENE_KEYS.GAME);
     }
 
     init(data?: { level?: number }) {
@@ -68,18 +70,22 @@ export class GameScene extends Phaser.Scene {
         this.hud.updateLives(this.lives);
         this.particles = new ParticleSystem(this);
 
-        this.bricks = this.physics.add.staticGroup();
-        this.loadLevel(this.currentLevelIndex);
-
-        // Initialize object pools
+        // Initialize object pools BEFORE loading level
         this.ballPool = new ObjectPool<Ball>(
             () => new Ball(this, DESIGN_WIDTH / 2, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION - 55),
-            5 // Initial pool size - enough for multi-ball
+            5
         );
         this.powerUpPool = new ObjectPool<PowerUp>(
             () => new PowerUp(this, 0, 0, 'EXTRA_LIFE'),
-            3 // Initial pool size
+            3
         );
+        this.brickPool = new ObjectPool<Brick>(
+            () => new Brick(this, 0, 0, 'NORMAL'),
+            200
+        );
+
+        this.bricks = this.physics.add.staticGroup();
+        this.loadLevel(this.currentLevelIndex);
 
         // Use groups for collision management
         this.balls = this.add.group({ classType: Ball, runChildUpdate: false });
@@ -213,12 +219,23 @@ export class GameScene extends Phaser.Scene {
             const res = brick.hit();
 
             if (res.points > 0) {
+                // 获取砖块位置 BEFORE 隐藏它
+                const brickX = brick.x;
+                const brickY = brick.y;
+
                 this.hud.updateScore(res.points);
-                audioManager.play(brick.isIndestructible ? 'indestructible' : brick.hp > 1 ? 'hard' : 'normal');
+
+                // 砖块销毁逻辑：从组和场景中移除，并回收到池
+                if (res.destroyed) {
+                    this.bricks.remove(brick, false);
+                    this.brickPool.release(brick);
+                }
+
+                audioManager.play(brick.hp > 1 ? 'hard' : 'normal');
 
                 if (this.particles) {
                     try {
-                        this.particles.spawnBrickParticles(brick.x, brick.y, color);
+                        this.particles.spawnBrickParticles(brickX, brickY, color);
                     } catch (e) {
                         console.error('Particle error:', e);
                     }
@@ -233,7 +250,7 @@ export class GameScene extends Phaser.Scene {
                 this.triggerHitstop(res.destroyed ? 60 : 30);
 
                 if (res.destroyed && Math.random() < GameConfig.POWERUPS.DROP_CHANCE) {
-                    this.spawnPowerUp(brick.x, brick.y);
+                    this.spawnPowerUp(brickX, brickY);
                 }
             }
 
@@ -289,26 +306,39 @@ export class GameScene extends Phaser.Scene {
         }
 
         // 额外生命道具：独立判定，极低掉落率 (5%)
-        // 只有当已经选中一个道具时才有机会额外出现
         if (selectedType === 'EXTRA_LIFE' && Math.random() < 0.95) {
             selectedType = 'SPEED_UP';
         }
 
-        // Get powerup from pool
+        // Get powerup from pool (position will be set after)
         const pu = this.powerUpPool.get();
+        
+        // IMPORTANT: Set position BEFORE making visible and enabling physics
         pu.setPosition(x, y);
+        
+        // Update powerup type (this also recreates the icon text at current position)
         pu.setPowerUpType(selectedType);
+        
+        // Make visible and enable physics
         pu.setVisible(true);
+        if (pu.body) {
+            pu.body.enable = true;
+            pu.setVelocityY(200);
+        }
+        
         this.powerUps.add(pu);
     }
 
     private handlePowerUpPickup(pu: PowerUp) {
-        // Return powerup to pool instead of destroying
+        // Get type BEFORE returning to pool
+        const type = pu.powerUpType;
+        
+        // Remove from group and return to pool (this hides the powerup and icon)
         this.powerUps.remove(pu, false);
         this.powerUpPool.release(pu);
+        
         audioManager.play('powerup');
 
-        const type = pu.powerUpType;
         const DURATION = GameConfig.POWERUP_DURATION;
 
         switch (type) {
@@ -369,8 +399,11 @@ export class GameScene extends Phaser.Scene {
     }
 
     private doubleBalls() {
-        const currentBalls = this.balls.getChildren() as Ball[];
-        currentBalls.forEach(ball => {
+        const currentBalls = this.balls.getChildren();
+        const ballCount = currentBalls.length;
+
+        for (let i = 0; i < ballCount; i++) {
+            const ball = currentBalls[i] as Ball;
             const newBall = this.ballPool.get();
             newBall.setPosition(ball.x, ball.y);
             this.balls.add(newBall);
@@ -385,7 +418,7 @@ export class GameScene extends Phaser.Scene {
                 const vel = ball.body.velocity;
                 newBall.body.velocity.set(vel.x * -1, vel.y);
             }
-        });
+        }
     }
 
     private updateBallsRadius(scaleFactor: number) {
@@ -450,7 +483,15 @@ export class GameScene extends Phaser.Scene {
     }
 
     private checkWin() {
-        return this.bricks.getChildren().filter(b => !(b as Brick).isIndestructible).length === 0;
+        // Check if all non-indestructible bricks are destroyed (not visible)
+        const bricks = this.bricks.getChildren();
+        for (let i = 0; i < bricks.length; i++) {
+            const brick = bricks[i] as Brick;
+            if (!brick.isIndestructible && brick.visible) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private handleWin() {
@@ -469,7 +510,7 @@ export class GameScene extends Phaser.Scene {
             } else {
                 // Completed all levels - show final victory in GameOverScene
                 const finalScore = this.hud.getScore;
-                this.scene.start('GameOverScene', {
+                this.scene.start(SCENE_KEYS.GAME_OVER, {
                     score: finalScore,
                     level: completedLevel
                 });
@@ -480,7 +521,10 @@ export class GameScene extends Phaser.Scene {
     private showWinOverlay(completedLevel: number, score: number) {
         // Pause physics and ball trails
         this.physics.world.isPaused = true;
-        this.balls.getChildren().forEach(b => (b as Ball).body!.stop());
+        const balls = this.balls.getChildren();
+        for (let i = 0; i < balls.length; i++) {
+            (balls[i] as Ball).body!.stop();
+        }
 
         const width = DESIGN_WIDTH;
         const height = DESIGN_HEIGHT;
@@ -580,7 +624,7 @@ export class GameScene extends Phaser.Scene {
             if (this.lives <= 0) {
                 audioManager.play('lose');
                 const finalScore = this.hud.getScore;
-                this.scene.start('GameOverScene', {
+                this.scene.start(SCENE_KEYS.GAME_OVER, {
                     score: finalScore,
                     level: this.currentLevelIndex + 1
                 });
@@ -616,9 +660,9 @@ export class GameScene extends Phaser.Scene {
         this.input.keyboard?.on('keydown-SPACE', () => this.handleBallLaunch());
 
         // Listen for resume/restart/menu events from PauseMenu
-        this.events.on('resumeGame', () => this.resumeGame());
-        this.events.on('restartGame', () => this.restartGame());
-        this.events.on('goToMenu', () => this.scene.start('MenuScene'));
+        this.events.on(GAME_EVENTS.RESUME, () => this.resumeGame());
+        this.events.on(GAME_EVENTS.RESTART, () => this.restartGame());
+        this.events.on(GAME_EVENTS.GO_TO_MENU, () => this.scene.start(SCENE_KEYS.MENU));
     }
 
     private togglePause(): void {
@@ -676,12 +720,18 @@ export class GameScene extends Phaser.Scene {
         const conf = LEVELS[idx];
         const tW = conf.cols * conf.brickWidth + (conf.cols - 1) * conf.brickPaddingX;
         const sX = (DESIGN_WIDTH - tW) / 2 + conf.brickWidth / 2;
+
+        // Clear existing bricks from pool
+        this.bricks.clear(true, true);
+        this.brickPool.releaseAll();
+
         conf.grid.forEach((row, rI) => {
             row.forEach((type, cI) => {
                 if (type === 'EMPTY') return;
                 const x = sX + cI * (conf.brickWidth + conf.brickPaddingX);
                 const y = conf.offsetTop + rI * (conf.brickHeight + conf.brickPaddingY);
-                const brick = new Brick(this, x, y, type);
+                const brick = this.brickPool.get();
+                brick.reset(x, y, type);
                 brick.setDisplaySize(conf.brickWidth, conf.brickHeight);
                 this.bricks.add(brick);
                 brick.refreshBody();
@@ -710,6 +760,10 @@ export class GameScene extends Phaser.Scene {
         if (this.powerUpPool) {
             this.powerUpPool.releaseAll();
             this.powerUpPool.destroy();
+        }
+        if (this.brickPool) {
+            this.brickPool.releaseAll();
+            this.brickPool.destroy();
         }
     }
 }
