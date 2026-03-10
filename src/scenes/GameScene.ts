@@ -35,7 +35,7 @@ export class GameScene extends Phaser.Scene {
         if (data && typeof data.level === 'number') {
             this.currentLevelIndex = data.level;
         } else {
-            this.currentLevelIndex = 4; // 恢复从第一关开始
+            this.currentLevelIndex = 1; // 恢复从第一关开始
         }
         this.lives = 3;
     }
