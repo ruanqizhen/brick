@@ -24,4 +24,23 @@ export class ParticleSystem {
         this.emitter.setParticleTint(color);
         this.emitter.explode(Phaser.Math.Between(8, 12), x, y);
     }
+
+    spawnSparks(x: number, y: number) {
+        this.emitter.setParticleTint(0xffdd00);
+        this.emitter.setConfig({
+            speed: { min: 400, max: 600 },
+            lifespan: 300,
+            gravityY: 1000,
+            scale: { start: 0.3, end: 0 }
+        });
+        this.emitter.explode(Phaser.Math.Between(15, 20), x, y);
+
+        // 恢复默认配置，防止影响标准砖块粒子
+        this.emitter.setConfig({
+            speed: { min: 150, max: 300 },
+            lifespan: 800,
+            gravityY: 600,
+            scale: { start: 0.4, end: 0 }
+        });
+    }
 }

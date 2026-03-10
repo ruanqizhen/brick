@@ -69,22 +69,22 @@ export class BootScene extends Phaser.Scene {
             graphics.generateTexture('paddle', pW, pH);
         }
 
-        // 3. Ball texture (Tennis Ball)
+        // 3. Ball texture (Tennis Ball - High Res for scaling)
         if (!this.textures.exists('ball')) {
-            const radius = GameConfig.BALL_RADIUS;
+            const radius = 128; // Higher res base (256x256)
             const size = radius * 2;
             graphics.clear();
 
             // Base shadow (subtle)
             graphics.fillStyle(0x000000, 0.2);
-            graphics.fillCircle(radius + 1, radius + 1, radius);
+            graphics.fillCircle(radius + 4, radius + 4, radius);
 
             // Fluorescent Yellow Base
             graphics.fillStyle(0xCCFF00);
             graphics.fillCircle(radius, radius, radius);
 
             // Tennis Ball Seams (White S-curves)
-            graphics.lineStyle(2, 0xFFFFFF, 0.8);
+            graphics.lineStyle(12, 0xFFFFFF, 0.8); // Thicker lines for high res
 
             // Top-left curve
             graphics.beginPath();

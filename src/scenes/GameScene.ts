@@ -35,7 +35,7 @@ export class GameScene extends Phaser.Scene {
         if (data && typeof data.level === 'number') {
             this.currentLevelIndex = data.level;
         } else {
-            this.currentLevelIndex = 0; // 恢复从第一关开始
+            this.currentLevelIndex = 4; // 恢复从第一关开始
         }
         this.lives = 3;
     }
@@ -107,7 +107,30 @@ export class GameScene extends Phaser.Scene {
     update(time: number, delta: number) {
         if (this.starfield) this.starfield.update();
         if (this.paddle) this.paddle.update(time, delta);
-        this.balls.getChildren().forEach(b => (b as Ball).update());
+
+        let maxVel = 0;
+        this.balls.getChildren().forEach(b => {
+            const ball = b as Ball;
+            ball.update();
+            const body = ball.body as Phaser.Physics.Arcade.Body;
+            if (body && body.enable) {
+                const vel = body.velocity.length();
+                if (vel > maxVel) maxVel = vel;
+            }
+        });
+
+        // --- HIGH SPEED REDESIGN: DYNAMIC BIAS ---
+        // Ensure TILE_BIAS is always larger than the distance traveled in a single physics step.
+        // At 120Hz, step is ~8.3ms. 
+        const physicsFps = (this.physics.world as any).fps || 120;
+        const stepTime = 1 / physicsFps;
+        const distancePerStep = maxVel * stepTime;
+        // Bias should be at least 40 (standard) or 1.5x the max distance moved per step
+        const bias = Math.max(40, distancePerStep * 1.5);
+        (this.physics.world as any).TILE_BIAS = bias;
+        // Also scale OVERLAP_BIAS to prevent balls skipping narrow overlaps
+        (this.physics.world as any).OVERLAP_BIAS = Math.max(4, bias / 10);
+
         this.powerUps.getChildren().forEach(p => (p as PowerUp).update());
     }
 
@@ -117,6 +140,15 @@ export class GameScene extends Phaser.Scene {
             const isIndestructible = brick.isIndestructible;
 
             // 1. 处理反弹逻辑 (基于重叠深度，并增加方向性检查防止表面震动)
+            // 特殊效果：火球碰撞金属砖块产生火珠/火星
+            if (ball.isFireball && (brick.texture.key === 'brick_metal' || brick.isIndestructible)) {
+                this.particles.spawnSparks(brick.x, brick.y);
+            }
+
+            // 反弹逻辑：
+            // - 普通球撞击任何砖块都会反弹
+            // - 火球撞击金刚砖会反弹
+            // - 火球撞击普通砖块不会反弹 (穿透)
             if (!isFireball || isIndestructible) {
                 const overlapX = (ball.displayWidth / 2 + brick.displayWidth / 2) - Math.abs(ball.x - brick.x);
                 const overlapY = (ball.displayHeight / 2 + brick.displayHeight / 2) - Math.abs(ball.y - brick.y);
@@ -314,8 +346,9 @@ export class GameScene extends Phaser.Scene {
 
     private setFireball(active: boolean) {
         this.balls.getChildren().forEach(b => {
-            (b as Ball).isFireball = active;
-            (b as Ball).setTint(active ? 0xffaa00 : 0xffffff);
+            const ball = b as Ball;
+            ball.activeFire(active);
+            ball.setTint(active ? 0xffaa00 : 0xffffff);
         });
     }
 

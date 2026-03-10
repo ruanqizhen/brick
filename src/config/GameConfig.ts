@@ -45,7 +45,7 @@ export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
             arcade: {
                 gravity: { x: 0, y: 0 },
                 debug: false,
-                fps: 60, // Fixed physics FPS for consistent behavior across all devices
+                fps: 120, // Increase sampling rate to prevent tunneling at high speeds
                 fixedStep: true // Use fixed timestep for deterministic physics
             }
         },

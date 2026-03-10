@@ -6,6 +6,7 @@ import { audioManager } from '../audio/AudioManager';
 export class Ball extends Phaser.Physics.Arcade.Sprite {
     public isFireball: boolean = false;
     private trailEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+    private fireEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
     private trailScale: number = 1.0;
     private lastPaddleHitTime: number = 0;
 
@@ -19,8 +20,9 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         (this.body as Phaser.Physics.Arcade.Body).onWorldBounds = true;
         this.setBounce(1, 1);
 
-        // 初始化尺寸
-        this.setCircle(GameConfig.BALL_RADIUS);
+        // 初始化尺寸 (基于高分辨率纹理半径 128)
+        this.setCircle(128);
+        this.setDisplaySize(GameConfig.BALL_RADIUS * 2, GameConfig.BALL_RADIUS * 2);
 
         // 创建拖尾粒子发射器
         this.trailEmitter = scene.add.particles(0, 0, 'particle', {
@@ -39,6 +41,20 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         // 确保发射器本身不缩放，这样 follow 逻辑就不会产生坐标偏移
         this.trailEmitter.setDepth(this.depth - 1);
         this.trailEmitter.setScale(1);
+
+        // 创建火球火焰发射器
+        this.fireEmitter = scene.add.particles(0, 0, 'particle', {
+            lifespan: 400,
+            speed: { min: 50, max: 150 },
+            scale: { start: 1.2, end: 0 },
+            alpha: { start: 0.8, end: 0 },
+            tint: [0xff0000, 0xffaa00, 0xffff00],
+            blendMode: 'ADD',
+            frequency: 15,
+            follow: this,
+            emitting: false
+        });
+        this.fireEmitter.setDepth(this.depth - 1);
 
         this.setData('state', 'READY');
         if (this.body) {
@@ -102,14 +118,23 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     setBallRadius(radius: number) {
         this.setDisplaySize(radius * 2, radius * 2);
 
-        // 修复：始终基于基准半径设置圆周，由 Sprite 的 Scale 机制处理最终碰撞尺寸。
+        // 修复：始终基于高分辨率纹理半径 (128) 设置圆周，由 Sprite 的 Scale 机制处理最终碰撞尺寸。
         // 不传递偏移量，允许 Phaser 自动居中。
         if (this.body) {
-            this.setCircle(GameConfig.BALL_RADIUS);
+            this.setCircle(128);
         }
 
         // 动态调整粒子缩放系数
         this.trailScale = radius / GameConfig.BALL_RADIUS;
+    }
+
+    activeFire(active: boolean) {
+        this.isFireball = active;
+        if (active) {
+            this.fireEmitter.start();
+        } else {
+            this.fireEmitter.stop();
+        }
     }
 
     private normalizeSpeed() {
@@ -117,7 +142,16 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         if (!body) return;
 
         const currentSpeed = body.velocity.length();
-        const targetSpeed = (this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED) * 60;
+        const baseSpeed = this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED;
+        let targetSpeed = baseSpeed * 60;
+
+        // --- HIGH SPEED REDESIGN ---
+        // Cap the speed to a "safe" limit for 120Hz physics (distance < bias)
+        const MAX_SAFE_SPEED = 2500;
+        if (targetSpeed > MAX_SAFE_SPEED) {
+            targetSpeed = MAX_SAFE_SPEED;
+            this.setData('targetSpeed', MAX_SAFE_SPEED / 60);
+        }
 
         if (currentSpeed < 100) {
             // 紧急补救：如果速度消失，强制向上发射
