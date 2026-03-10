@@ -12,11 +12,13 @@ import { audioManager } from '../audio/AudioManager';
 import { GameOverScene } from './GameOverScene';
 import { PauseMenu } from './PauseMenu';
 import { saveManager } from '../storage/SaveManager';
-
 import { Starfield } from '../systems/Starfield';
+import { ObjectPool } from '../utils/ObjectPool';
 
 export class GameScene extends Phaser.Scene {
     public paddle!: Paddle;
+    private ballPool!: ObjectPool<Ball>;
+    private powerUpPool!: ObjectPool<PowerUp>;
     private balls!: Phaser.GameObjects.Group;
     private bricks!: Phaser.Physics.Arcade.StaticGroup;
     private powerUps!: Phaser.GameObjects.Group;
@@ -25,7 +27,7 @@ export class GameScene extends Phaser.Scene {
     private starfield!: Starfield;
     private lives: number = 3;
     private currentLevelIndex: number = 0;
-    private activeSpeedMultipliers: number[] = []; // 追踪当前所有激活的速度倍数
+    private activeSpeedMultipliers: number[] = [];
 
     constructor() {
         super('GameScene');
@@ -44,15 +46,15 @@ export class GameScene extends Phaser.Scene {
         // 重置物理环境
         this.physics.world.timeScale = 1.0;
         this.physics.world.isPaused = false;
-        (this.physics.world as any).TILE_BIAS = 40; // 优化后的平衡值，兼顾防穿透与视觉精准
-        (this.physics.world as any).OVERLAP_BIAS = 4; // 恢复标准重叠容差，修复“虚空反弹”
+        const world = this.physics.world as Phaser.Physics.Arcade.World;
+        world.TILE_BIAS = 40;
+        world.OVERLAP_BIAS = 4;
 
         this.starfield = new Starfield(this);
 
         // 启用相机辉光 (Phaser 3.60+)
-        // 注意：Bloom 可能会影响性能，如果用户设备较弱，后续可改为可选
         try {
-            const BloomPipeline = (Phaser.Renderer.WebGL.Pipelines as any).FX?.Bloom;
+            const BloomPipeline = (Phaser.Renderer.WebGL.Pipelines.FX as any)?.Bloom;
             if (BloomPipeline) {
                 this.cameras.main.setPostPipeline(BloomPipeline, {
                     intensity: 0.3
@@ -69,14 +71,26 @@ export class GameScene extends Phaser.Scene {
         this.bricks = this.physics.add.staticGroup();
         this.loadLevel(this.currentLevelIndex);
 
-        // 使用普通组管理小球，手动控制碰撞
-        this.balls = this.add.group({ classType: Ball });
-        this.powerUps = this.add.group({ classType: PowerUp });
+        // Initialize object pools
+        this.ballPool = new ObjectPool<Ball>(
+            () => new Ball(this, DESIGN_WIDTH / 2, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION - 55),
+            5 // Initial pool size - enough for multi-ball
+        );
+        this.powerUpPool = new ObjectPool<PowerUp>(
+            () => new PowerUp(this, 0, 0, 'EXTRA_LIFE'),
+            3 // Initial pool size
+        );
+
+        // Use groups for collision management
+        this.balls = this.add.group({ classType: Ball, runChildUpdate: false });
+        this.powerUps = this.add.group({ classType: PowerUp, runChildUpdate: false });
 
         this.paddle = new Paddle(this, DESIGN_WIDTH / 2, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION);
 
+        // Get first ball from pool
         const baseSpeed = this.getBaseSpeedForLevel(this.currentLevelIndex);
-        const mainBall = new Ball(this, DESIGN_WIDTH / 2, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION - 55);
+        const mainBall = this.ballPool.get();
+        mainBall.setPosition(DESIGN_WIDTH / 2, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION - 55);
         mainBall.setData('targetSpeed', baseSpeed);
         this.balls.add(mainBall);
 
@@ -108,30 +122,36 @@ export class GameScene extends Phaser.Scene {
         if (this.starfield) this.starfield.update();
         if (this.paddle) this.paddle.update(time, delta);
 
+        // Optimized: Cache children array and use for loop
+        const balls = this.balls.getChildren();
+        const ballCount = balls.length;
         let maxVel = 0;
-        this.balls.getChildren().forEach(b => {
-            const ball = b as Ball;
+
+        for (let i = 0; i < ballCount; i++) {
+            const ball = balls[i] as Ball;
             ball.update();
             const body = ball.body as Phaser.Physics.Arcade.Body;
-            if (body && body.enable) {
+            if (body?.enable) {
                 const vel = body.velocity.length();
                 if (vel > maxVel) maxVel = vel;
             }
-        });
+        }
 
-        // --- HIGH SPEED REDESIGN: DYNAMIC BIAS ---
-        // Ensure TILE_BIAS is always larger than the distance traveled in a single physics step.
-        // At 120Hz, step is ~8.3ms. 
-        const physicsFps = (this.physics.world as any).fps || 120;
+        // Dynamic physics bias adjustment for high-speed prevention
+        const world = this.physics.world as Phaser.Physics.Arcade.World;
+        const physicsFps = world.fps || 120;
         const stepTime = 1 / physicsFps;
         const distancePerStep = maxVel * stepTime;
-        // Bias should be at least 40 (standard) or 1.5x the max distance moved per step
         const bias = Math.max(40, distancePerStep * 1.5);
-        (this.physics.world as any).TILE_BIAS = bias;
-        // Also scale OVERLAP_BIAS to prevent balls skipping narrow overlaps
-        (this.physics.world as any).OVERLAP_BIAS = Math.max(4, bias / 10);
+        world.TILE_BIAS = bias;
+        world.OVERLAP_BIAS = Math.max(4, bias / 10);
 
-        this.powerUps.getChildren().forEach(p => (p as PowerUp).update());
+        // Optimized: Cache powerups array
+        const powerUps = this.powerUps.getChildren();
+        const powerUpCount = powerUps.length;
+        for (let i = 0; i < powerUpCount; i++) {
+            (powerUps[i] as PowerUp).update();
+        }
     }
 
     private handleBrickHit(ball: Ball, brick: Brick) {
@@ -274,15 +294,21 @@ export class GameScene extends Phaser.Scene {
             selectedType = 'SPEED_UP';
         }
 
-        const pu = new PowerUp(this, x, y, selectedType);
+        // Get powerup from pool
+        const pu = this.powerUpPool.get();
+        pu.setPosition(x, y);
+        pu.setPowerUpType(selectedType);
+        pu.setVisible(true);
         this.powerUps.add(pu);
     }
 
     private handlePowerUpPickup(pu: PowerUp) {
-        const type = pu.powerUpType;
-        pu.destroy();
+        // Return powerup to pool instead of destroying
+        this.powerUps.remove(pu, false);
+        this.powerUpPool.release(pu);
         audioManager.play('powerup');
 
+        const type = pu.powerUpType;
         const DURATION = GameConfig.POWERUP_DURATION;
 
         switch (type) {
@@ -345,14 +371,13 @@ export class GameScene extends Phaser.Scene {
     private doubleBalls() {
         const currentBalls = this.balls.getChildren() as Ball[];
         currentBalls.forEach(ball => {
-            const newBall = new Ball(this, ball.x, ball.y);
+            const newBall = this.ballPool.get();
+            newBall.setPosition(ball.x, ball.y);
             this.balls.add(newBall);
 
             newBall.setBallRadius(ball.displayWidth / 2);
             newBall.isFireball = ball.isFireball;
             newBall.setTint(ball.isFireball ? 0xffaa00 : 0xffffff);
-
-            // 继承当前小球的目标速度（已包含所有倍数）
             newBall.setData('targetSpeed', ball.getData('targetSpeed'));
 
             newBall.launch();
@@ -543,7 +568,9 @@ export class GameScene extends Phaser.Scene {
     }
 
     private handleBallLost(ball: Ball) {
-        ball.destroy();
+        // Return ball to pool instead of destroying
+        this.balls.remove(ball, false);
+        this.ballPool.release(ball);
         audioManager.play('ballLost');
 
         if (this.balls.countActive() === 0) {
@@ -552,19 +579,17 @@ export class GameScene extends Phaser.Scene {
 
             if (this.lives <= 0) {
                 audioManager.play('lose');
-                // Save high score and transition to GameOverScene
                 const finalScore = this.hud.getScore;
                 this.scene.start('GameOverScene', {
                     score: finalScore,
                     level: this.currentLevelIndex + 1
                 });
-            }
-            else {
+            } else {
                 const baseSpeed = this.getBaseSpeedForLevel(this.currentLevelIndex);
                 const totalMultiplier = this.activeSpeedMultipliers.reduce((acc, m) => acc * m, 1);
 
-                const b = new Ball(this, this.paddle.x, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION - 50);
-                // 确保新球也应用当前所有倍数
+                const b = this.ballPool.get();
+                b.setPosition(this.paddle.x, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION - 50);
                 b.setData('targetSpeed', baseSpeed * totalMultiplier);
                 this.balls.add(b);
                 this.showLaunchInstruction();
@@ -665,17 +690,26 @@ export class GameScene extends Phaser.Scene {
     }
 
     shutdown(): void {
-        // Clean up paddle event listeners to prevent memory leaks
+        // Clean up paddle event listeners
         if (this.paddle) {
             this.paddle.cleanupEventListeners();
         }
-        // Clean up HUD resize listener
+        // Clean up HUD
         if (this.hud) {
             this.hud.shutdown();
         }
         // Clean up particle system
         if (this.particles) {
             this.particles.destroy();
+        }
+        // Release all pooled objects
+        if (this.ballPool) {
+            this.ballPool.releaseAll();
+            this.ballPool.destroy();
+        }
+        if (this.powerUpPool) {
+            this.powerUpPool.releaseAll();
+            this.powerUpPool.destroy();
         }
     }
 }

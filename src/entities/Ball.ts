@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GameConfig } from '../config/GameConfig';
 import { Paddle } from './Paddle';
 import { audioManager } from '../audio/AudioManager';
+import { GameScene } from '../scenes/GameScene';
 
 export class Ball extends Phaser.Physics.Arcade.Sprite {
     public isFireball: boolean = false;
@@ -9,10 +10,13 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     private fireEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
     private trailScale: number = 1.0;
     private lastPaddleHitTime: number = 0;
+    private isPooledActive: boolean = false;
+    private sceneRef: Phaser.Scene;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, 'ball');
 
+        this.sceneRef = scene;
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
@@ -20,29 +24,23 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         (this.body as Phaser.Physics.Arcade.Body).onWorldBounds = true;
         this.setBounce(1, 1);
 
-        // 初始化尺寸 (基于高分辨率纹理半径 128)
         this.setCircle(128);
         this.setDisplaySize(GameConfig.BALL_RADIUS * 2, GameConfig.BALL_RADIUS * 2);
 
-        // 创建拖尾粒子发射器
         this.trailEmitter = scene.add.particles(0, 0, 'particle', {
             lifespan: 200,
-            // 使用回调函数确保粒子在发射瞬间获取最新的缩放值
             scale: {
                 onEmit: () => this.trailScale,
-                // 使用平方根衰减，让颗粒在生命周期的大部分时间内保持较大的尺寸
-                onUpdate: (p: any, k: string, t: number) => this.trailScale * Math.sqrt(1 - t)
-            } as any,
-            alpha: { start: 0.6, end: 0 }, // 满透明度开始，让拖尾更凝实
+                onUpdate: (p: Phaser.GameObjects.Particles.Particle, _key: string, t: number) => this.trailScale * Math.sqrt(1 - t)
+            },
+            alpha: { start: 0.6, end: 0 },
             blendMode: 'ADD',
             frequency: 10,
             follow: this
         });
-        // 确保发射器本身不缩放，这样 follow 逻辑就不会产生坐标偏移
         this.trailEmitter.setDepth(this.depth - 1);
         this.trailEmitter.setScale(1);
 
-        // 创建火球火焰发射器
         this.fireEmitter = scene.add.particles(0, 0, 'particle', {
             lifespan: 400,
             speed: { min: 50, max: 150 },
@@ -58,8 +56,10 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
 
         this.setData('state', 'READY');
         if (this.body) {
-            this.body.enable = false; // 初始状态禁用物理，防止抖动
+            this.body.enable = false;
         }
+
+        this.setPoolActive(false);
     }
 
     launch() {
@@ -78,14 +78,15 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     override update() {
         const state = this.getData('state');
         if (state === 'READY') {
-            const paddle = (this.scene as any).paddle;
+            const gameScene = this.scene as GameScene;
+            const paddle = gameScene.paddle;
             if (paddle) {
                 this.setPosition(paddle.x, paddle.y - paddle.displayHeight / 2 - this.displayHeight / 2);
                 if (this.body) this.body.updateFromGameObject();
             }
-            this.trailEmitter.stop(); // 准备状态不显示拖尾
+            this.trailEmitter.stop();
         } else if (state === 'MOVING') {
-            this.trailEmitter.start(); // 移动状态开启拖尾
+            this.trailEmitter.start();
             this.updateTrailEffect();
             this.normalizeSpeed();
         }
@@ -219,10 +220,50 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         audioManager.play('paddle');
     }
 
-    override destroy(fromScene?: boolean) {
+    // Pool methods
+    setPoolActive(active: boolean): void {
+        this.isPooledActive = active;
+        if (!active) {
+            this.setData('state', 'READY');
+            this.setData('targetSpeed', GameConfig.BALL_BASE_SPEED);
+            this.isFireball = false;
+            this.setTint(0xffffff);
+            this.fireEmitter.stop();
+            this.trailEmitter.stop();
+            if (this.body) {
+                this.body.enable = false;
+                this.body.velocity.set(0, 0);
+            }
+            this.setVisible(false);
+        } else {
+            this.setVisible(true);
+        }
+    }
+
+    onRelease(): void {
+        this.setPosition(0, -100);
+        if (this.body) {
+            this.body.enable = false;
+        }
+    }
+
+    isPoolActive(): boolean {
+        return this.isPooledActive;
+    }
+
+    override destroy(fromScene?: boolean): void {
+        if (!this.sceneRef) return;
+        
         if (this.trailEmitter) {
             this.trailEmitter.destroy();
         }
+        if (this.fireEmitter) {
+            this.fireEmitter.destroy();
+        }
         super.destroy(fromScene);
+    }
+
+    getScene(): Phaser.Scene {
+        return this.sceneRef;
     }
 }

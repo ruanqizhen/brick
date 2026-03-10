@@ -1,13 +1,17 @@
 import Phaser from 'phaser';
 import { PowerUpType } from '../entities/PowerUp';
 
+interface ScoreContainer extends Phaser.GameObjects.Container {
+    scoreValue: Phaser.GameObjects.Text;
+}
+
 export class HUD extends Phaser.GameObjects.Container {
     private scoreText!: Phaser.GameObjects.Text;
     private livesText!: Phaser.GameObjects.Text;
     private levelText!: Phaser.GameObjects.Text;
     private score: number = 0;
     private lives: number = 3;
-    private scoreContainer!: Phaser.GameObjects.Container;
+    private scoreContainer!: ScoreContainer;
 
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
@@ -52,8 +56,8 @@ export class HUD extends Phaser.GameObjects.Container {
         scene.scale.on('resize', this.handleResize, this);
     }
 
-    private createScorePanel(scene: Phaser.Scene, x: number, y: number): Phaser.GameObjects.Container {
-        const container = scene.add.container(x, y);
+    private createScorePanel(scene: Phaser.Scene, x: number, y: number): ScoreContainer {
+        const container = scene.add.container(x, y) as ScoreContainer;
 
         // Background with gradient effect
         const bg = scene.add.rectangle(0, 0, 220, 60, 0x1a1a3e, 0.9);
@@ -84,22 +88,19 @@ export class HUD extends Phaser.GameObjects.Container {
 
         container.add([bg, label, scoreValue]);
         container.setSize(220, 60);
-
-        // Store reference for updates
-        (container as any).scoreValue = scoreValue;
+        container.scoreValue = scoreValue;
 
         return container;
     }
 
     updateScore(points: number) {
         this.score += points;
-        const scoreValue = (this.scoreContainer as any).scoreValue as Phaser.GameObjects.Text;
-        if (scoreValue) {
-            scoreValue.setText(this.score.toLocaleString());
+        if (this.scoreContainer.scoreValue) {
+            this.scoreContainer.scoreValue.setText(this.score.toLocaleString());
 
             // Animate on score update
             this.scene.tweens.add({
-                targets: scoreValue,
+                targets: this.scoreContainer.scoreValue,
                 scaleX: 1.2,
                 scaleY: 1.2,
                 duration: 100,

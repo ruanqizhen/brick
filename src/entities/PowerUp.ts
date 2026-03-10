@@ -10,6 +10,8 @@ export type PowerUpType =
 export class PowerUp extends Phaser.Physics.Arcade.Sprite {
     public powerUpType: PowerUpType;
     private iconText!: Phaser.GameObjects.Text;
+    private isPooledActive: boolean = false;
+    private sceneRef: Phaser.Scene;
 
     constructor(scene: Phaser.Scene, x: number, y: number, type: PowerUpType) {
         // Create texture for this powerup type if not exists
@@ -19,16 +21,17 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
         }
 
         super(scene, x, y, textureKey);
+        this.sceneRef = scene;
         this.powerUpType = type;
 
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
-        this.setVelocityY(200); // 向下掉落
-        this.setCircle(25); // Circular collision
+        this.setVelocityY(200);
+        this.setCircle(25);
 
-        // Add emoji icon overlay (large and prominent)
         this.createIconText(scene);
+        this.setPoolActive(false);
     }
 
     private createIconText(scene: Phaser.Scene): void {
@@ -45,21 +48,76 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
     }
 
     override update(): void {
-        // Sync icon position with sprite
         if (this.iconText) {
             this.iconText.setPosition(this.x, this.y);
         }
 
-        if (this.y > (this.scene.game.config.height as number)) {
-            this.destroy();
+        if (this.isPooledActive && this.y > (this.scene.game.config.height as number)) {
+            this.setVisible(false);
+            this.setPoolActive(false);
         }
     }
 
+    // Pool methods
+    setPoolActive(active: boolean): void {
+        this.isPooledActive = active;
+        this.setVisible(active);
+        if (!active) {
+            this.setPosition(0, -100);
+            this.setVelocity(0, 0);
+            if (this.body) {
+                this.body.enable = false;
+            }
+        } else {
+            if (this.body) {
+                this.body.enable = true;
+                this.setVelocityY(200);
+            }
+        }
+    }
+
+    onRelease(): void {
+        this.setPosition(0, -100);
+        if (this.body) {
+            this.body.enable = false;
+        }
+    }
+
+    isPoolActive(): boolean {
+        return this.isPooledActive;
+    }
+
+    /**
+     * Set the powerup type and update appearance
+     */
+    setPowerUpType(type: PowerUpType): void {
+        this.powerUpType = type;
+        const textureKey = `powerup_${type}`;
+        if (!this.sceneRef.textures.exists(textureKey)) {
+            PowerUp.createPowerUpTexture(this.sceneRef, type, textureKey);
+        }
+        this.setTexture(textureKey);
+        
+        // Update icon text
+        if (this.iconText) {
+            this.iconText.destroy();
+        }
+        this.createIconText(this.sceneRef);
+    }
+
     override destroy(fromScene?: boolean): void {
+        if (!this.sceneRef) return;
         if (this.iconText) {
             this.iconText.destroy();
         }
         super.destroy(fromScene);
+    }
+
+    /**
+     * Get the scene reference
+     */
+    getScene(): Phaser.Scene {
+        return this.sceneRef;
     }
 
     /**

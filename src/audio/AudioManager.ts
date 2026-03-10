@@ -18,7 +18,8 @@ export class AudioManager {
         if (this.isUnlocked) return;
 
         try {
-            this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioContextClass();
 
             // Create audio pipeline: sources -> compressor -> master -> destination
             this.compressor = this.ctx.createDynamicsCompressor();
