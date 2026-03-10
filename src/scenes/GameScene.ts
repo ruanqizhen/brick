@@ -212,10 +212,14 @@ export class GameScene extends Phaser.Scene {
             if (isIndestructible) {
                 audioManager.play('indestructible');
                 if (isFireball) {
-                    brick.destroy();
+                    const bx = brick.x;
+                    const by = brick.y;
                     this.hud.updateScore(500);
-                    this.particles.spawnBrickParticles(brick.x, brick.y, 0xaaaaaa);
+                    this.particles.spawnBrickParticles(bx, by, 0xaaaaaa);
                     ScreenShake.shake(this.cameras.main, 0.008, 150);
+                    // 从物理组移除并归还到对象池（不使用 destroy）
+                    this.bricks.remove(brick, false);
+                    this.brickPool.release(brick);
                 }
                 return;
             }
@@ -231,12 +235,15 @@ export class GameScene extends Phaser.Scene {
                 this.hud.updateScore(res.points);
 
                 // 砖块销毁逻辑：从组和场景中移除，并回收到池
+                // 在回收前先读取声音类型
+                const soundType = brick.hp > 1 ? 'hard' : 'normal';
+
                 if (res.destroyed) {
                     this.bricks.remove(brick, false);
                     this.brickPool.release(brick);
                 }
 
-                audioManager.play(brick.hp > 1 ? 'hard' : 'normal');
+                audioManager.play(soundType as any);
 
                 if (this.particles) {
                     try {
@@ -689,6 +696,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     private showLaunchInstruction() {
+        // 先清除旧指示文本，防止重复创建导致内存泄漏
+        this.clearLaunchInstruction();
         this.add.text(DESIGN_WIDTH / 2, DESIGN_HEIGHT * 0.5, 'Click to Launch', { fontSize: '32px', color: '#ffffff' })
             .setOrigin(0.5).setName('instruction');
     }

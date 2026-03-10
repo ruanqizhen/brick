@@ -5,10 +5,13 @@ import { saveManager } from '../storage/SaveManager';
 export class MenuScene extends Phaser.Scene {
     private highScoreText!: Phaser.GameObjects.Text;
     private titleText!: Phaser.GameObjects.Text;
+    private subtitleText!: Phaser.GameObjects.Text;
     private startBtn!: Phaser.GameObjects.Container;
     private instructions!: Phaser.GameObjects.Text;
     private homepageLink!: Phaser.GameObjects.Text;
     private particles!: Phaser.GameObjects.Particles.ParticleEmitter;
+    private bgGradient!: Phaser.GameObjects.Rectangle;
+    private bgOverlay!: Phaser.GameObjects.Rectangle;
 
     constructor() {
         super('MenuScene');
@@ -18,48 +21,98 @@ export class MenuScene extends Phaser.Scene {
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
 
-        // Unlock audio on first interaction in this scene
+        // Unlock audio on first interaction
         this.input.once('pointerdown', () => {
             audioManager.unlock();
         });
 
-        // Create animated background gradient
-        this.createBackground(width, height);
+        // ============================================
+        // BACKGROUND — Deep space with animated color shift
+        // ============================================
+        this.bgGradient = this.add.rectangle(0, 0, width, height, 0x050510);
+        this.bgGradient.setOrigin(0);
 
-        // Create title with gradient and glow effect
-        this.titleText = this.add.text(width / 2, height * 0.22, '弹力砖块', {
-            fontSize: '88px',
+        // Subtle colored overlay that shifts hue
+        this.bgOverlay = this.add.rectangle(0, 0, width, height, 0x1a0030, 0.3);
+        this.bgOverlay.setOrigin(0);
+
+        // Animated overlay color cycling
+        this.tweens.add({
+            targets: this.bgOverlay,
+            alpha: { from: 0.15, to: 0.35 },
+            duration: 4000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+
+        // Floating neon particles (multi-color)
+        this.particles = this.add.particles(0, 0, 'particle', {
+            x: { min: 0, max: width },
+            y: { min: 0, max: height },
+            lifespan: 6000,
+            speed: { min: 8, max: 25 },
+            scale: { start: 0.4, end: 0 },
+            alpha: { start: 0.5, end: 0 },
+            blendMode: 'ADD',
+            quantity: 2,
+            frequency: 80,
+            tint: [0x00ffff, 0xff00ff, 0x8844ff, 0x00ff88]
+        });
+
+        // ============================================
+        // TITLE — Glowing animated title
+        // ============================================
+        this.titleText = this.add.text(width / 2, height * 0.2, '弹力砖块', {
+            fontSize: '96px',
             fontFamily: '"Microsoft YaHei", "PingFang SC", sans-serif',
             color: '#ffffff',
             fontStyle: 'bold',
-            stroke: '#00d4ff',
-            strokeThickness: 12,
+            stroke: '#8844ff',
+            strokeThickness: 8,
             shadow: {
-                blur: 20,
-                color: '#00d4ff',
+                blur: 30,
+                color: '#aa55ff',
                 fill: true,
                 offsetX: 0,
                 offsetY: 0
             }
         }).setOrigin(0.5);
 
-        // Add subtitle
-        const subtitle = this.add.text(width / 2, height * 0.29, 'BREAKOUT', {
-            fontSize: '28px',
-            fontFamily: '"Arial", sans-serif',
-            color: '#88ccff',
-            letterSpacing: 15
+        // Title glow pulse
+        this.tweens.add({
+            targets: this.titleText,
+            scaleX: { from: 1, to: 1.03 },
+            scaleY: { from: 1, to: 1.03 },
+            duration: 2000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+
+        // Subtitle with letter spacing
+        this.subtitleText = this.add.text(width / 2, height * 0.275, 'B R E A K O U T', {
+            fontSize: '24px',
+            fontFamily: '"Courier New", monospace',
+            color: '#00ffff',
+            shadow: {
+                blur: 10,
+                color: '#00ffff',
+                fill: true,
+                offsetX: 0,
+                offsetY: 0
+            }
         }).setOrigin(0.5);
 
-        // High score display with modern style - load async but don't block
+        // High score — golden glow
         this.highScoreText = this.add.text(width / 2, height * 0.36, '🏆 最高分：0', {
             fontSize: '28px',
             fontFamily: '"Microsoft YaHei", sans-serif',
             color: '#ffd700',
             fontStyle: 'bold',
             shadow: {
-                blur: 10,
-                color: '#ffd700',
+                blur: 12,
+                color: '#ffaa00',
                 fill: true,
                 offsetX: 0,
                 offsetY: 0
@@ -72,26 +125,23 @@ export class MenuScene extends Phaser.Scene {
             }
         });
 
-        // Start button with modern gradient effect
-        this.startBtn = this.createModernButton(width / 2, height * 0.5, '开始游戏', 0x00d4ff, 0x0099cc, () => {
-            // Immediate feedback: disable and slightly dim
+        // ============================================
+        // BUTTON — Pill-shaped gradient button
+        // ============================================
+        this.startBtn = this.createPillButton(width / 2, height * 0.5, '开始游戏', 0x8844ff, 0x00ccff, () => {
             this.startBtn.setAlpha(0.8);
-
-            // Play launch sound
             audioManager.play('launch');
-
-            // Transition to game
             this.time.delayedCall(100, () => {
                 this.scene.start('GameScene');
             });
         });
 
-        // Instructions with modern styling
-        this.instructions = this.add.text(width / 2, height * 0.75,
+        // Instructions
+        this.instructions = this.add.text(width / 2, height * 0.72,
             '鼠标 / 触摸移动 • 点击发射\nESC / P 暂停游戏', {
             fontSize: '22px',
             fontFamily: '"Microsoft YaHei", sans-serif',
-            color: '#6688aa',
+            color: '#667799',
             align: 'center',
             lineSpacing: 12
         }).setOrigin(0.5);
@@ -100,16 +150,16 @@ export class MenuScene extends Phaser.Scene {
         this.homepageLink = this.add.text(width / 2, height * 0.85, '🌐 访问我的个人主页', {
             fontSize: '20px',
             fontFamily: '"Microsoft YaHei", sans-serif',
-            color: '#88ccff'
+            color: '#6688aa'
         }).setOrigin(0.5);
 
         this.homepageLink.setInteractive({ useHandCursor: true });
         this.homepageLink.on('pointerover', () => {
-            this.homepageLink.setColor('#ffffff');
-            this.homepageLink.setShadow(0, 0, '#00d4ff', 10, true, true);
+            this.homepageLink.setColor('#00ffff');
+            this.homepageLink.setShadow(0, 0, '#00ffff', 10, true, true);
         });
         this.homepageLink.on('pointerout', () => {
-            this.homepageLink.setColor('#88ccff');
+            this.homepageLink.setColor('#6688aa');
             this.homepageLink.setShadow(0, 0, '#000000', 0);
         });
         this.homepageLink.on('pointerdown', () => {
@@ -120,83 +170,66 @@ export class MenuScene extends Phaser.Scene {
         this.scale.on('resize', this.handleResize, this);
     }
 
-    private createBackground(width: number, height: number): void {
-        // Dark gradient background
-        const bg = this.add.rectangle(0, 0, width, height, 0x0a0a1a);
-        bg.setOrigin(0);
-
-        // Add grid pattern overlay
-        const grid = this.add.grid(
-            width / 2, height / 2,
-            width, height,
-            50, 50,
-            0x1a1a3e, 0.3,
-            0x0a0a1a, 0
-        );
-
-        // Create floating particles
-        this.particles = this.add.particles(0, 0, 'particle', {
-            x: { min: 0, max: width },
-            y: { min: 0, max: height },
-            lifespan: 5000,
-            speed: { min: 10, max: 30 },
-            scale: { start: 0.3, end: 0 },
-            alpha: { start: 0.5, end: 0 },
-            blendMode: 'ADD',
-            quantity: 2,
-            frequency: 100
-        });
-    }
-
-    private createModernButton(x: number, y: number, text: string, color1: number, color2: number, onClick: () => void): Phaser.GameObjects.Container {
+    private createPillButton(x: number, y: number, text: string, color1: number, color2: number, onClick: () => void): Phaser.GameObjects.Container {
         const container = this.add.container(x, y);
-        const btnWidth = 280;
-        const btnHeight = 70;
+        const btnWidth = 320;
+        const btnHeight = 72;
+        const radius = btnHeight / 2;
 
-        // Gradient background using multiple rectangles
+        // Main pill background
         const bg = this.add.rectangle(0, 0, btnWidth, btnHeight, color1);
         bg.setOrigin(0.5);
-        bg.setStrokeStyle(3, 0xffffff, 0.8);
 
-        // Inner highlight
-        const highlight = this.add.rectangle(-btnWidth / 2 + 10, -btnHeight / 2 + 10, btnWidth - 20, btnHeight / 2 - 10, 0xffffff, 0.15);
-        highlight.setOrigin(0);
+        // Create the pill shape mask effect with rounded corners
+        // Since Phaser rectangles can't have rounded corners easily, we layer
+        const leftCap = this.add.circle(-btnWidth / 2 + radius, 0, radius, color1);
+        const rightCap = this.add.circle(btnWidth / 2 - radius, 0, radius, color2);
 
-        // Button text with shadow
+        // Inner highlight (top half lighter)
+        const highlight = this.add.rectangle(0, -btnHeight * 0.15, btnWidth - 20, btnHeight * 0.35, 0xffffff, 0.12);
+        highlight.setOrigin(0.5);
+
+        // Glowing border line
+        const borderGlow = this.add.rectangle(0, 0, btnWidth + 4, btnHeight + 4, 0x00000, 0);
+        borderGlow.setOrigin(0.5);
+        borderGlow.setStrokeStyle(2, 0xffffff, 0.3);
+
+        // Button text
         const btnText = this.add.text(0, 0, text, {
             fontSize: '36px',
             fontFamily: '"Microsoft YaHei", sans-serif',
             color: '#ffffff',
             fontStyle: 'bold',
             shadow: {
-                blur: 8,
+                blur: 10,
                 color: '#000000',
                 fill: true,
-                offsetX: 2,
+                offsetX: 0,
                 offsetY: 2
             }
         }).setOrigin(0.5);
 
-        container.add([bg, highlight, btnText]);
-        container.setSize(btnWidth, btnHeight);
+        container.add([leftCap, bg, rightCap, highlight, borderGlow, btnText]);
+        container.setSize(btnWidth + radius * 2, btnHeight);
         container.setDepth(100);
 
-        // Set interaction on the background instead of the container for better stability
+        // Make all main shapes interactive
         bg.setInteractive({ useHandCursor: true });
+        leftCap.setInteractive({ useHandCursor: true });
+        rightCap.setInteractive({ useHandCursor: true });
 
-        // Hover effects targeting the container for visual consistency
-        bg.on('pointerover', () => {
+        const hoverIn = () => {
             this.tweens.add({
                 targets: container,
-                scaleX: 1.05,
-                scaleY: 1.05,
+                scaleX: 1.06,
+                scaleY: 1.06,
                 duration: 200,
                 ease: 'Back.out'
             });
-            bg.setFillStyle(0x00e0ff); // Modern cyan hover
-        });
+            borderGlow.setStrokeStyle(3, 0x00ffff, 0.8);
+        };
 
-        bg.on('pointerout', () => {
+        const hoverOut = () => {
             this.tweens.add({
                 targets: container,
                 scaleX: 1,
@@ -204,20 +237,23 @@ export class MenuScene extends Phaser.Scene {
                 duration: 200,
                 ease: 'Back.out'
             });
-            bg.setFillStyle(color1);
-        });
+            borderGlow.setStrokeStyle(2, 0xffffff, 0.3);
+        };
 
-        bg.on('pointerdown', () => {
+        const pointerDown = () => {
             this.tweens.add({
                 targets: container,
-                scaleX: 0.98,
-                scaleY: 0.98,
+                scaleX: 0.97,
+                scaleY: 0.97,
                 duration: 100
             });
-        });
+        };
 
-        bg.on('pointerup', () => {
-            onClick();
+        [bg, leftCap, rightCap].forEach(shape => {
+            shape.on('pointerover', hoverIn);
+            shape.on('pointerout', hoverOut);
+            shape.on('pointerdown', pointerDown);
+            shape.on('pointerup', onClick);
         });
 
         return container;
@@ -227,10 +263,13 @@ export class MenuScene extends Phaser.Scene {
         const width = gameSize.width;
         const height = gameSize.height;
 
-        this.titleText.setPosition(width / 2, height * 0.22);
+        this.bgGradient.setSize(width, height);
+        this.bgOverlay.setSize(width, height);
+        this.titleText.setPosition(width / 2, height * 0.2);
+        this.subtitleText.setPosition(width / 2, height * 0.275);
         this.highScoreText.setPosition(width / 2, height * 0.36);
         this.startBtn.setPosition(width / 2, height * 0.5);
-        this.instructions.setPosition(width / 2, height * 0.75);
+        this.instructions.setPosition(width / 2, height * 0.72);
         this.homepageLink.setPosition(width / 2, height * 0.85);
     }
 

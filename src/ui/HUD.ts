@@ -16,33 +16,33 @@ export class HUD extends Phaser.GameObjects.Container {
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
 
-        // Score container with modern styling
+        // Score container — frosted glass pill
         this.scoreContainer = this.createScorePanel(scene, 20, 20);
 
-        // Lives display
-        this.livesText = scene.add.text(scene.cameras.main.width - 30, 35, '❤️ 生命：3', {
-            fontSize: '28px',
-            fontFamily: '"Microsoft YaHei", sans-serif',
-            color: '#ff6b6b',
+        // Lives display — modern pill with hearts
+        this.livesText = scene.add.text(scene.cameras.main.width - 30, 35, '♥ 3', {
+            fontSize: '30px',
+            fontFamily: '"Courier New", monospace',
+            color: '#ff4488',
             fontStyle: 'bold',
             shadow: {
-                blur: 8,
-                color: '#ff0000',
+                blur: 12,
+                color: '#ff0044',
                 fill: true,
-                offsetX: 2,
-                offsetY: 2
+                offsetX: 0,
+                offsetY: 0
             }
         }).setOrigin(1, 0.5);
 
-        // Level display (Centered)
-        this.levelText = scene.add.text(scene.cameras.main.width / 2, 35, '第 1 关', {
-            fontSize: '32px',
-            fontFamily: '"Microsoft YaHei", sans-serif',
-            color: '#ffd700',
+        // Level display — centered, monospace, neon glow
+        this.levelText = scene.add.text(scene.cameras.main.width / 2, 35, 'LV 01', {
+            fontSize: '28px',
+            fontFamily: '"Courier New", monospace',
+            color: '#00ffff',
             fontStyle: 'bold',
             shadow: {
                 blur: 15,
-                color: '#ffd700',
+                color: '#00aaff',
                 fill: true,
                 offsetX: 0,
                 offsetY: 0
@@ -59,27 +59,28 @@ export class HUD extends Phaser.GameObjects.Container {
     private createScorePanel(scene: Phaser.Scene, x: number, y: number): ScoreContainer {
         const container = scene.add.container(x, y) as ScoreContainer;
 
-        // Background with gradient effect
-        const bg = scene.add.rectangle(0, 0, 220, 60, 0x1a1a3e, 0.9);
-        bg.setStrokeStyle(2, 0x00d4ff, 0.6);
+        // Frosted glass pill background
+        const bg = scene.add.rectangle(0, 0, 240, 56, 0x111133, 0.7);
+        bg.setStrokeStyle(1.5, 0x4444aa, 0.5);
         bg.setOrigin(0);
 
-        // Score label
-        const label = scene.add.text(15, 30, '得分', {
-            fontSize: '18px',
-            fontFamily: '"Microsoft YaHei", sans-serif',
-            color: '#88aaff'
+        // Score label — dim accent
+        const label = scene.add.text(15, 28, 'SCORE', {
+            fontSize: '14px',
+            fontFamily: '"Courier New", monospace',
+            color: '#6677aa',
+            fontStyle: 'bold'
         }).setOrigin(0, 0.5);
 
-        // Score value
-        const scoreValue = scene.add.text(65, 30, '0', {
-            fontSize: '32px',
-            fontFamily: '"Microsoft YaHei", sans-serif',
-            color: '#00d4ff',
+        // Score value — bright monospace digits
+        const scoreValue = scene.add.text(90, 28, '0', {
+            fontSize: '30px',
+            fontFamily: '"Courier New", monospace',
+            color: '#00ffcc',
             fontStyle: 'bold',
             shadow: {
                 blur: 10,
-                color: '#00d4ff',
+                color: '#00ffaa',
                 fill: true,
                 offsetX: 0,
                 offsetY: 0
@@ -87,7 +88,7 @@ export class HUD extends Phaser.GameObjects.Container {
         }).setOrigin(0, 0.5);
 
         container.add([bg, label, scoreValue]);
-        container.setSize(220, 60);
+        container.setSize(240, 56);
         container.scoreValue = scoreValue;
 
         return container;
@@ -112,7 +113,8 @@ export class HUD extends Phaser.GameObjects.Container {
 
     updateLives(lives: number) {
         this.lives = lives;
-        this.livesText.setText(`❤️ 生命：${lives}`);
+        const hearts = '♥'.repeat(Math.max(0, lives));
+        this.livesText.setText(hearts + ' ' + lives);
 
         // Flash effect when life lost
         if (lives < 3) {
@@ -127,13 +129,14 @@ export class HUD extends Phaser.GameObjects.Container {
     }
 
     updateLevel(level: number) {
-        this.levelText.setText(`第 ${level} 关`);
+        const lvStr = level < 10 ? `0${level}` : `${level}`;
+        this.levelText.setText(`LV ${lvStr}`);
 
-        // Slight scale effect on level change
+        // Scale + glow pulse on level change
         this.scene.tweens.add({
             targets: this.levelText,
-            scale: 1.2,
-            duration: 200,
+            scale: 1.3,
+            duration: 300,
             yoyo: true,
             ease: 'Back.out'
         });

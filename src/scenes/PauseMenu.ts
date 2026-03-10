@@ -19,49 +19,56 @@ export class PauseMenu extends Phaser.Scene {
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
 
-        // Create semi-transparent overlay with blur effect
-        this.overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.85);
+        // Dark overlay with higher blur
+        this.overlay = this.add.rectangle(0, 0, width, height, 0x050510, 0.88);
         this.overlay.setOrigin(0);
         this.overlay.setDepth(1000);
 
-        // Create background grid animation
-        this.createAnimatedBackground(width, height);
+        // Floating neon particles
+        this.particles = this.add.particles(0, 0, 'particle', {
+            x: { min: 0, max: width },
+            y: { min: 0, max: height },
+            lifespan: 4000,
+            speed: { min: 15, max: 40 },
+            scale: { start: 0.3, end: 0 },
+            alpha: { start: 0.4, end: 0 },
+            blendMode: 'ADD',
+            quantity: 2,
+            frequency: 120,
+            tint: [0x8844ff, 0x00ffff, 0xff44aa]
+        });
+        (this.particles as any).setDepth?.(1000);
 
-        // Main pause menu container
+        // Main container
         this.pauseContainer = this.add.container(width / 2, height / 2);
         this.pauseContainer.setDepth(1001);
 
-        // Modern glassmorphism panel
-        this.panelBg = this.add.rectangle(0, 0, 550, 450, 0x1a1a3e, 0.95);
-        this.panelBg.setStrokeStyle(3, 0x00d4ff, 0.5);
+        // Frosted glass panel with rounded border
+        this.panelBg = this.add.rectangle(0, 0, 520, 420, 0x111133, 0.85);
+        this.panelBg.setStrokeStyle(2, 0x4444aa, 0.6);
         this.panelBg.setOrigin(0.5);
 
-        // Add corner decorations
-        this.addCornerDecorations(0, 0, 275, 225);
-
-        // Title with gradient glow
-        this.titleText = this.add.text(0, -160, '游戏暂停', {
-            fontSize: '68px',
+        // Title with neon glow
+        this.titleText = this.add.text(0, -155, '游戏暂停', {
+            fontSize: '64px',
             fontFamily: '"Microsoft YaHei", sans-serif',
-            color: '#00d4ff',
+            color: '#ffffff',
             fontStyle: 'bold',
+            stroke: '#8844ff',
+            strokeThickness: 4,
             shadow: {
-                blur: 20,
-                color: '#00d4ff',
+                blur: 25,
+                color: '#aa55ff',
                 fill: true,
                 offsetX: 0,
                 offsetY: 0
             }
         }).setOrigin(0.5);
 
-        // Resume button (green)
-        this.resumeBtn = this.createModernButton(0, -60, '继续游戏', 0x00cc66, 0x009944, () => this.resumeGame());
-
-        // Restart button (orange)
-        this.restartBtn = this.createModernButton(0, 30, '重新开始', 0xff9900, 0xcc6600, () => this.restartGame());
-
-        // Menu button (blue)
-        this.menuBtn = this.createModernButton(0, 120, '返回菜单', 0x0099cc, 0x006699, () => this.goToMenu());
+        // Buttons — pill-shaped with gradient
+        this.resumeBtn = this.createButton(0, -50, '继续游戏', 0x00cc66, () => this.resumeGame());
+        this.restartBtn = this.createButton(0, 35, '重新开始', 0xff8800, () => this.restartGame());
+        this.menuBtn = this.createButton(0, 120, '返回菜单', 0x4488ff, () => this.goToMenu());
 
         this.pauseContainer.add([this.panelBg, this.titleText, this.resumeBtn, this.restartBtn, this.menuBtn]);
 
@@ -70,10 +77,9 @@ export class PauseMenu extends Phaser.Scene {
         this.input.keyboard?.on('keydown-P', () => this.resumeGame());
         this.input.keyboard?.on('keydown-ENTER', () => this.resumeGame());
 
-        // Game is paused
         this.isPaused = true;
 
-        // Animate menu appearance
+        // Animate in
         this.pauseContainer.setScale(0.8);
         this.pauseContainer.setAlpha(0);
 
@@ -81,79 +87,46 @@ export class PauseMenu extends Phaser.Scene {
             targets: this.pauseContainer,
             scale: 1,
             alpha: 1,
-            duration: 400,
+            duration: 350,
             ease: 'Back.out'
         });
 
-        // Stagger animation for buttons
-        this.tweens.add({
-            targets: [this.resumeBtn, this.restartBtn, this.menuBtn],
-            alpha: 1,
-            from: 0,
-            duration: 250,
-            delay: 150,
-            stagger: 120
+        // Stagger button appearance
+        [this.resumeBtn, this.restartBtn, this.menuBtn].forEach((btn, i) => {
+            btn.setAlpha(0);
+            btn.x = -40;
+            this.tweens.add({
+                targets: btn,
+                alpha: 1,
+                x: 0,
+                duration: 250,
+                delay: 150 + i * 100,
+                ease: 'Power2'
+            });
         });
 
-        // Listen for resize
         this.scale.on('resize', this.handleResize, this);
     }
 
-    private createAnimatedBackground(width: number, height: number): void {
-        // Floating particles
-        this.particles = this.add.particles(0, 0, 'particle', {
-            x: { min: 0, max: width },
-            y: { min: 0, max: height },
-            lifespan: 4000,
-            speed: { min: 20, max: 50 },
-            scale: { start: 0.4, end: 0 },
-            alpha: { start: 0.4, end: 0 },
-            blendMode: 'ADD',
-            quantity: 3,
-            frequency: 150,
-            tint: [0x00d4ff, 0x0099ff, 0x0066ff]
-        });
-    }
-
-    private addCornerDecorations(x: number, y: number, halfW: number, halfH: number): void {
-        const cornerSize = 30;
-        const cornerColor = 0x00d4ff;
-        const cornerAlpha = 0.6;
-
-        // Top-left
-        const tl = this.add.rectangle(-halfW + 15, -halfH + 15, cornerSize, 3, cornerColor, cornerAlpha);
-        const tl2 = this.add.rectangle(-halfW + 15, -halfH + 15, 3, cornerSize, cornerColor, cornerAlpha);
-
-        // Top-right
-        const tr = this.add.rectangle(halfW - 15, -halfH + 15, cornerSize, 3, cornerColor, cornerAlpha);
-        const tr2 = this.add.rectangle(halfW - 15, -halfH + 15, 3, cornerSize, cornerColor, cornerAlpha);
-
-        // Bottom-left
-        const bl = this.add.rectangle(-halfW + 15, halfH - 15, cornerSize, 3, cornerColor, cornerAlpha);
-        const bl2 = this.add.rectangle(-halfW + 15, halfH - 15, 3, cornerSize, cornerColor, cornerAlpha);
-
-        // Bottom-right
-        const br = this.add.rectangle(halfW - 15, halfH - 15, cornerSize, 3, cornerColor, cornerAlpha);
-        const br2 = this.add.rectangle(halfW - 15, halfH - 15, 3, cornerSize, cornerColor, cornerAlpha);
-
-        this.pauseContainer.add([tl, tl2, tr, tr2, bl, bl2, br, br2]);
-    }
-
-    private createModernButton(x: number, y: number, label: string, color1: number, color2: number, callback: () => void): Phaser.GameObjects.Container {
+    private createButton(x: number, y: number, label: string, color: number, callback: () => void): Phaser.GameObjects.Container {
         const container = this.add.container(x, y);
-        const btnWidth = 300;
-        const btnHeight = 55;
+        const btnWidth = 280;
+        const btnHeight = 52;
 
-        const bg = this.add.rectangle(0, 0, btnWidth, btnHeight, color1);
+        const bg = this.add.rectangle(0, 0, btnWidth, btnHeight, color, 0.9);
         bg.setOrigin(0.5);
-        bg.setStrokeStyle(2, 0xffffff, 0.5);
 
-        // Inner highlight
-        const highlight = this.add.rectangle(-btnWidth / 2 + 8, -btnHeight / 2 + 8, btnWidth - 16, btnHeight / 2 - 8, 0xffffff, 0.12);
-        highlight.setOrigin(0);
+        // Highlight
+        const highlight = this.add.rectangle(0, -btnHeight * 0.15, btnWidth - 16, btnHeight * 0.3, 0xffffff, 0.12);
+        highlight.setOrigin(0.5);
+
+        // Border glow
+        const border = this.add.rectangle(0, 0, btnWidth + 2, btnHeight + 2, 0x000000, 0);
+        border.setOrigin(0.5);
+        border.setStrokeStyle(1.5, 0xffffff, 0.25);
 
         const text = this.add.text(0, 0, label, {
-            fontSize: '28px',
+            fontSize: '26px',
             fontFamily: '"Microsoft YaHei", sans-serif',
             color: '#ffffff',
             fontStyle: 'bold',
@@ -161,31 +134,25 @@ export class PauseMenu extends Phaser.Scene {
                 blur: 6,
                 color: '#000000',
                 fill: true,
-                offsetX: 1,
+                offsetX: 0,
                 offsetY: 1
             }
         }).setOrigin(0.5);
 
-        container.add([bg, highlight, text]);
+        container.add([bg, highlight, border, text]);
         container.setSize(btnWidth, btnHeight);
 
-        // Move interactivity to bg for better stability
         bg.setInteractive({ useHandCursor: true });
 
-        // Hover effects targeting the container
         bg.on('pointerover', () => {
             this.tweens.add({
                 targets: container,
-                scaleX: 1.03,
-                scaleY: 1.03,
+                scaleX: 1.04,
+                scaleY: 1.04,
                 duration: 150,
                 ease: 'Back.out'
             });
-            bg.setFillStyle(Phaser.Display.Color.GetColor(
-                Math.min(255, ((color1 >> 16) & 0xFF) + 30),
-                Math.min(255, ((color1 >> 8) & 0xFF) + 30),
-                Math.min(255, (color1 & 0xFF) + 30)
-            ));
+            border.setStrokeStyle(2, 0x00ffff, 0.8);
         });
 
         bg.on('pointerout', () => {
@@ -196,21 +163,19 @@ export class PauseMenu extends Phaser.Scene {
                 duration: 150,
                 ease: 'Back.out'
             });
-            bg.setFillStyle(color1);
+            border.setStrokeStyle(1.5, 0xffffff, 0.25);
         });
 
         bg.on('pointerdown', () => {
             this.tweens.add({
                 targets: container,
-                scaleX: 0.97,
-                scaleY: 0.97,
+                scaleX: 0.96,
+                scaleY: 0.96,
                 duration: 80
             });
         });
 
-        bg.on('pointerup', () => {
-            callback();
-        });
+        bg.on('pointerup', callback);
 
         return container;
     }
@@ -227,7 +192,6 @@ export class PauseMenu extends Phaser.Scene {
         if (this.isPaused) {
             this.isPaused = false;
 
-            // Animate out
             this.tweens.add({
                 targets: this.pauseContainer,
                 scale: 0.9,
@@ -239,7 +203,6 @@ export class PauseMenu extends Phaser.Scene {
                 }
             });
 
-            // Notify GameScene to resume
             const gameScene = this.scene.get('GameScene') as Phaser.Scene;
             gameScene.events.emit('resumeGame');
         }

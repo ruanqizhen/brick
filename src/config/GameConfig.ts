@@ -38,13 +38,13 @@ export const GameConfig = {
 
     // 颜色
     COLORS: {
-        BG: '#000010',
+        BG: '#050510',
         PADDLE: '#FFFFFF',
         BALL: '#FFFFFF',
-        BRICK_NORMAL: 0x4FC3F7,
-        BRICK_HARD_2: 0xEF6C00,
-        BRICK_HARD_3: 0xB71C1C,
-        BRICK_INDESTRUCTIBLE: 0xC0C0C0
+        BRICK_NORMAL: 0x00bcd4,
+        BRICK_HARD_2: 0xff6d00,
+        BRICK_HARD_3: 0xe91e63,
+        BRICK_INDESTRUCTIBLE: 0xb0bec5
     }
 };
 

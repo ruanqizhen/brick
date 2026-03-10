@@ -58,7 +58,7 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
 
         switch (this.brickType) {
             case 'INDESTRUCTIBLE':
-                color = 0xEEEEEE;
+                color = GameConfig.COLORS.BRICK_INDESTRUCTIBLE;
                 break;
             case 'HARD_3':
                 color = this._hp === 3 ? GameConfig.COLORS.BRICK_HARD_3 : (this._hp === 2 ? GameConfig.COLORS.BRICK_HARD_2 : 0xF9A825);

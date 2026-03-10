@@ -15,155 +15,200 @@ export class BootScene extends Phaser.Scene {
         // Create all procedural textures once
         const graphics = this.make.graphics({ x: 0, y: 0 });
 
-        // 1. Particle texture
+        // ============================================
+        // 1. PARTICLE — Soft gradient circle
+        // ============================================
         if (!this.textures.exists('particle')) {
+            const pSize = 32;
             graphics.clear();
-            graphics.fillStyle(0xffffff, 1);
-            graphics.fillCircle(8, 8, 8);
-            graphics.generateTexture('particle', 16, 16);
+            // Multi-layer soft circle for smooth falloff
+            for (let r = pSize / 2; r > 0; r -= 2) {
+                const alpha = (r / (pSize / 2)) * 0.8;
+                graphics.fillStyle(0xffffff, alpha);
+                graphics.fillCircle(pSize / 2, pSize / 2, r);
+            }
+            graphics.generateTexture('particle', pSize, pSize);
         }
 
-        // 2. Paddle texture (Light Wood / Beige with Curved Grain)
+        // ============================================
+        // 2. PADDLE — Crystal glass paddle
+        // ============================================
         if (!this.textures.exists('paddle')) {
             const pW = GameConfig.PADDLE_WIDTH;
             const pH = GameConfig.PADDLE_HEIGHT;
             graphics.clear();
 
-            // Base wood color (Warm Yellow / Golden Oak)
-            graphics.fillStyle(0xFAD55C);
-            graphics.fillRoundedRect(0, 0, pW, pH, 8);
+            // Outer glow halo (positioned within bounds)
+            graphics.fillStyle(0x44aaff, 0.08);
+            graphics.fillRoundedRect(0, 0, pW, pH, pH / 2);
 
-            // Curved Wood Grain Lines
-            graphics.lineStyle(1, 0x8B4513, 0.25);
-            for (let i = 0; i < 12; i++) {
-                const y = Phaser.Math.Between(4, pH - 4);
-                graphics.beginPath();
-                graphics.moveTo(2, y);
+            // Glass body — deep translucent blue
+            graphics.fillStyle(0x1a3366, 0.85);
+            graphics.fillRoundedRect(2, 1, pW - 4, pH - 2, pH / 2 - 1);
 
-                // Increased waviness for "curved" look
-                for (let x = 20; x < pW; x += 30) {
-                    const wave = Phaser.Math.Between(-3, 3);
-                    graphics.lineTo(x, y + wave);
-                }
-                graphics.lineTo(pW - 2, y);
-                graphics.strokePath();
-            }
+            // Inner glass layer — lighter
+            graphics.fillStyle(0x2255aa, 0.5);
+            graphics.fillRoundedRect(5, 3, pW - 10, pH - 6, (pH - 6) / 2);
 
-            // Subtle Knots
-            graphics.fillStyle(0x8B4513, 0.1);
-            for (let i = 0; i < 2; i++) {
-                const kX = Phaser.Math.Between(pW * 0.1, pW * 0.9);
-                const kY = Phaser.Math.Between(pH * 0.2, pH * 0.8);
-                graphics.fillEllipse(kX, kY, 12, 5);
-            }
+            // Top specular reflection — bright white streak
+            graphics.fillStyle(0xffffff, 0.45);
+            graphics.fillRoundedRect(pW * 0.12, 2, pW * 0.76, pH * 0.3, 4);
 
-            // High-quality Bevel/Highlights for light theme
-            // Top highlight
-            graphics.lineStyle(2, 0xFFFFFF, 0.5);
-            graphics.strokeLineShape(new Phaser.Geom.Line(5, 1, pW - 5, 1));
+            // Secondary mid-reflection
+            graphics.fillStyle(0x88ccff, 0.2);
+            graphics.fillRoundedRect(pW * 0.2, pH * 0.35, pW * 0.6, pH * 0.25, 3);
 
-            // Bottom shadow (Soft brown)
-            graphics.lineStyle(2, 0xA0522D, 0.3);
-            graphics.strokeLineShape(new Phaser.Geom.Line(5, pH - 1, pW - 5, pH - 1));
+            // Crystal edge highlight — top
+            graphics.lineStyle(1.5, 0xaaddff, 0.7);
+            graphics.beginPath();
+            graphics.arc(pH / 2, pH / 2, pH / 2 - 1, Math.PI, Math.PI * 1.5);
+            graphics.lineTo(pW - pH / 2, 1);
+            graphics.arc(pW - pH / 2, pH / 2, pH / 2 - 1, Math.PI * 1.5, Math.PI * 2);
+            graphics.strokePath();
+
+            // Crystal edge — bottom (dimmer)
+            graphics.lineStyle(1, 0x6699cc, 0.4);
+            graphics.beginPath();
+            graphics.arc(pH / 2, pH / 2, pH / 2 - 1, Math.PI * 0.5, Math.PI);
+            graphics.strokePath();
+            graphics.beginPath();
+            graphics.arc(pW - pH / 2, pH / 2, pH / 2 - 1, 0, Math.PI * 0.5);
+            graphics.strokePath();
+            graphics.beginPath();
+            graphics.moveTo(pH / 2, pH - 1);
+            graphics.lineTo(pW - pH / 2, pH - 1);
+            graphics.strokePath();
+
+            // Sparkle dots
+            graphics.fillStyle(0xffffff, 0.6);
+            graphics.fillCircle(pW * 0.2, pH * 0.3, 1.5);
+            graphics.fillCircle(pW * 0.8, pH * 0.3, 1.5);
+            graphics.fillCircle(pW * 0.5, pH * 0.25, 1);
 
             graphics.generateTexture('paddle', pW, pH);
         }
 
-        // 3. Ball texture (Tennis Ball - High Res for scaling)
+        // ============================================
+        // 3. BALL — Crystal energy sphere (high-res)
+        // ============================================
         if (!this.textures.exists('ball')) {
-            const radius = 128; // Higher res base (256x256)
+            const radius = 128;
             const size = radius * 2;
             graphics.clear();
 
-            // Base shadow (subtle)
-            graphics.fillStyle(0x000000, 0.2);
-            graphics.fillCircle(radius + 4, radius + 4, radius);
+            // Outer glow aura
+            for (let r = radius; r > radius * 0.6; r -= 4) {
+                const t = (r - radius * 0.6) / (radius * 0.4);
+                graphics.fillStyle(0x44ddff, t * 0.12);
+                graphics.fillCircle(radius, radius, r);
+            }
 
-            // Fluorescent Yellow Base
-            graphics.fillStyle(0xCCFF00);
-            graphics.fillCircle(radius, radius, radius);
+            // Main glass body
+            graphics.fillStyle(0xbbff44, 0.85);
+            graphics.fillCircle(radius, radius, radius * 0.65);
 
-            // Tennis Ball Seams (White S-curves)
-            graphics.lineStyle(12, 0xFFFFFF, 0.8); // Thicker lines for high res
+            // Inner light core
+            graphics.fillStyle(0xeeffaa, 0.7);
+            graphics.fillCircle(radius, radius, radius * 0.4);
 
-            // Top-left curve
-            graphics.beginPath();
-            graphics.arc(0, 0, radius * 1.1, Phaser.Math.DegToRad(0), Phaser.Math.DegToRad(90), false);
-            graphics.strokePath();
+            // Bright center
+            graphics.fillStyle(0xffffff, 0.5);
+            graphics.fillCircle(radius, radius, radius * 0.2);
 
-            // Bottom-right curve
-            graphics.beginPath();
-            graphics.arc(size, size, radius * 1.1, Phaser.Math.DegToRad(180), Phaser.Math.DegToRad(270), false);
-            graphics.strokePath();
+            // Specular highlight (top-left crescent)
+            graphics.fillStyle(0xffffff, 0.6);
+            graphics.fillEllipse(radius * 0.6, radius * 0.55, radius * 0.35, radius * 0.22);
 
-            // Highlight (Volume)
-            graphics.fillStyle(0xFFFFFF, 0.3);
-            graphics.fillCircle(radius * 0.6, radius * 0.6, radius * 0.3);
+            // Secondary caustic reflection (bottom-right)
+            graphics.fillStyle(0xffffff, 0.15);
+            graphics.fillEllipse(radius * 1.3, radius * 1.35, radius * 0.2, radius * 0.12);
+
+            // Glass rim highlight
+            graphics.lineStyle(3, 0xffffff, 0.25);
+            graphics.strokeCircle(radius, radius, radius * 0.65);
+
+            // Outer rim (very subtle)
+            graphics.lineStyle(2, 0xaaddff, 0.15);
+            graphics.strokeCircle(radius, radius, radius * 0.85);
 
             graphics.generateTexture('ball', size, size);
         }
 
-        // 4. Standard Brick texture (with bevel for texture)
+        // ============================================
+        // 4. BRICK — Crystal glass brick
+        // ============================================
         if (!this.textures.exists('brick')) {
-            const bW = 80;
-            const bH = 30;
+            const bW = 100;
+            const bH = 36;
             graphics.clear();
 
-            // Base fill
-            graphics.fillStyle(0xffffff);
-            graphics.fillRect(0, 0, bW, bH);
+            // Base glass body (will be tinted by Brick.ts)
+            graphics.fillStyle(0xffffff, 0.85);
+            graphics.fillRoundedRect(0, 0, bW, bH, 7);
 
-            // Bevel - lighter top and left
-            graphics.lineStyle(2, 0xffffff, 0.5);
-            graphics.strokeLineShape(new Phaser.Geom.Line(1, 1, bW - 1, 1));
-            graphics.strokeLineShape(new Phaser.Geom.Line(1, 1, 1, bH - 1));
+            // Top specular band (glass reflection)
+            graphics.fillStyle(0xffffff, 0.5);
+            graphics.fillRoundedRect(4, 2, bW - 8, bH * 0.3, 4);
 
-            // Bevel - darker bottom and right
-            graphics.lineStyle(2, 0x000000, 0.3);
-            graphics.strokeLineShape(new Phaser.Geom.Line(1, bH - 1, bW - 1, bH - 1));
-            graphics.strokeLineShape(new Phaser.Geom.Line(bW - 1, 1, bW - 1, bH - 1));
+            // Mid translucent layer
+            graphics.fillStyle(0xffffff, 0.15);
+            graphics.fillRoundedRect(6, bH * 0.35, bW - 12, bH * 0.3, 3);
 
-            // Inner texture pattern (subtle pinstripes)
-            graphics.lineStyle(1, 0xffffff, 0.1);
-            for (let i = 5; i < bW; i += 10) {
-                graphics.strokeLineShape(new Phaser.Geom.Line(i, 3, i, bH - 3));
-            }
+            // Bottom shadow/depth
+            graphics.fillStyle(0x000000, 0.12);
+            graphics.fillRoundedRect(4, bH * 0.65, bW - 8, bH * 0.3, 4);
+
+            // Crystal outline
+            graphics.lineStyle(1.5, 0xffffff, 0.5);
+            graphics.strokeRoundedRect(1, 1, bW - 2, bH - 2, 6);
+
+            // Inner sparkle dots
+            graphics.fillStyle(0xffffff, 0.7);
+            graphics.fillCircle(10, 8, 1.5);
+            graphics.fillCircle(bW - 10, 8, 1.5);
 
             graphics.generateTexture('brick', bW, bH);
         }
 
-        // 5. Metal Brick texture (Stainless Steel look)
+        // ============================================
+        // 5. METAL BRICK — Frosted crystal titanium
+        // ============================================
         if (!this.textures.exists('brick_metal')) {
-            const bW = 80;
-            const bH = 30;
+            const bW = 100;
+            const bH = 36;
             graphics.clear();
 
-            // Metallic gradient base (simulated)
-            graphics.fillStyle(0xdddddd);
-            graphics.fillRect(0, 0, bW, bH);
+            // Frosted glass base
+            graphics.fillStyle(0x99aabb, 0.9);
+            graphics.fillRoundedRect(0, 0, bW, bH, 7);
 
-            // Brushed metal lines (horizontal)
-            graphics.lineStyle(1, 0x999999, 0.4);
-            for (let i = 2; i < bH; i += 2) {
-                const offset = (i % 4 === 0) ? 0 : 5;
-                graphics.strokeLineShape(new Phaser.Geom.Line(offset, i, bW - offset, i));
-            }
+            // Inner frosted layer
+            graphics.fillStyle(0xbbccdd, 0.4);
+            graphics.fillRoundedRect(3, 3, bW - 6, bH - 6, 5);
 
-            // Diagonal shine/highlight
-            graphics.fillStyle(0xffffff, 0.3);
+            // Top specular band
+            graphics.fillStyle(0xffffff, 0.4);
+            graphics.fillRoundedRect(5, 2, bW - 10, bH * 0.3, 4);
+
+            // Diagonal caustic shimmer
+            graphics.fillStyle(0xffffff, 0.2);
             graphics.beginPath();
             graphics.moveTo(bW * 0.2, 0);
             graphics.lineTo(bW * 0.5, 0);
             graphics.lineTo(bW * 0.3, bH);
-            graphics.lineTo(0, bH);
+            graphics.lineTo(bW * 0.0, bH);
+            graphics.closePath();
             graphics.fillPath();
 
-            // Sharp bevel
-            graphics.lineStyle(2, 0xffffff, 0.8);
-            graphics.strokeRect(0, 0, bW, bH);
-            graphics.lineStyle(1, 0x444444, 1);
-            graphics.strokeLineShape(new Phaser.Geom.Line(0, bH, bW, bH));
-            graphics.strokeLineShape(new Phaser.Geom.Line(bW, 0, bW, bH));
+            // Crystal outline
+            graphics.lineStyle(2, 0xddeeff, 0.6);
+            graphics.strokeRoundedRect(1, 1, bW - 2, bH - 2, 6);
+
+            // Diamond sparkle dots
+            graphics.fillStyle(0xffffff, 0.65);
+            graphics.fillCircle(12, bH / 2, 2);
+            graphics.fillCircle(bW - 12, bH / 2, 2);
+            graphics.fillCircle(bW / 2, 6, 1.5);
 
             graphics.generateTexture('brick_metal', bW, bH);
         }
