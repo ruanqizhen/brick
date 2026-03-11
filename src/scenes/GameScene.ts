@@ -30,7 +30,7 @@ export class GameScene extends Phaser.Scene {
     private lives: number = 3;
     private currentLevelIndex: number = 0;
     private activeSpeedMultipliers: number[] = [];
-    
+
     // Timed powerup trackers
     private fireballTimer: Phaser.Time.TimerEvent | null = null;
     private speedUpTimer: Phaser.Time.TimerEvent | null = null;
@@ -46,7 +46,9 @@ export class GameScene extends Phaser.Scene {
         } else {
             this.currentLevelIndex = 0; // 恢复从第一关开始
         }
-        this.lives = 3;
+        if (this.currentLevelIndex === 0) {
+            this.lives = 3;
+        }
     }
 
     create() {
@@ -324,31 +326,31 @@ export class GameScene extends Phaser.Scene {
 
         // Get powerup from pool (position will be set after)
         const pu = this.powerUpPool.get();
-        
+
         // IMPORTANT: Set position BEFORE making visible and enabling physics
         pu.setPosition(x, y);
-        
+
         // Update powerup type (this also recreates the icon text at current position)
         pu.setPowerUpType(selectedType);
-        
+
         // Make visible and enable physics
         pu.setVisible(true);
         if (pu.body) {
             pu.body.enable = true;
             pu.setVelocityY(200);
         }
-        
+
         this.powerUps.add(pu);
     }
 
     private handlePowerUpPickup(pu: PowerUp) {
         // Get type BEFORE returning to pool
         const type = pu.powerUpType;
-        
+
         // Remove from group and return to pool (this hides the powerup and icon)
         this.powerUps.remove(pu, false);
         this.powerUpPool.release(pu);
-        
+
         audioManager.play('powerup');
 
         const DURATION = GameConfig.POWERUP_DURATION;
@@ -498,7 +500,7 @@ export class GameScene extends Phaser.Scene {
                 this.speedDownTimer = null;
             }
         });
-        
+
         // Store timer reference
         if (multiplier === 1.3) {
             this.speedUpTimer = timer;
@@ -811,7 +813,7 @@ export class GameScene extends Phaser.Scene {
             this.speedDownTimer.remove();
             this.speedDownTimer = null;
         }
-        
+
         // Clean up paddle event listeners
         if (this.paddle) {
             this.paddle.cleanupEventListeners();
