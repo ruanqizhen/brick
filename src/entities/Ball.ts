@@ -8,7 +8,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     public isFireball: boolean = false;
     private trailEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
     private fireEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
-    private trailScale: number = 1.0;
+    private trailScale: number = (GameConfig.BALL_RADIUS * 2) / 16; // Particle is 16x16
     private lastPaddleHitTime: number = 0;
     private isPooledActive: boolean = false;
     private sceneRef: Phaser.Scene;
@@ -125,8 +125,8 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
             this.setCircle(128);
         }
 
-        // 动态调整粒子缩放系数
-        this.trailScale = radius / GameConfig.BALL_RADIUS;
+        // 动态调整粒子缩放系数以完全包裹小球宽幅 (particle=16)
+        this.trailScale = (radius * 2) / 16;
     }
 
     activeFire(active: boolean) {

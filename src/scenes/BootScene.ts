@@ -42,12 +42,12 @@ export class BootScene extends Phaser.Scene {
             graphics.fillStyle(0x44aaff, 0.08);
             graphics.fillRoundedRect(0, 0, pW, pH, pH / 2);
 
-            // Glass body — deep translucent blue
-            graphics.fillStyle(0x1a3366, 0.85);
+            // Glass body — hyper vibrant cyan
+            graphics.fillStyle(0x00e5ff, 0.95);
             graphics.fillRoundedRect(2, 1, pW - 4, pH - 2, pH / 2 - 1);
 
-            // Inner glass layer — lighter
-            graphics.fillStyle(0x2255aa, 0.5);
+            // Inner glass layer — bright white/cyan
+            graphics.fillStyle(0xb3ffff, 0.6);
             graphics.fillRoundedRect(5, 3, pW - 10, pH - 6, (pH - 6) / 2);
 
             // Top specular reflection — bright white streak
@@ -96,40 +96,29 @@ export class BootScene extends Phaser.Scene {
             const size = radius * 2;
             graphics.clear();
 
-            // Outer glow aura
-            for (let r = radius; r > radius * 0.6; r -= 4) {
-                const t = (r - radius * 0.6) / (radius * 0.4);
-                graphics.fillStyle(0x44ddff, t * 0.12);
-                graphics.fillCircle(radius, radius, r);
-            }
-
             // Main glass body
-            graphics.fillStyle(0xbbff44, 0.85);
-            graphics.fillCircle(radius, radius, radius * 0.65);
+            graphics.fillStyle(0xbbff44, 0.95);
+            graphics.fillCircle(radius, radius, radius);
 
             // Inner light core
-            graphics.fillStyle(0xeeffaa, 0.7);
-            graphics.fillCircle(radius, radius, radius * 0.4);
+            graphics.fillStyle(0xeeffaa, 0.8);
+            graphics.fillCircle(radius, radius, radius * 0.75);
 
             // Bright center
-            graphics.fillStyle(0xffffff, 0.5);
-            graphics.fillCircle(radius, radius, radius * 0.2);
+            graphics.fillStyle(0xffffff, 0.9);
+            graphics.fillCircle(radius, radius, radius * 0.4);
 
             // Specular highlight (top-left crescent)
-            graphics.fillStyle(0xffffff, 0.6);
-            graphics.fillEllipse(radius * 0.6, radius * 0.55, radius * 0.35, radius * 0.22);
+            graphics.fillStyle(0xffffff, 0.8);
+            graphics.fillEllipse(radius * 0.6, radius * 0.55, radius * 0.5, radius * 0.35);
 
             // Secondary caustic reflection (bottom-right)
-            graphics.fillStyle(0xffffff, 0.15);
-            graphics.fillEllipse(radius * 1.3, radius * 1.35, radius * 0.2, radius * 0.12);
+            graphics.fillStyle(0xffffff, 0.35);
+            graphics.fillEllipse(radius * 1.3, radius * 1.35, radius * 0.3, radius * 0.2);
 
             // Glass rim highlight
-            graphics.lineStyle(3, 0xffffff, 0.25);
-            graphics.strokeCircle(radius, radius, radius * 0.65);
-
-            // Outer rim (very subtle)
-            graphics.lineStyle(2, 0xaaddff, 0.15);
-            graphics.strokeCircle(radius, radius, radius * 0.85);
+            graphics.lineStyle(6, 0xffffff, 0.4);
+            graphics.strokeCircle(radius, radius, radius - 3);
 
             graphics.generateTexture('ball', size, size);
         }
@@ -140,34 +129,153 @@ export class BootScene extends Phaser.Scene {
         if (!this.textures.exists('brick')) {
             const bW = 100;
             const bH = 36;
-            graphics.clear();
+            
+            // Helper to generate a brick variant
+            const drawBrick = (textureKey: string, noiseFactor: number, crackLevel: number) => {
+                graphics.clear();
 
-            // Base glass body (will be tinted by Brick.ts)
-            graphics.fillStyle(0xffffff, 0.85);
-            graphics.fillRoundedRect(0, 0, bW, bH, 7);
+                // 1. Base vibrant block
+                graphics.fillStyle(0xffffff, 0.95); // White base, will be tinted
+                graphics.fillRect(0, 0, bW, bH);
 
-            // Top specular band (glass reflection)
-            graphics.fillStyle(0xffffff, 0.5);
-            graphics.fillRoundedRect(4, 2, bW - 8, bH * 0.3, 4);
+                // 2. Bevels (3D edge effect)
+                // Top bevel (bright)
+                graphics.fillStyle(0xffffff, 0.4);
+                graphics.beginPath();
+                graphics.moveTo(0, 0);
+                graphics.lineTo(bW, 0);
+                graphics.lineTo(bW - 4, 4);
+                graphics.lineTo(4, 4);
+                graphics.closePath();
+                graphics.fillPath();
 
-            // Mid translucent layer
-            graphics.fillStyle(0xffffff, 0.15);
-            graphics.fillRoundedRect(6, bH * 0.35, bW - 12, bH * 0.3, 3);
+                // Left bevel (bright)
+                graphics.fillStyle(0xffffff, 0.25);
+                graphics.beginPath();
+                graphics.moveTo(0, 0);
+                graphics.lineTo(4, 4);
+                graphics.lineTo(4, bH - 4);
+                graphics.lineTo(0, bH);
+                graphics.closePath();
+                graphics.fillPath();
 
-            // Bottom shadow/depth
-            graphics.fillStyle(0x000000, 0.12);
-            graphics.fillRoundedRect(4, bH * 0.65, bW - 8, bH * 0.3, 4);
+                // Bottom bevel (dark)
+                graphics.fillStyle(0x000000, 0.3);
+                graphics.beginPath();
+                graphics.moveTo(0, bH);
+                graphics.lineTo(4, bH - 4);
+                graphics.lineTo(bW - 4, bH - 4);
+                graphics.lineTo(bW, bH);
+                graphics.closePath();
+                graphics.fillPath();
 
-            // Crystal outline
-            graphics.lineStyle(1.5, 0xffffff, 0.5);
-            graphics.strokeRoundedRect(1, 1, bW - 2, bH - 2, 6);
+                // Right bevel (dark)
+                graphics.fillStyle(0x000000, 0.2);
+                graphics.beginPath();
+                graphics.moveTo(bW, 0);
+                graphics.lineTo(bW, bH);
+                graphics.lineTo(bW - 4, bH - 4);
+                graphics.lineTo(bW - 4, 4);
+                graphics.closePath();
+                graphics.fillPath();
 
-            // Inner sparkle dots
-            graphics.fillStyle(0xffffff, 0.7);
-            graphics.fillCircle(10, 8, 1.5);
-            graphics.fillCircle(bW - 10, 8, 1.5);
+                // 3. Procedural Grit / Noise (Highly randomized)
+                graphics.fillStyle(0x000000, 0.15 + (Math.random() * 0.15)); // Dark grit
+                const dotCount = 50 + (noiseFactor * 60) + (Math.random() * 40);
+                for (let i = 0; i < dotCount; i++) {
+                    const dx = 5 + Math.random() * (bW - 10);
+                    const dy = 5 + Math.random() * (bH - 10);
+                    const size = 1 + Math.random() * 2.5; // Bigger random particles
+                    graphics.fillRect(dx, dy, size, size);
+                }
+                
+                // Add some light grit for contrast
+                graphics.fillStyle(0xffffff, 0.1 + (Math.random() * 0.2));
+                for (let i = 0; i < dotCount / 2; i++) {
+                    const dx = 5 + Math.random() * (bW - 10);
+                    const dy = 5 + Math.random() * (bH - 10);
+                    graphics.fillRect(dx, dy, 1, 1 + Math.random());
+                }
 
-            graphics.generateTexture('brick', bW, bH);
+                // 4. Cracks (based on damage level - highly randomized per variant parameter)
+                // Let's use the noiseFactor (seed simulation) to decide the crack aesthetic
+                if (crackLevel > 0) {
+                    graphics.lineStyle(2 + Math.random() * 1.5, 0x000000, 0.7 + Math.random() * 0.3); // Randomly thick dark crack line
+                    graphics.beginPath();
+                    
+                    // Generate random points for the crack
+                    const startX = bW * (0.1 + Math.random() * 0.8);
+                    const startY = Math.random() < 0.5 ? 0 : bH;
+                    let currX = startX;
+                    let currY = startY;
+                    const steps = 3 + Math.floor(Math.random() * 3);
+                    
+                    graphics.moveTo(currX, currY);
+                    
+                    const pointsX = [currX];
+                    const pointsY = [currY];
+
+                    for (let i = 0; i < steps; i++) {
+                        currX += (Math.random() - 0.5) * (bW * 0.4);
+                        currY += (startY === 0 ? 1 : -1) * (bH / steps);
+                        
+                        // Keep within bounds
+                        currX = Math.max(2, Math.min(bW - 2, currX));
+                        currY = Math.max(2, Math.min(bH - 2, currY));
+                        
+                        graphics.lineTo(currX, currY);
+                        pointsX.push(currX);
+                        pointsY.push(currY);
+                    }
+                    
+                    if (crackLevel === 2) {
+                        // Heavy crack: Add a secondary branch or chip
+                        graphics.moveTo(pointsX[1], pointsY[1]);
+                        graphics.lineTo(pointsX[1] + (Math.random() > 0.5 ? 20 : -20), pointsY[1] + (Math.random() > 0.5 ? 15 : -15));
+                        
+                        // Edge chip
+                        graphics.moveTo(0, bH * Math.random());
+                        graphics.lineTo(bW * 0.15, bH * Math.random());
+                        graphics.lineTo(0, bH * Math.random());
+                    }
+                    graphics.strokePath();
+                    
+                    // Highlight (Depth)
+                    graphics.lineStyle(1.5, 0xffffff, 0.6 + Math.random() * 0.4);
+                    graphics.beginPath();
+                    graphics.moveTo(pointsX[0] + 1.5, pointsY[0]);
+                    for (let i = 1; i < pointsX.length; i++) {
+                        graphics.lineTo(pointsX[i] + 1.5, pointsY[i]);
+                    }
+                    graphics.strokePath();
+                }
+
+                graphics.generateTexture(textureKey, bW, bH);
+            };
+
+            // Generate 5 completely distinct pristine variants
+            drawBrick('brick_var_0', 0.5, 0);
+            drawBrick('brick_var_1', 1.0, 0);
+            drawBrick('brick_var_2', 1.5, 0);
+            drawBrick('brick_var_3', 2.0, 0);
+            drawBrick('brick_var_4', 2.5, 0);
+            drawBrick('brick', 1.0, 0); // fallback
+
+            // Generate 5 light crack variants
+            drawBrick('brick_cr_1_var_0', 0.5, 1);
+            drawBrick('brick_cr_1_var_1', 1.0, 1);
+            drawBrick('brick_cr_1_var_2', 1.5, 1);
+            drawBrick('brick_cr_1_var_3', 2.0, 1);
+            drawBrick('brick_cr_1_var_4', 2.5, 1);
+            drawBrick('brick_cracked_1', 1.0, 1); // fallback
+
+            // Generate 5 heavy crack variants
+            drawBrick('brick_cr_2_var_0', 0.5, 2);
+            drawBrick('brick_cr_2_var_1', 1.0, 2);
+            drawBrick('brick_cr_2_var_2', 1.5, 2);
+            drawBrick('brick_cr_2_var_3', 2.0, 2);
+            drawBrick('brick_cr_2_var_4', 2.5, 2);
+            drawBrick('brick_cracked_2', 1.0, 2); // fallback
         }
 
         // ============================================
