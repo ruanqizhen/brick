@@ -213,7 +213,7 @@ export class GameOverScene extends Phaser.Scene {
 
         // Hint
         this.hintText = this.add.text(width / 2, height * 0.88, 'ENTER 重新开始 • ESC 返回菜单', {
-            fontSize: '16px',
+            fontSize: '24px',
             fontFamily: "'Noto Sans SC', sans-serif",
             color: 'rgba(255, 255, 255, 0.4)',
             letterSpacing: 2
@@ -232,34 +232,34 @@ export class GameOverScene extends Phaser.Scene {
 
     private createCyberButton(x: number, y: number, textStr: string, isPrimary: boolean, onClick: () => void): Phaser.GameObjects.Container {
         const container = this.add.container(x, y);
-        const btnWidth = 240;
+        const btnWidth = 260;
         const btnHeight = 54;
         const radius = btnHeight / 2;
 
         const mainColor = isPrimary ? 0x00d4ff : 0xffffff;
 
         const graphics = this.add.graphics();
-        
+
         // Base fill
         graphics.fillStyle(isPrimary ? 0x00d4ff : 0xffffff, isPrimary ? 0.15 : 0.05);
-        graphics.fillCircle(-btnWidth/2 + radius, 0, radius);
-        graphics.fillCircle(btnWidth/2 - radius, 0, radius);
-        graphics.fillRect(-btnWidth/2 + radius, -radius, btnWidth - radius * 2, btnHeight);
+        graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
+        graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
+        graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
 
         // Border
         graphics.lineStyle(1, mainColor, isPrimary ? 0.4 : 0.2);
         graphics.beginPath();
-        graphics.arc(-btnWidth/2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-        graphics.lineTo(btnWidth/2 - radius, -radius);
-        graphics.arc(btnWidth/2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
+        graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
+        graphics.lineTo(btnWidth / 2 - radius, -radius);
+        graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
         graphics.closePath();
         graphics.strokePath();
 
         // Button text
         const btnText = this.add.text(0, 0, textStr, {
-            fontSize: '18px',
+            fontSize: '28px',
             fontFamily: "'Noto Sans SC', sans-serif",
-            color: '#ffffff',
+            color: '#dddddd',
             fontStyle: 'bold',
             letterSpacing: 3
         }).setOrigin(0.5);
@@ -267,25 +267,25 @@ export class GameOverScene extends Phaser.Scene {
         container.add([graphics, btnText]);
         container.setSize(btnWidth, btnHeight);
 
-        const hitArea = new Phaser.Geom.Rectangle(-btnWidth/2, -radius, btnWidth, btnHeight);
-        container.setInteractive({ 
-            hitArea: hitArea, 
-            hitAreaCallback: Phaser.Geom.Rectangle.Contains, 
-            useHandCursor: true 
+        const hitArea = new Phaser.Geom.Rectangle(-btnWidth / 2, -radius, btnWidth, btnHeight);
+        container.setInteractive({
+            hitArea: hitArea,
+            hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+            useHandCursor: true
         });
 
         container.on('pointerover', () => {
             graphics.clear();
             graphics.fillStyle(isPrimary ? 0x00d4ff : 0xffffff, isPrimary ? 0.3 : 0.1);
-            graphics.fillCircle(-btnWidth/2 + radius, 0, radius);
-            graphics.fillCircle(btnWidth/2 - radius, 0, radius);
-            graphics.fillRect(-btnWidth/2 + radius, -radius, btnWidth - radius * 2, btnHeight);
-            
+            graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
+            graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
+            graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
+
             graphics.lineStyle(2, mainColor, 0.8);
             graphics.beginPath();
-            graphics.arc(-btnWidth/2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-            graphics.lineTo(btnWidth/2 - radius, -radius);
-            graphics.arc(btnWidth/2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
+            graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
+            graphics.lineTo(btnWidth / 2 - radius, -radius);
+            graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
             graphics.closePath();
             graphics.strokePath();
 
@@ -295,15 +295,15 @@ export class GameOverScene extends Phaser.Scene {
         container.on('pointerout', () => {
             graphics.clear();
             graphics.fillStyle(isPrimary ? 0x00d4ff : 0xffffff, isPrimary ? 0.15 : 0.05);
-            graphics.fillCircle(-btnWidth/2 + radius, 0, radius);
-            graphics.fillCircle(btnWidth/2 - radius, 0, radius);
-            graphics.fillRect(-btnWidth/2 + radius, -radius, btnWidth - radius * 2, btnHeight);
+            graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
+            graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
+            graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
 
             graphics.lineStyle(1, mainColor, isPrimary ? 0.4 : 0.2);
             graphics.beginPath();
-            graphics.arc(-btnWidth/2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-            graphics.lineTo(btnWidth/2 - radius, -radius);
-            graphics.arc(btnWidth/2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
+            graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
+            graphics.lineTo(btnWidth / 2 - radius, -radius);
+            graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
             graphics.closePath();
             graphics.strokePath();
 

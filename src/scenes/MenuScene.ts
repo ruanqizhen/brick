@@ -80,7 +80,7 @@ export class MenuScene extends Phaser.Scene {
         // ============================================
         // HIGH SCORE
         // ============================================
-        this.highScoreText = this.add.text(width / 2, iconY + 145, '高分记录: 0', {
+        this.highScoreText = this.add.text(width / 2, iconY + 245, '高分记录: 0', {
             fontSize: '28px',
             fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
             fontStyle: '700',
@@ -123,7 +123,7 @@ export class MenuScene extends Phaser.Scene {
         const createKeyTag = (x: number, y: number, text: string) => {
             const tagBg = this.add.rectangle(x, y, 0, 0, 0xffffff, 0.08).setStrokeStyle(1, 0xffffff, 0.15);
             const tagText = this.add.text(x, y, text, {
-                fontSize: '16px',
+                fontSize: '20px',
                 fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
                 fontStyle: '700',
                 color: '#00d4ff',
@@ -138,7 +138,7 @@ export class MenuScene extends Phaser.Scene {
             const yOffset = panelY + y;
             const tagElements = createKeyTag(centerX - 40, yOffset, keyText);
             const descText = this.add.text(centerX + 30, yOffset, actionText, {
-                fontSize: '18px',
+                fontSize: '24px',
                 fontFamily: "'Noto Sans SC', sans-serif",
                 color: 'rgba(255, 255, 255, 0.6)'
             }).setOrigin(0, 0.5);
@@ -159,7 +159,7 @@ export class MenuScene extends Phaser.Scene {
         // FOOTER LINK
         // ============================================
         this.homepageLink = this.add.text(width / 2, height * 0.9, '访问我的个人主页', {
-            fontSize: '18px',
+            fontSize: '24px',
             fontFamily: "'Noto Sans SC', sans-serif",
             color: 'rgba(255, 255, 255, 0.4)',
             letterSpacing: 1
@@ -198,7 +198,7 @@ export class MenuScene extends Phaser.Scene {
 
     private createCyberButton(x: number, y: number, text: string, isPrimary: boolean, onClick: () => void): Phaser.GameObjects.Container {
         const container = this.add.container(x, y);
-        const btnWidth = 240;
+        const btnWidth = 260;
         const btnHeight = 54;
         const radius = btnHeight / 2;
 
@@ -226,9 +226,9 @@ export class MenuScene extends Phaser.Scene {
 
         // Button text
         const btnText = this.add.text(0, 0, text, {
-            fontSize: '18px',
+            fontSize: '28px',
             fontFamily: "'Noto Sans SC', sans-serif",
-            color: '#ffffff',
+            color: '#dddddd',
             fontStyle: 'bold',
             letterSpacing: 3
         }).setOrigin(0.5);
