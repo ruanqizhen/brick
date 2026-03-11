@@ -160,10 +160,17 @@ export class GameScene extends Phaser.Scene {
         world.OVERLAP_BIAS = Math.max(4, bias / 10);
 
         // Optimized: Cache powerups array
+        // We use a regular array copy or backward loop because we might modify the group
         const powerUps = this.powerUps.getChildren();
-        const powerUpCount = powerUps.length;
-        for (let i = 0; i < powerUpCount; i++) {
-            (powerUps[i] as PowerUp).update();
+        for (let i = powerUps.length - 1; i >= 0; i--) {
+            const pu = powerUps[i] as PowerUp;
+            pu.update();
+            
+            // Handle off-screen cleanup
+            if (pu.y > DESIGN_HEIGHT + 100) {
+                this.powerUps.remove(pu, false);
+                this.powerUpPool.release(pu);
+            }
         }
     }
 
@@ -333,11 +340,11 @@ export class GameScene extends Phaser.Scene {
         // Update powerup type (this also recreates the icon text at current position)
         pu.setPowerUpType(selectedType);
 
-        // Make visible and enable physics
-        pu.setVisible(true);
+        // Make visible and enable physics correctly restoring body state
+        pu.enableBody(true, x, y, true, true);
         if (pu.body) {
-            pu.body.enable = true;
             pu.setVelocityY(200);
+            (pu.body as Phaser.Physics.Arcade.Body).setCircle(25);
         }
 
         this.powerUps.add(pu);

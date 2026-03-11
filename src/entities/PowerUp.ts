@@ -51,11 +51,6 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
         if (this.iconText) {
             this.iconText.setPosition(this.x, this.y);
         }
-
-        if (this.isPooledActive && this.y > (this.scene.game.config.height as number)) {
-            this.setVisible(false);
-            this.setPoolActive(false);
-        }
     }
 
     // Pool methods
