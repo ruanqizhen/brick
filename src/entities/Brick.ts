@@ -11,6 +11,7 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
     private baseTextureKey: string;
     private shadeVal: number;
     private damageVariantSeed: number;
+    private crackGraphics: Phaser.GameObjects.Graphics;
 
     constructor(scene: Phaser.Scene, x: number, y: number, type: BrickType) {
         super(scene, x, y, 'brick');
@@ -27,6 +28,10 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this, true);
 
+        // Graphics for rendering dynamic cracks over the brick
+        this.crackGraphics = scene.add.graphics();
+        this.crackGraphics.setDepth(this.depth + 0.1);
+
         // Call reset to setup the actual properties organically
         this.reset(x, y, type);
         this.setPoolActive(false);
@@ -39,10 +44,15 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
 
         this._hp--;
         this.updateAppearance();
+        
+        if (this._hp > 0 && !this.isIndestructible) {
+            this.drawRandomCracks(2);
+        }
 
         if (this._hp <= 0) {
             // 隐藏砖块而非销毁
             this.setVisible(false);
+            this.crackGraphics.setVisible(false);
             return { destroyed: true, points: 100 };
         }
 
@@ -74,7 +84,10 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
         this.damageVariantSeed = Math.floor(Math.random() * 5);
 
         this.setPosition(x, y);
+        this.crackGraphics.setPosition(x, y); // Sync graphics pos
+        this.crackGraphics.clear(); // Clear old cracks
         this.setVisible(true);
+        this.crackGraphics.setVisible(true);
         this.setPoolActive(true);
         this.updateAppearance();
     }
@@ -123,6 +136,94 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
         this.setTint(tintedColor);
     }
 
+    private drawRandomCracks(count: number) {
+        if (!this.crackGraphics) return;
+
+        const bW = this.displayWidth;
+        const bH = this.displayHeight;
+        const halfW = bW / 2;
+        const halfH = bH / 2;
+
+        for (let j = 0; j < count; j++) {
+            this.crackGraphics.lineStyle(2 + Math.random() * 1.5, 0x000000, 0.7 + Math.random() * 0.3);
+            this.crackGraphics.beginPath();
+            
+            // Random start point on an edge (relative to center 0,0)
+            let startX, startY;
+            if (Math.random() > 0.5) {
+                // Top or bottom edge
+                startX = (Math.random() * bW) - halfW;
+                startY = Math.random() > 0.5 ? -halfH : halfH;
+            } else {
+                // Left or right edge
+                startX = Math.random() > 0.5 ? -halfW : halfW;
+                startY = (Math.random() * bH) - halfH;
+            }
+            
+            let currX = startX;
+            let currY = startY;
+            const steps = 3 + Math.floor(Math.random() * 3);
+            
+            this.crackGraphics.moveTo(currX, currY);
+            
+            const pointsX = [currX];
+            const pointsY = [currY];
+
+            // Target roughly the center (0,0)
+            const targetX = (Math.random() - 0.5) * halfW;
+            const targetY = (Math.random() - 0.5) * halfH;
+
+            for (let i = 0; i < steps; i++) {
+                // Move towards target with randomness
+                currX += (targetX - currX) / (steps - i) + (Math.random() - 0.5) * 15;
+                currY += (targetY - currY) / (steps - i) + (Math.random() - 0.5) * 10;
+                
+                currX = Math.max(-halfW + 2, Math.min(halfW - 2, currX));
+                currY = Math.max(-halfH + 2, Math.min(halfH - 2, currY));
+                
+                this.crackGraphics.lineTo(currX, currY);
+                pointsX.push(currX);
+                pointsY.push(currY);
+            }
+            
+            this.crackGraphics.strokePath();
+            
+            // Highlight for depth (glass edge)
+            this.crackGraphics.lineStyle(1.5, 0xffffff, 0.6 + Math.random() * 0.4);
+            this.crackGraphics.beginPath();
+            this.crackGraphics.moveTo(pointsX[0] + 1.5, pointsY[0]);
+            for (let i = 1; i < pointsX.length; i++) {
+                this.crackGraphics.lineTo(pointsX[i] + 1.5, pointsY[i]);
+            }
+            this.crackGraphics.strokePath();
+
+            // Sometime split off a sub-crack
+            if (Math.random() > 0.5 && pointsX.length > 2) {
+                const splitIdx = Math.floor(pointsX.length / 2);
+                this.crackGraphics.lineStyle(1.5, 0x000000, 0.6);
+                this.crackGraphics.beginPath();
+                this.crackGraphics.moveTo(pointsX[splitIdx], pointsY[splitIdx]);
+                
+                let branchX = pointsX[splitIdx] + (Math.random() > 0.5 ? 15 : -15);
+                let branchY = pointsY[splitIdx] + (Math.random() > 0.5 ? 10 : -10);
+                
+                branchX = Math.max(-halfW + 2, Math.min(halfW - 2, branchX));
+                branchY = Math.max(-halfH + 2, Math.min(halfH - 2, branchY));
+                
+                this.crackGraphics.lineTo(branchX, branchY);
+                this.crackGraphics.strokePath();
+            }
+        }
+    }
+
+    override preUpdate(time: number, delta: number) {
+        super.preUpdate(time, delta);
+        if (this.crackGraphics && this.crackGraphics.visible) {
+            this.crackGraphics.setPosition(this.x, this.y);
+            this.crackGraphics.setAlpha(this.alpha);
+        }
+    }
+
     get isIndestructible(): boolean {
         return this.brickType === 'INDESTRUCTIBLE';
     }
@@ -135,11 +236,14 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
     setPoolActive(active: boolean): void {
         this.isPooledActive = active;
         this.setVisible(active);
+        this.crackGraphics.setVisible(active);
     }
 
     onRelease(): void {
         this.setPosition(0, -100);
         this.setVisible(false);
+        this.crackGraphics.clear();
+        this.crackGraphics.setVisible(false);
     }
 
     isPoolActive(): boolean {
@@ -152,6 +256,9 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
 
     override destroy(fromScene?: boolean): void {
         if (!this.sceneRef) return;
+        if (this.crackGraphics) {
+            this.crackGraphics.destroy();
+        }
         super.destroy(fromScene);
     }
 }
