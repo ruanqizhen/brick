@@ -8,7 +8,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     public isFireball: boolean = false;
     private trailEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
     private fireEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
-    private trailScale: number = (GameConfig.BALL_RADIUS * 2) / 16; // Particle is 16x16
+    private trailScale: number = (GameConfig.BALL_RADIUS * 2) / 32; // Particle is 32x32
     private lastPaddleHitTime: number = 0;
     private isPooledActive: boolean = false;
     private sceneRef: Phaser.Scene;
