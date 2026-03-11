@@ -125,8 +125,8 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
             this.setCircle(128);
         }
 
-        // 动态调整粒子缩放系数以完全包裹小球宽幅 (particle=16)
-        this.trailScale = (radius * 2) / 16;
+        // 动态调整粒子缩放系数以完全包裹小球宽幅 (particle=32)
+        this.trailScale = (radius * 2) / 32;
     }
 
     activeFire(active: boolean) {
