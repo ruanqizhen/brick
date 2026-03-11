@@ -592,8 +592,7 @@ export class GameScene extends Phaser.Scene {
         const width = DESIGN_WIDTH;
         const height = DESIGN_HEIGHT;
 
-        // Semi-transparent dimming overlay
-        const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.75)
+        const overlay = this.add.rectangle(0, 0, width, height, 0x0a0a12, 0.85)
             .setOrigin(0)
             .setDepth(2000)
             .setInteractive();
@@ -605,53 +604,96 @@ export class GameScene extends Phaser.Scene {
         panel.setStrokeStyle(4, 0x00d4ff, 1);
 
         const titleText = this.add.text(0, -140, '关卡完成!', {
-            fontSize: '84px',
-            fontFamily: '"Microsoft YaHei", sans-serif',
-            color: '#ffd700',
-            fontStyle: 'bold',
-            shadow: { blur: 20, color: '#ffd700', fill: true }
+            fontSize: '64px',
+            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            color: '#ffffff',
+            fontStyle: '900',
+            letterSpacing: 4
         }).setOrigin(0.5);
+        titleText.setTint(0xffffff, 0xffffff, 0x00d4ff, 0xffcc00);
+        titleText.setShadow(0, 0, 'rgba(0, 212, 255, 0.4)', 30, true, true);
 
         const levelText = this.add.text(0, -30, `第 ${completedLevel} 关`, {
-            fontSize: '48px',
-            fontFamily: '"Microsoft YaHei", sans-serif',
+            fontSize: '42px',
+            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
             color: '#ffffff'
         }).setOrigin(0.5);
 
         const scoreText = this.add.text(0, 40, `当前得分: ${score.toLocaleString()}`, {
-            fontSize: '42px',
-            fontFamily: '"Microsoft YaHei", sans-serif',
+            fontSize: '36px',
+            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
             color: '#00d4ff'
         }).setOrigin(0.5);
 
-        // Modern Continue Button
-        const btnWidth = 320;
-        const btnHeight = 84;
+        // Modern Continue Button (Cyberpunk style)
+        const btnWidth = 280;
+        const btnHeight = 64;
+        const radius = btnHeight / 2;
         const btn = this.add.container(0, 160);
 
-        const btnBg = this.add.rectangle(0, 0, btnWidth, btnHeight, 0x00cc66);
-        btnBg.setStrokeStyle(3, 0xffffff, 0.8);
-        btnBg.setOrigin(0.5);
+        const graphics = this.add.graphics();
+        
+        // Base fill
+        graphics.fillStyle(0x00d4ff, 0.15);
+        graphics.fillCircle(-btnWidth/2 + radius, 0, radius);
+        graphics.fillCircle(btnWidth/2 - radius, 0, radius);
+        graphics.fillRect(-btnWidth/2 + radius, -radius, btnWidth - radius * 2, btnHeight);
+
+        // Border
+        graphics.lineStyle(2, 0x00d4ff, 0.6);
+        graphics.beginPath();
+        graphics.arc(-btnWidth/2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
+        graphics.lineTo(btnWidth/2 - radius, -radius);
+        graphics.arc(btnWidth/2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
+        graphics.closePath();
+        graphics.strokePath();
 
         const btnText = this.add.text(0, 0, '下一关', {
-            fontSize: '42px',
-            fontFamily: '"Microsoft YaHei", sans-serif',
+            fontSize: '24px',
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: '#ffffff',
-            fontStyle: 'bold'
+            fontStyle: 'bold',
+            letterSpacing: 3
         }).setOrigin(0.5);
 
-        btn.add([btnBg, btnText]);
+        btn.add([graphics, btnText]);
         btn.setSize(btnWidth, btnHeight);
         btn.setInteractive({ useHandCursor: true });
 
         btn.on('pointerover', () => {
-            this.tweens.add({ targets: btn, scale: 1.05, duration: 150 });
-            btnBg.setFillStyle(0x00ee77);
+            graphics.clear();
+            graphics.fillStyle(0x00d4ff, 0.3);
+            graphics.fillCircle(-btnWidth/2 + radius, 0, radius);
+            graphics.fillCircle(btnWidth/2 - radius, 0, radius);
+            graphics.fillRect(-btnWidth/2 + radius, -radius, btnWidth - radius * 2, btnHeight);
+            
+            graphics.lineStyle(3, 0x00d4ff, 1);
+            graphics.beginPath();
+            graphics.arc(-btnWidth/2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
+            graphics.lineTo(btnWidth/2 - radius, -radius);
+            graphics.arc(btnWidth/2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
+            graphics.closePath();
+            graphics.strokePath();
+
+            this.tweens.add({ targets: btn, y: 158, duration: 200, ease: 'Power2' });
         });
 
         btn.on('pointerout', () => {
-            this.tweens.add({ targets: btn, scale: 1, duration: 150 });
-            btnBg.setFillStyle(0x00cc66);
+            graphics.clear();
+            graphics.fillStyle(0x00d4ff, 0.15);
+            graphics.fillCircle(-btnWidth/2 + radius, 0, radius);
+            graphics.fillCircle(btnWidth/2 - radius, 0, radius);
+            graphics.fillRect(-btnWidth/2 + radius, -radius, btnWidth - radius * 2, btnHeight);
+
+            graphics.lineStyle(2, 0x00d4ff, 0.6);
+            graphics.beginPath();
+            graphics.arc(-btnWidth/2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
+            graphics.lineTo(btnWidth/2 - radius, -radius);
+            graphics.arc(btnWidth/2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
+            graphics.closePath();
+            graphics.strokePath();
+
+            this.tweens.add({ targets: btn, y: 160, duration: 200, ease: 'Power2' });
         });
 
         btn.on('pointerdown', () => {

@@ -7,20 +7,60 @@
     <title>弹力砖块消除游戏</title>
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☄️</text></svg>">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
+        :root {
+            --bg-color: #0a0a12;
+            --primary: #00d4ff;
+            --primary-dim: rgba(0, 212, 255, 0.15);
+            --accent: #ff3366;
+            --accent-dim: rgba(255, 51, 102, 0.15);
+            --gold: #ffcc00;
+            --surface: rgba(255, 255, 255, 0.04);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --font-display: 'Orbitron', 'Noto Sans SC', sans-serif;
+            --font-body: 'Noto Sans SC', 'Inter', system-ui, sans-serif;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        html,
-        body {
+        html, body {
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #111;
+            background-color: var(--bg-color);
             touch-action: none;
+            color: white;
+            font-family: var(--font-body);
+        }
+
+        /* ─── Ambient Background Glow ─── */
+        .ambient-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse 600px 400px at 30% 20%, rgba(0, 212, 255, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 500px 500px at 70% 80%, rgba(255, 51, 102, 0.05) 0%, transparent 60%),
+                radial-gradient(ellipse 300px 300px at 50% 50%, rgba(255, 204, 0, 0.03) 0%, transparent 60%);
+            animation: ambient-pulse 8s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes ambient-pulse {
+            0% { opacity: 0.6; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.05); }
         }
 
         #game-container {
@@ -29,10 +69,18 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background-color: #000;
             overflow: hidden;
             margin: 0 !important;
             padding: 0 !important;
+            z-index: 1;
+        }
+
+        /* 仅在屏幕极高(窄)时才留出上下20%空隙 */
+        @media (max-aspect-ratio: 2/3) {
+            #game-container {
+                top: 20%;
+                height: 60%;
+            }
         }
 
         #game-wrapper {
@@ -53,10 +101,14 @@
             max-width: 100% !important;
             max-height: 100% !important;
             object-fit: contain;
-            border: 3px solid #4a4a6e;
-            border-radius: 8px;
-            box-shadow: 0 0 30px rgba(100, 100, 255, 0.3),
-                inset 0 0 60px rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--primary);
+            box-shadow:
+                0 0 60px rgba(0, 212, 255, 0.2),
+                0 0 120px rgba(0, 212, 255, 0.1),
+                0 20px 60px rgba(0, 0, 0, 0.8),
+                inset 0 0 20px rgba(0, 212, 255, 0.5);
+            /* 去除圆角以更符合 Phaser 直接绘图感，或者保留一点点 */
+            border-radius: 4px;
         }
 
         /* 响应式边框 - 小屏幕上更细 */
@@ -88,6 +140,7 @@
 </head>
 
 <body>
+    <div class="ambient-glow"></div>
     <div id="game-container">
         <div id="game-wrapper"></div>
     </div>

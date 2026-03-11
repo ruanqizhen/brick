@@ -22,12 +22,12 @@ export class HUD extends Phaser.GameObjects.Container {
         // Lives display — modern pill with hearts
         this.livesText = scene.add.text(scene.cameras.main.width - 30, 35, '♥ 3', {
             fontSize: '30px',
-            fontFamily: '"Courier New", monospace',
-            color: '#ff4488',
+            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            color: '#ff3366', // Accent red
             fontStyle: 'bold',
             shadow: {
                 blur: 12,
-                color: '#ff0044',
+                color: 'rgba(255, 51, 102, 0.5)',
                 fill: true,
                 offsetX: 0,
                 offsetY: 0
@@ -37,12 +37,12 @@ export class HUD extends Phaser.GameObjects.Container {
         // Level display — centered, monospace, neon glow
         this.levelText = scene.add.text(scene.cameras.main.width / 2, 35, 'LV 01', {
             fontSize: '28px',
-            fontFamily: '"Courier New", monospace',
-            color: '#00ffff',
+            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            color: '#00d4ff', // Primary cyan
             fontStyle: 'bold',
             shadow: {
                 blur: 15,
-                color: '#00aaff',
+                color: 'rgba(0, 212, 255, 0.5)',
                 fill: true,
                 offsetX: 0,
                 offsetY: 0
@@ -59,28 +59,28 @@ export class HUD extends Phaser.GameObjects.Container {
     private createScorePanel(scene: Phaser.Scene, x: number, y: number): ScoreContainer {
         const container = scene.add.container(x, y) as ScoreContainer;
 
-        // Frosted glass pill background
-        const bg = scene.add.rectangle(0, 0, 240, 56, 0x111133, 0.7);
-        bg.setStrokeStyle(1.5, 0x4444aa, 0.5);
+        // Frosted glass pill background - using the Cyberpunk surface styling
+        const bg = scene.add.rectangle(0, 0, 240, 56, 0xffffff, 0.04);
+        bg.setStrokeStyle(1.5, 0xffffff, 0.08);
         bg.setOrigin(0);
 
         // Score label — dim accent
         const label = scene.add.text(15, 28, 'SCORE', {
             fontSize: '14px',
-            fontFamily: '"Courier New", monospace',
-            color: '#6677aa',
+            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            color: 'rgba(255, 255, 255, 0.6)',
             fontStyle: 'bold'
         }).setOrigin(0, 0.5);
 
         // Score value — bright monospace digits
         const scoreValue = scene.add.text(90, 28, '0', {
             fontSize: '30px',
-            fontFamily: '"Courier New", monospace',
-            color: '#00ffcc',
+            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            color: '#ffcc00', // Gold color from CSS variables
             fontStyle: 'bold',
             shadow: {
                 blur: 10,
-                color: '#00ffaa',
+                color: 'rgba(255, 204, 0, 0.5)',
                 fill: true,
                 offsetX: 0,
                 offsetY: 0
