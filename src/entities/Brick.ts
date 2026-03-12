@@ -37,16 +37,15 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
         this.setPoolActive(false);
     }
 
-    hit(): { destroyed: boolean, points: number } {
+    hit(instant: boolean = false): { destroyed: boolean, points: number } {
         if (this.brickType === 'INDESTRUCTIBLE') {
             return { destroyed: false, points: 0 };
         }
 
-        this._hp--;
-        this.updateAppearance();
-        
-        if (this._hp > 0 && !this.isIndestructible) {
-            this.drawRandomCracks(2);
+        if (instant) {
+            this._hp = 0;
+        } else {
+            this._hp--;
         }
 
         if (this._hp <= 0) {
@@ -54,6 +53,11 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
             this.setVisible(false);
             this.crackGraphics.setVisible(false);
             return { destroyed: true, points: 100 };
+        }
+        
+        this.updateAppearance();
+        if (!this.isIndestructible) {
+            this.drawRandomCracks(2);
         }
 
         return { destroyed: false, points: 50 };

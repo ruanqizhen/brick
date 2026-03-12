@@ -129,7 +129,7 @@ export class BootScene extends Phaser.Scene {
         if (!this.textures.exists('brick')) {
             const bW = 100;
             const bH = 36;
-            
+
             // Helper to generate a brick variant
             const drawBrick = (textureKey: string, noiseFactor: number, crackLevel: number) => {
                 graphics.clear();
@@ -188,7 +188,7 @@ export class BootScene extends Phaser.Scene {
                     const size = 1 + Math.random() * 2.5; // Bigger random particles
                     graphics.fillRect(dx, dy, size, size);
                 }
-                
+
                 // Add some light grit for contrast
                 graphics.fillStyle(0xffffff, 0.1 + (Math.random() * 0.2));
                 for (let i = 0; i < dotCount / 2; i++) {
@@ -202,44 +202,44 @@ export class BootScene extends Phaser.Scene {
                 if (crackLevel > 0) {
                     graphics.lineStyle(2 + Math.random() * 1.5, 0x000000, 0.7 + Math.random() * 0.3); // Randomly thick dark crack line
                     graphics.beginPath();
-                    
+
                     // Generate random points for the crack
                     const startX = bW * (0.1 + Math.random() * 0.8);
                     const startY = Math.random() < 0.5 ? 0 : bH;
                     let currX = startX;
                     let currY = startY;
                     const steps = 3 + Math.floor(Math.random() * 3);
-                    
+
                     graphics.moveTo(currX, currY);
-                    
+
                     const pointsX = [currX];
                     const pointsY = [currY];
 
                     for (let i = 0; i < steps; i++) {
                         currX += (Math.random() - 0.5) * (bW * 0.4);
                         currY += (startY === 0 ? 1 : -1) * (bH / steps);
-                        
+
                         // Keep within bounds
                         currX = Math.max(2, Math.min(bW - 2, currX));
                         currY = Math.max(2, Math.min(bH - 2, currY));
-                        
+
                         graphics.lineTo(currX, currY);
                         pointsX.push(currX);
                         pointsY.push(currY);
                     }
-                    
+
                     if (crackLevel === 2) {
                         // Heavy crack: Add a secondary branch or chip
                         graphics.moveTo(pointsX[1], pointsY[1]);
                         graphics.lineTo(pointsX[1] + (Math.random() > 0.5 ? 20 : -20), pointsY[1] + (Math.random() > 0.5 ? 15 : -15));
-                        
+
                         // Edge chip
                         graphics.moveTo(0, bH * Math.random());
                         graphics.lineTo(bW * 0.15, bH * Math.random());
                         graphics.lineTo(0, bH * Math.random());
                     }
                     graphics.strokePath();
-                    
+
                     // Highlight (Depth)
                     graphics.lineStyle(1.5, 0xffffff, 0.6 + Math.random() * 0.4);
                     graphics.beginPath();
@@ -286,16 +286,16 @@ export class BootScene extends Phaser.Scene {
             const bH = 36;
             graphics.clear();
 
-            // Frosted glass base
-            graphics.fillStyle(0x99aabb, 0.9);
+            // Frosted glass base (lighter)
+            graphics.fillStyle(0x99aabb, 0.95);
             graphics.fillRoundedRect(0, 0, bW, bH, 7);
 
-            // Inner frosted layer
-            graphics.fillStyle(0xbbccdd, 0.4);
+            // Inner frosted layer (brighter)
+            graphics.fillStyle(0xbbccdd, 0.6);
             graphics.fillRoundedRect(3, 3, bW - 6, bH - 6, 5);
 
             // Top specular band
-            graphics.fillStyle(0xffffff, 0.4);
+            graphics.fillStyle(0xffffff, 0.5);
             graphics.fillRoundedRect(5, 2, bW - 10, bH * 0.3, 4);
 
             // Diagonal caustic shimmer

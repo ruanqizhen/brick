@@ -40,13 +40,14 @@ export class GameScene extends Phaser.Scene {
         super(SCENE_KEYS.GAME);
     }
 
-    init(data?: { level?: number }) {
+    init(data?: { level?: number, resetLives?: boolean }) {
         if (data && typeof data.level === 'number') {
             this.currentLevelIndex = data.level;
         } else {
             this.currentLevelIndex = 0; // 恢复从第一关开始
         }
-        if (this.currentLevelIndex === 0) {
+
+        if (data?.resetLives || this.currentLevelIndex === 0) {
             this.lives = 3;
         }
     }
@@ -165,7 +166,7 @@ export class GameScene extends Phaser.Scene {
         for (let i = powerUps.length - 1; i >= 0; i--) {
             const pu = powerUps[i] as PowerUp;
             pu.update();
-            
+
             // Handle off-screen cleanup
             if (pu.y > DESIGN_HEIGHT + 100) {
                 this.powerUps.remove(pu, false);
@@ -243,7 +244,7 @@ export class GameScene extends Phaser.Scene {
             }
 
             const color = brick.tintTopLeft;
-            const res = brick.hit();
+            const res = brick.hit(isFireball);
 
             if (res.points > 0) {
                 // 获取砖块位置 BEFORE 隐藏它
@@ -641,19 +642,19 @@ export class GameScene extends Phaser.Scene {
         const btn = this.add.container(0, 160);
 
         const graphics = this.add.graphics();
-        
+
         // Base fill
         graphics.fillStyle(0x00d4ff, 0.15);
-        graphics.fillCircle(-btnWidth/2 + radius, 0, radius);
-        graphics.fillCircle(btnWidth/2 - radius, 0, radius);
-        graphics.fillRect(-btnWidth/2 + radius, -radius, btnWidth - radius * 2, btnHeight);
+        graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
+        graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
+        graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
 
         // Border
         graphics.lineStyle(2, 0x00d4ff, 0.6);
         graphics.beginPath();
-        graphics.arc(-btnWidth/2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-        graphics.lineTo(btnWidth/2 - radius, -radius);
-        graphics.arc(btnWidth/2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
+        graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
+        graphics.lineTo(btnWidth / 2 - radius, -radius);
+        graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
         graphics.closePath();
         graphics.strokePath();
 
@@ -665,47 +666,50 @@ export class GameScene extends Phaser.Scene {
             letterSpacing: 3
         }).setOrigin(0.5);
 
-        btn.add([graphics, btnText]);
-        btn.setSize(btnWidth, btnHeight);
-        btn.setInteractive({ useHandCursor: true });
+        // Reliable Hit Zone
+        const hitZone = this.add.rectangle(0, 0, btnWidth, btnHeight, 0x000000, 0);
+        hitZone.setInteractive({ useHandCursor: true });
 
-        btn.on('pointerover', () => {
+        btn.add([graphics, btnText, hitZone]);
+        btn.setSize(btnWidth, btnHeight);
+
+        hitZone.on('pointerover', () => {
             graphics.clear();
             graphics.fillStyle(0x00d4ff, 0.3);
-            graphics.fillCircle(-btnWidth/2 + radius, 0, radius);
-            graphics.fillCircle(btnWidth/2 - radius, 0, radius);
-            graphics.fillRect(-btnWidth/2 + radius, -radius, btnWidth - radius * 2, btnHeight);
-            
+            graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
+            graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
+            graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
+
             graphics.lineStyle(3, 0x00d4ff, 1);
             graphics.beginPath();
-            graphics.arc(-btnWidth/2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-            graphics.lineTo(btnWidth/2 - radius, -radius);
-            graphics.arc(btnWidth/2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
+            graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
+            graphics.lineTo(btnWidth / 2 - radius, -radius);
+            graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
             graphics.closePath();
             graphics.strokePath();
 
             this.tweens.add({ targets: btn, y: 158, duration: 200, ease: 'Power2' });
         });
 
-        btn.on('pointerout', () => {
+        hitZone.on('pointerout', () => {
             graphics.clear();
             graphics.fillStyle(0x00d4ff, 0.15);
-            graphics.fillCircle(-btnWidth/2 + radius, 0, radius);
-            graphics.fillCircle(btnWidth/2 - radius, 0, radius);
-            graphics.fillRect(-btnWidth/2 + radius, -radius, btnWidth - radius * 2, btnHeight);
+            graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
+            graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
+            graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
 
             graphics.lineStyle(2, 0x00d4ff, 0.6);
             graphics.beginPath();
-            graphics.arc(-btnWidth/2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-            graphics.lineTo(btnWidth/2 - radius, -radius);
-            graphics.arc(btnWidth/2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
+            graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
+            graphics.lineTo(btnWidth / 2 - radius, -radius);
+            graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
             graphics.closePath();
             graphics.strokePath();
 
             this.tweens.add({ targets: btn, y: 160, duration: 200, ease: 'Power2' });
         });
 
-        btn.on('pointerdown', () => {
+        hitZone.on('pointerdown', () => {
             audioManager.play('launch');
             this.currentLevelIndex++;
             this.scene.restart({ level: this.currentLevelIndex });

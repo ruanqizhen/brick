@@ -199,7 +199,7 @@ export class GameOverScene extends Phaser.Scene {
 
         this.restartBtn = this.createCyberButton(width / 2 - 135, buttonsY, '再来一局', true, () => {
             audioManager.play('launch');
-            this.scene.start('GameScene');
+            this.scene.start('GameScene', { level: this.level - 1 });
         });
 
         this.menuBtn = this.createCyberButton(width / 2 + 135, buttonsY, '返回菜单', false, () => {
@@ -208,7 +208,7 @@ export class GameOverScene extends Phaser.Scene {
         });
 
         // Keyboard
-        this.input.keyboard?.on('keydown-ENTER', () => this.scene.start('GameScene'));
+        this.input.keyboard?.on('keydown-ENTER', () => this.scene.start('GameScene', { level: this.level - 1 }));
         this.input.keyboard?.on('keydown-ESC', () => this.scene.start('MenuScene'));
 
         // Hint
@@ -264,35 +264,30 @@ export class GameOverScene extends Phaser.Scene {
             letterSpacing: 3
         }).setOrigin(0.5);
 
-        container.add([graphics, btnText]);
+        // Reliable Hit Zone
+        const hitZone = this.add.rectangle(0, 0, btnWidth, btnHeight, 0x000000, 0);
+        hitZone.setInteractive({ useHandCursor: true });
+        
+        container.add([graphics, btnText, hitZone]);
         container.setSize(btnWidth, btnHeight);
 
-        const hitArea = new Phaser.Geom.Rectangle(-btnWidth / 2, -radius, btnWidth, btnHeight);
-        container.setInteractive({
-            hitArea: hitArea,
-            hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-            useHandCursor: true
-        });
-
-        container.on('pointerover', () => {
+        hitZone.on('pointerover', () => {
             graphics.clear();
             graphics.fillStyle(isPrimary ? 0x00d4ff : 0xffffff, isPrimary ? 0.3 : 0.1);
             graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
             graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
             graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
 
-            graphics.lineStyle(2, mainColor, 0.8);
+            graphics.lineStyle(1, mainColor, isPrimary ? 0.4 : 0.2);
             graphics.beginPath();
             graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
             graphics.lineTo(btnWidth / 2 - radius, -radius);
             graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
             graphics.closePath();
             graphics.strokePath();
-
-            this.tweens.add({ targets: container, y: y - 2, duration: 200, ease: 'Power2' });
         });
 
-        container.on('pointerout', () => {
+        hitZone.on('pointerout', () => {
             graphics.clear();
             graphics.fillStyle(isPrimary ? 0x00d4ff : 0xffffff, isPrimary ? 0.15 : 0.05);
             graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
@@ -310,7 +305,7 @@ export class GameOverScene extends Phaser.Scene {
             this.tweens.add({ targets: container, y: y, duration: 200, ease: 'Power2' });
         });
 
-        container.on('pointerdown', () => {
+        hitZone.on('pointerdown', () => {
             this.tweens.add({ targets: container, scale: 0.95, duration: 100, yoyo: true, onComplete: onClick });
         });
 

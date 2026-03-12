@@ -108,74 +108,86 @@ export class PauseMenu extends Phaser.Scene {
         this.scale.on('resize', this.handleResize, this);
     }
 
-    private createButton(x: number, y: number, label: string, color: number, callback: () => void): Phaser.GameObjects.Container {
+    private createButton(x: number, y: number, textStr: string, mainColor: number, callback: () => void): Phaser.GameObjects.Container {
         const container = this.add.container(x, y);
-        const btnWidth = 280;
-        const btnHeight = 52;
+        const btnWidth = 260;
+        const btnHeight = 54;
+        const radius = btnHeight / 2;
 
-        const bg = this.add.rectangle(0, 0, btnWidth, btnHeight, color, 0.9);
-        bg.setOrigin(0.5);
+        const graphics = this.add.graphics();
 
-        // Highlight
-        const highlight = this.add.rectangle(0, -btnHeight * 0.15, btnWidth - 16, btnHeight * 0.3, 0xffffff, 0.12);
-        highlight.setOrigin(0.5);
+        const fillAlpha = 0.15;
 
-        // Border glow
-        const border = this.add.rectangle(0, 0, btnWidth + 2, btnHeight + 2, 0x000000, 0);
-        border.setOrigin(0.5);
-        border.setStrokeStyle(1.5, 0xffffff, 0.25);
+        // Base fill
+        graphics.fillStyle(mainColor, fillAlpha);
+        graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
+        graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
+        graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
 
-        const text = this.add.text(0, 0, label, {
-            fontSize: '26px',
-            fontFamily: '"Microsoft YaHei", sans-serif',
-            color: '#ffffff',
+        // Border
+        graphics.lineStyle(2, mainColor, 0.6);
+        graphics.beginPath();
+        graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
+        graphics.lineTo(btnWidth / 2 - radius, -radius);
+        graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
+        graphics.closePath();
+        graphics.strokePath();
+
+        // Button text
+        const btnText = this.add.text(0, 0, textStr, {
+            fontSize: '28px',
+            fontFamily: "'Noto Sans SC', sans-serif",
+            color: '#dddddd',
             fontStyle: 'bold',
-            shadow: {
-                blur: 6,
-                color: '#000000',
-                fill: true,
-                offsetX: 0,
-                offsetY: 1
-            }
+            letterSpacing: 3
         }).setOrigin(0.5);
 
-        container.add([bg, highlight, border, text]);
+        // Reliable Hit Zone
+        const hitZone = this.add.rectangle(0, 0, btnWidth, btnHeight, 0x000000, 0);
+        hitZone.setInteractive({ useHandCursor: true });
+
+        container.add([graphics, btnText, hitZone]);
         container.setSize(btnWidth, btnHeight);
 
-        bg.setInteractive({ useHandCursor: true });
+        hitZone.on('pointerover', () => {
+            graphics.clear();
+            graphics.fillStyle(mainColor, 0.3);
+            graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
+            graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
+            graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
 
-        bg.on('pointerover', () => {
-            this.tweens.add({
-                targets: container,
-                scaleX: 1.04,
-                scaleY: 1.04,
-                duration: 150,
-                ease: 'Back.out'
-            });
-            border.setStrokeStyle(2, 0x00ffff, 0.8);
+            graphics.lineStyle(3, mainColor, 1);
+            graphics.beginPath();
+            graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
+            graphics.lineTo(btnWidth / 2 - radius, -radius);
+            graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
+            graphics.closePath();
+            graphics.strokePath();
+
+            this.tweens.add({ targets: container, y: y - 2, duration: 200, ease: 'Power2' });
         });
 
-        bg.on('pointerout', () => {
-            this.tweens.add({
-                targets: container,
-                scaleX: 1,
-                scaleY: 1,
-                duration: 150,
-                ease: 'Back.out'
-            });
-            border.setStrokeStyle(1.5, 0xffffff, 0.25);
+        hitZone.on('pointerout', () => {
+            graphics.clear();
+            graphics.fillStyle(mainColor, fillAlpha);
+            graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
+            graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
+            graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
+
+            graphics.lineStyle(2, mainColor, 0.6);
+            graphics.beginPath();
+            graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
+            graphics.lineTo(btnWidth / 2 - radius, -radius);
+            graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
+            graphics.closePath();
+            graphics.strokePath();
+
+            this.tweens.add({ targets: container, y: y, duration: 200, ease: 'Power2' });
         });
 
-        bg.on('pointerdown', () => {
-            this.tweens.add({
-                targets: container,
-                scaleX: 0.96,
-                scaleY: 0.96,
-                duration: 80
-            });
+        hitZone.on('pointerdown', () => {
+            this.tweens.add({ targets: container, scale: 0.95, duration: 100, yoyo: true, onComplete: callback });
         });
-
-        bg.on('pointerup', callback);
 
         return container;
     }
