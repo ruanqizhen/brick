@@ -12,6 +12,8 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     private lastPaddleHitTime: number = 0;
     private isPooledActive: boolean = false;
     private sceneRef: Phaser.Scene;
+    public lastHitBrickId: string | null = null;
+    public lastHitTime: number = 0;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, 'ball');
@@ -206,13 +208,6 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
 
         this.applyJitter(1.0);
 
-        const visualRadius = this.displayWidth / 2;
-        const paddleTop = paddle.y - paddle.displayHeight / 2;
-
-        if (this.y + visualRadius > paddleTop && this.y < paddle.y) {
-            this.y = paddleTop - visualRadius;
-        }
-
         if (this.body) {
             this.body.updateFromGameObject();
         }
@@ -227,6 +222,8 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
             this.setData('state', 'READY');
             this.setData('targetSpeed', GameConfig.BALL_BASE_SPEED);
             this.isFireball = false;
+            this.lastHitBrickId = null;
+            this.lastHitTime = 0;
             this.setTint(0xffffff);
             this.fireEmitter.stop();
             this.trailEmitter.stop();

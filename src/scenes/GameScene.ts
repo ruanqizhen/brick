@@ -184,6 +184,15 @@ export class GameScene extends Phaser.Scene {
                 this.particles.spawnSparks(brick.x, brick.y);
             }
 
+            const currentTime = this.time.now;
+            // 防连击 (Debounce): 如果在50毫秒内再次碰撞同一个砖块，忽略此次碰撞计算
+            if (ball.lastHitBrickId === brick.name && currentTime - ball.lastHitTime < 50) {
+                return;
+            }
+
+            ball.lastHitBrickId = brick.name;
+            ball.lastHitTime = currentTime;
+
             // 反弹逻辑：
             // - 普通球撞击任何砖块都会反弹
             // - 火球撞击金刚砖会反弹
@@ -201,7 +210,7 @@ export class GameScene extends Phaser.Scene {
                         ball.applyJitter(1.0);
                     }
                     const separation = (ball.x > brick.x) ? overlapX : -overlapX;
-                    ball.x += separation;
+                    ball.x += separation + (Math.sign(separation) * 1); // 额外反推 1px 确保彻底脱离重叠区
                 } else {
                     // 上下侧碰撞
                     if ((ball.y < brick.y && ball.body!.velocity.y > 0) ||
@@ -210,7 +219,7 @@ export class GameScene extends Phaser.Scene {
                         ball.applyJitter(1.0);
                     }
                     const separation = (ball.y > brick.y) ? overlapY : -overlapY;
-                    ball.y += separation;
+                    ball.y += separation + (Math.sign(separation) * 1); // 额外反推 1px 确保彻底脱离重叠区
                 }
 
                 // 更新物理体位置

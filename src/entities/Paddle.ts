@@ -76,9 +76,9 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
-        // 约束边界：允许 5 像素的重叠以防止小球从极端边缘漏过
+        // 约束边界：严格贴合边界，防止边界角落遗留夹缝导致小球漏过
         const halfWidth = this.displayWidth / 2;
-        this.x = Phaser.Math.Clamp(this.x, halfWidth - 5, DESIGN_WIDTH - halfWidth + 5);
+        this.x = Phaser.Math.Clamp(this.x, halfWidth, DESIGN_WIDTH - halfWidth);
 
         // 计算速度用于球的摩擦力反弹
         this._velocityX = this.x - this.prevX;
