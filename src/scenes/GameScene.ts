@@ -88,7 +88,7 @@ export class GameScene extends Phaser.Scene {
             3
         );
         this.brickPool = new ObjectPool<Brick>(
-            () => new Brick(this, 0, 0, 'NORMAL'),
+            () => new Brick(this, 0, 0, '1'),
             200
         );
 
@@ -230,6 +230,7 @@ export class GameScene extends Phaser.Scene {
             // 金刚砖逻辑：无论是否火球，撞击到就发出声音
             if (isIndestructible) {
                 audioManager.play('indestructible');
+                // If it's an indestructible brick and a fireball, destroy it
                 if (isFireball) {
                     const bx = brick.x;
                     const by = brick.y;
@@ -849,7 +850,7 @@ export class GameScene extends Phaser.Scene {
 
         conf.grid.forEach((row, rI) => {
             row.forEach((type, cI) => {
-                if (type === 'EMPTY') return;
+                if (type === '0') return;
                 const x = sX + cI * (conf.brickWidth + conf.brickPaddingX);
                 const y = conf.offsetTop + rI * (conf.brickHeight + conf.brickPaddingY);
                 const brick = this.brickPool.get();

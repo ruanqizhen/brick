@@ -1,4 +1,4 @@
-export type BrickType = 'NORMAL' | 'HARD_2' | 'HARD_3' | 'INDESTRUCTIBLE' | 'EMPTY';
+export type BrickType = '1' | '2' | '3' | '8' | '0';
 
 export interface BrickRow {
     type: BrickType;
@@ -33,47 +33,46 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 10,
         offsetTop: 150,
         grid: [
-            ['NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL',],
-            ['NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL',],
-            ['NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL',]
+            ['1', '1', '1', '1', '1', '1', '1',],
+            ['1', '1', '1', '1', '1', '1', '1',],
+            ['1', '1', '1', '1', '1', '1', '1',]
         ]
     },
     {
         id: 2,
         name: '双重防线',
         difficulty: 'easy',
-        cols: 10,
+        cols: 8,
         rows: 4,
-        brickWidth: 100,
-        brickHeight: 35,
-        brickPaddingX: 8,
+        brickWidth: 110,
+        brickHeight: 40,
+        brickPaddingX: 10,
         brickPaddingY: 8,
-        offsetTop: 140,
+        offsetTop: 150,
         grid: [
-            ['NORMAL', 'NORMAL', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'NORMAL', 'NORMAL'],
-            ['NORMAL', 'HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_2', 'NORMAL'],
-            ['NORMAL', 'HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_2', 'NORMAL'],
-            ['NORMAL', 'NORMAL', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'NORMAL', 'NORMAL']
+            ['1', '1', '2', '2', '2', '2', '1', '1'],
+            ['1', '2', '1', '1', '1', '1', '2', '1'],
+            ['1', '2', '1', '1', '1', '1', '2', '1'],
+            ['1', '1', '2', '2', '2', '2', '1', '1']
         ]
     },
     {
         id: 3,
         name: '心形回响',
         difficulty: 'easy',
-        cols: 11,
-        rows: 6,
-        brickWidth: 90,
-        brickHeight: 32,
-        brickPaddingX: 6,
-        brickPaddingY: 6,
+        cols: 9,
+        rows: 5,
+        brickWidth: 100,
+        brickHeight: 35,
+        brickPaddingX: 9,
+        brickPaddingY: 8,
         offsetTop: 140,
         grid: [
-            ['EMPTY', 'NORMAL', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'NORMAL', 'EMPTY'],
-            ['NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY', 'NORMAL', 'EMPTY', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL'],
-            ['NORMAL', 'NORMAL', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'NORMAL', 'NORMAL'],
-            ['EMPTY', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY']
+            ['1', '1', '1', '0', '1', '0', '1', '1', '1'],
+            ['1', '1', '2', '2', '2', '2', '2', '1', '1'],
+            ['0', '1', '1', '1', '1', '1', '1', '1', '0'],
+            ['0', '0', '1', '1', '1', '1', '1', '0', '0'],
+            ['0', '0', '1', '1', '1', '1', '1', '0', '0']
         ]
     },
     {
@@ -88,12 +87,12 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 130,
         grid: [
-            ['HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2'],
-            ['HARD_2', 'NORMAL', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'NORMAL', 'HARD_2'],
-            ['HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'HARD_2', 'HARD_2', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2'],
-            ['HARD_2', 'NORMAL', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'NORMAL', 'HARD_2']
+            ['2', '2', '2', '0', '0', '0', '0', '2', '2', '2'],
+            ['2', '1', '2', '0', '0', '0', '0', '2', '1', '2'],
+            ['2', '2', '2', '0', '0', '0', '0', '2', '2', '2'],
+            ['0', '0', '0', '0', '2', '2', '0', '0', '0', '0'],
+            ['2', '2', '2', '0', '2', '2', '0', '2', '2', '2'],
+            ['2', '1', '2', '0', '0', '0', '0', '2', '1', '2']
         ]
     },
     {
@@ -108,12 +107,12 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 6,
         offsetTop: 140,
         grid: [
-            ['NORMAL', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'NORMAL'],
-            ['EMPTY', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'HARD_2', 'INDESTRUCTIBLE', 'NORMAL', 'NORMAL', 'NORMAL', 'INDESTRUCTIBLE', 'HARD_2', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY'],
-            ['NORMAL', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'NORMAL']
+            ['1', '1', '0', '0', '0', '0', '0', '0', '0', '1', '1'],
+            ['0', '1', '1', '1', '1', '1', '1', '1', '1', '1', '0'],
+            ['0', '0', '2', '2', '2', '2', '2', '2', '2', '0', '0'],
+            ['0', '0', '2', '8', '1', '1', '1', '8', '2', '0', '0'],
+            ['0', '1', '1', '1', '1', '1', '1', '1', '1', '1', '0'],
+            ['1', '1', '0', '0', '0', '0', '0', '0', '0', '1', '1']
         ]
     },
     // --- MEDIUM (6-25) ---
@@ -129,11 +128,11 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 6,
         offsetTop: 150,
         grid: [
-            ['NORMAL', 'EMPTY', 'HARD_2', 'EMPTY', 'NORMAL', 'EMPTY', 'HARD_2', 'EMPTY', 'NORMAL', 'EMPTY', 'HARD_2', 'EMPTY'],
-            ['EMPTY', 'NORMAL', 'EMPTY', 'HARD_2', 'EMPTY', 'NORMAL', 'EMPTY', 'HARD_2', 'EMPTY', 'NORMAL', 'EMPTY', 'HARD_2'],
-            ['INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE'],
-            ['EMPTY', 'NORMAL', 'EMPTY', 'HARD_2', 'EMPTY', 'NORMAL', 'EMPTY', 'HARD_2', 'EMPTY', 'NORMAL', 'EMPTY', 'HARD_2'],
-            ['NORMAL', 'EMPTY', 'HARD_2', 'EMPTY', 'NORMAL', 'EMPTY', 'HARD_2', 'EMPTY', 'NORMAL', 'EMPTY', 'HARD_2', 'EMPTY']
+            ['1', '0', '2', '0', '1', '0', '2', '0', '1', '0', '2', '0'],
+            ['0', '1', '0', '2', '0', '1', '0', '2', '0', '1', '0', '2'],
+            ['8', '8', '1', '1', '1', '1', '1', '1', '1', '1', '8', '8'],
+            ['0', '1', '0', '2', '0', '1', '0', '2', '0', '1', '0', '2'],
+            ['1', '0', '2', '0', '1', '0', '2', '0', '1', '0', '2', '0']
         ]
     },
     {
@@ -148,12 +147,12 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 6,
         offsetTop: 130,
         grid: [
-            ['HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['HARD_2', 'NORMAL', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY']
+            ['2', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
+            ['2', '1', '0', '0', '0', '0', '0', '0', '0', '0'],
+            ['2', '1', '1', '0', '0', '0', '0', '0', '0', '0'],
+            ['2', '1', '1', '1', '0', '0', '0', '0', '0', '0'],
+            ['2', '1', '1', '1', '1', '0', '0', '0', '0', '0'],
+            ['2', '1', '1', '1', '1', '1', '0', '0', '0', '0']
         ]
     },
     {
@@ -168,13 +167,13 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 6,
         offsetTop: 140,
         grid: [
-            ['EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'NORMAL', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'HARD_2', 'NORMAL', 'HARD_2', 'HARD_3', 'HARD_2', 'NORMAL', 'HARD_2', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'NORMAL', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY']
+            ['0', '0', '0', '0', '0', '2', '0', '0', '0', '0', '0'],
+            ['0', '0', '0', '0', '2', '1', '2', '0', '0', '0', '0'],
+            ['0', '0', '0', '2', '1', '2', '1', '2', '0', '0', '0'],
+            ['0', '0', '2', '1', '2', '3', '2', '1', '2', '0', '0'],
+            ['0', '0', '0', '2', '1', '2', '1', '2', '0', '0', '0'],
+            ['0', '0', '0', '0', '2', '1', '2', '0', '0', '0', '0'],
+            ['0', '0', '0', '0', '0', '2', '0', '0', '0', '0', '0']
         ]
     },
     {
@@ -189,12 +188,12 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 130,
         grid: [
-            ['EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'NORMAL', 'NORMAL', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_3', 'HARD_3', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_3', 'HARD_3', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_2'],
-            ['NORMAL', 'HARD_3', 'HARD_3', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_3', 'HARD_3', 'NORMAL'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_3', 'HARD_3', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'NORMAL', 'NORMAL', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY']
+            ['0', '0', '0', '2', '1', '1', '2', '0', '0', '0'],
+            ['0', '0', '0', '1', '3', '3', '1', '0', '0', '0'],
+            ['2', '1', '1', '1', '3', '3', '1', '1', '1', '2'],
+            ['1', '3', '3', '1', '1', '1', '1', '3', '3', '1'],
+            ['0', '0', '0', '1', '3', '3', '1', '0', '0', '0'],
+            ['0', '0', '0', '2', '1', '1', '2', '0', '0', '0']
         ]
     },
     {
@@ -209,10 +208,10 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 10,
         offsetTop: 150,
         grid: [
-            ['HARD_2', 'EMPTY', 'HARD_2', 'EMPTY', 'HARD_2', 'EMPTY', 'HARD_2', 'EMPTY', 'HARD_2', 'EMPTY', 'HARD_2', 'EMPTY'],
-            ['HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL'],
-            ['HARD_3', 'HARD_2', 'HARD_3', 'HARD_2', 'HARD_3', 'HARD_2', 'HARD_3', 'HARD_2', 'HARD_3', 'HARD_2', 'HARD_3', 'HARD_2'],
-            ['HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL']
+            ['2', '0', '2', '0', '2', '0', '2', '0', '2', '0', '2', '0'],
+            ['2', '1', '2', '1', '2', '1', '2', '1', '2', '1', '2', '1'],
+            ['3', '2', '3', '2', '3', '2', '3', '2', '3', '2', '3', '2'],
+            ['2', '1', '2', '1', '2', '1', '2', '1', '2', '1', '2', '1']
         ]
     },
 
@@ -229,13 +228,13 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 130,
         grid: [
-            ['HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'NORMAL', 'NORMAL', 'HARD_3', 'HARD_3', 'NORMAL', 'NORMAL', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'NORMAL', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'NORMAL', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'NORMAL', 'NORMAL', 'HARD_3', 'HARD_3', 'NORMAL', 'NORMAL', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2']
+            ['2', '2', '2', '2', '2', '2', '2', '2', '2', '2'],
+            ['2', '0', '0', '0', '0', '0', '0', '0', '0', '2'],
+            ['2', '0', '1', '1', '3', '3', '1', '1', '0', '2'],
+            ['2', '0', '1', '8', '0', '0', '8', '1', '0', '2'],
+            ['2', '0', '1', '1', '3', '3', '1', '1', '0', '2'],
+            ['2', '0', '0', '0', '0', '0', '0', '0', '0', '2'],
+            ['2', '2', '2', '2', '2', '2', '2', '2', '2', '2']
         ]
     },
     {
@@ -250,14 +249,14 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 7,
         offsetTop: 120,
         grid: [
-            ['HARD_3', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_3'],
-            ['EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2', 'HARD_2', 'HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY'],
-            ['HARD_3', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_3']
+            ['3', '0', '0', '0', '0', '0', '0', '0', '0', '0', '3'],
+            ['0', '2', '0', '0', '0', '0', '0', '0', '0', '2', '0'],
+            ['0', '0', '1', '0', '0', '0', '0', '0', '1', '0', '0'],
+            ['0', '0', '0', '8', '2', '2', '2', '8', '0', '0', '0'],
+            ['0', '0', '0', '2', '3', '3', '3', '2', '0', '0', '0'],
+            ['0', '0', '1', '0', '0', '0', '0', '0', '1', '0', '0'],
+            ['0', '2', '0', '0', '0', '0', '0', '0', '0', '2', '0'],
+            ['3', '0', '0', '0', '0', '0', '0', '0', '0', '0', '3']
         ]
     },
     {
@@ -272,13 +271,13 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 6,
         offsetTop: 120,
         grid: [
-            ['EMPTY', 'NORMAL', 'EMPTY', 'EMPTY', 'NORMAL', 'EMPTY', 'EMPTY', 'NORMAL', 'EMPTY', 'EMPTY', 'NORMAL', 'EMPTY'],
-            ['INDESTRUCTIBLE', 'HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2', 'INDESTRUCTIBLE'],
-            ['EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY'],
-            ['EMPTY', 'HARD_3', 'EMPTY', 'EMPTY', 'HARD_3', 'EMPTY', 'EMPTY', 'HARD_3', 'EMPTY', 'EMPTY', 'HARD_3', 'EMPTY'],
-            ['EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY'],
-            ['INDESTRUCTIBLE', 'HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2', 'INDESTRUCTIBLE'],
-            ['EMPTY', 'NORMAL', 'EMPTY', 'EMPTY', 'NORMAL', 'EMPTY', 'EMPTY', 'NORMAL', 'EMPTY', 'EMPTY', 'NORMAL', 'EMPTY']
+            ['0', '1', '0', '0', '1', '0', '0', '1', '0', '0', '1', '0'],
+            ['8', '2', '8', '0', '2', '0', '0', '2', '0', '8', '2', '8'],
+            ['0', '2', '0', '0', '2', '0', '0', '2', '0', '0', '2', '0'],
+            ['0', '3', '0', '0', '3', '0', '0', '3', '0', '0', '3', '0'],
+            ['0', '2', '0', '0', '2', '0', '0', '2', '0', '0', '2', '0'],
+            ['8', '2', '8', '0', '2', '0', '0', '2', '0', '8', '2', '8'],
+            ['0', '1', '0', '0', '1', '0', '0', '1', '0', '0', '1', '0']
         ]
     },
     {
@@ -293,16 +292,16 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 110,
         grid: [
-            ['HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'HARD_3', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'HARD_3', 'EMPTY', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'HARD_3', 'EMPTY', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'HARD_3', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2']
+            ['2', '2', '2', '2', '2', '2', '2', '2', '2', '2'],
+            ['2', '0', '0', '0', '0', '0', '0', '0', '0', '2'],
+            ['2', '0', '3', '3', '3', '3', '3', '3', '0', '2'],
+            ['2', '0', '3', '0', '0', '0', '0', '3', '0', '2'],
+            ['2', '0', '3', '0', '8', '8', '0', '3', '0', '2'],
+            ['2', '0', '3', '0', '8', '8', '0', '3', '0', '2'],
+            ['2', '0', '3', '0', '0', '0', '0', '3', '0', '2'],
+            ['2', '0', '3', '3', '3', '3', '3', '3', '0', '2'],
+            ['2', '0', '0', '0', '0', '0', '0', '0', '0', '2'],
+            ['2', '2', '2', '2', '2', '2', '2', '2', '2', '2']
         ]
     },
     {
@@ -317,15 +316,15 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 120,
         grid: [
-            ['EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_3', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'NORMAL', 'HARD_3', 'NORMAL', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2', 'HARD_2', 'HARD_3', 'HARD_2', 'HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'NORMAL', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_2', 'NORMAL', 'EMPTY'],
-            ['HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3'],
-            ['EMPTY', 'NORMAL', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_2', 'NORMAL', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2', 'HARD_2', 'HARD_3', 'HARD_2', 'HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'NORMAL', 'HARD_3', 'NORMAL', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_3', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY']
+            ['0', '0', '0', '0', '0', '3', '0', '0', '0', '0', '0'],
+            ['0', '0', '0', '1', '1', '3', '1', '1', '0', '0', '0'],
+            ['0', '0', '8', '2', '2', '3', '2', '2', '8', '0', '0'],
+            ['0', '1', '2', '3', '3', '3', '3', '3', '2', '1', '0'],
+            ['3', '3', '3', '3', '0', '0', '0', '3', '3', '3', '3'],
+            ['0', '1', '2', '3', '3', '3', '3', '3', '2', '1', '0'],
+            ['0', '0', '8', '2', '2', '3', '2', '2', '8', '0', '0'],
+            ['0', '0', '0', '1', '1', '3', '1', '1', '0', '0', '0'],
+            ['0', '0', '0', '0', '0', '3', '0', '0', '0', '0', '0']
         ]
     },
     // --- HARD (16-25) ---
@@ -341,14 +340,14 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 120,
         grid: [
-            ['HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2'],
-            ['EMPTY', 'HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2', 'EMPTY'],
-            ['HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2']
+            ['2', '1', '0', '0', '0', '0', '0', '0', '1', '2'],
+            ['0', '2', '1', '0', '0', '0', '0', '1', '2', '0'],
+            ['0', '0', '2', '1', '0', '0', '1', '2', '0', '0'],
+            ['0', '0', '0', '2', '3', '3', '2', '0', '0', '0'],
+            ['0', '0', '0', '3', '3', '3', '3', '0', '0', '0'],
+            ['0', '0', '2', '1', '0', '0', '1', '2', '0', '0'],
+            ['0', '2', '1', '0', '0', '0', '0', '1', '2', '0'],
+            ['2', '1', '0', '0', '0', '0', '0', '0', '1', '2']
         ]
     },
     {
@@ -363,12 +362,12 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 10,
         offsetTop: 130,
         grid: [
-            ['EMPTY', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_2', 'EMPTY'],
-            ['HARD_2', 'HARD_3', 'EMPTY', 'EMPTY', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY', 'EMPTY', 'HARD_3', 'HARD_2'],
-            ['HARD_2', 'HARD_3', 'EMPTY', 'EMPTY', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY', 'EMPTY', 'HARD_3', 'HARD_2'],
-            ['EMPTY', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_2', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'EMPTY']
+            ['0', '0', '2', '2', '2', '2', '2', '2', '2', '2', '0', '0'],
+            ['0', '2', '3', '3', '3', '3', '3', '3', '3', '3', '2', '0'],
+            ['2', '3', '0', '0', '1', '1', '1', '1', '0', '0', '3', '2'],
+            ['2', '3', '0', '0', '1', '1', '1', '1', '0', '0', '3', '2'],
+            ['0', '2', '3', '3', '3', '3', '3', '3', '3', '3', '2', '0'],
+            ['0', '0', '2', '2', '2', '2', '2', '2', '2', '2', '0', '0']
         ]
     },
     {
@@ -383,13 +382,13 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 140,
         grid: [
-            ['NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL'],
-            ['HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2'],
-            ['HARD_3', 'HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2', 'HARD_3'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['HARD_3', 'HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2', 'HARD_3'],
-            ['HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2'],
-            ['NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL']
+            ['1', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1'],
+            ['2', '1', '0', '0', '0', '0', '0', '0', '0', '1', '2'],
+            ['3', '2', '1', '0', '0', '0', '0', '0', '1', '2', '3'],
+            ['8', '3', '2', '1', '1', '1', '1', '1', '2', '3', '8'],
+            ['3', '2', '1', '0', '0', '0', '0', '0', '1', '2', '3'],
+            ['2', '1', '0', '0', '0', '0', '0', '0', '0', '1', '2'],
+            ['1', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1']
         ]
     },
     {
@@ -404,12 +403,12 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 130,
         grid: [
-            ['HARD_3', 'HARD_3', 'EMPTY', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'EMPTY', 'HARD_3', 'HARD_3'],
-            ['HARD_3', 'HARD_3', 'EMPTY', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'EMPTY', 'HARD_3', 'HARD_3'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['HARD_2', 'HARD_2', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'HARD_2', 'HARD_2'],
-            ['HARD_2', 'HARD_2', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'HARD_2', 'HARD_2'],
-            ['NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL']
+            ['3', '3', '0', '3', '3', '3', '3', '0', '3', '3'],
+            ['3', '3', '0', '3', '3', '3', '3', '0', '3', '3'],
+            ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
+            ['2', '2', '0', '2', '2', '2', '2', '0', '2', '2'],
+            ['2', '2', '0', '2', '2', '2', '2', '0', '2', '2'],
+            ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1']
         ]
     },
     {
@@ -424,14 +423,14 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 6,
         offsetTop: 120,
         grid: [
-            ['HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2'],
-            ['HARD_2', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_2'],
-            ['HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2'],
-            ['HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2'],
-            ['HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'NORMAL', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'NORMAL', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2'],
-            ['HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2'],
-            ['HARD_2', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_2'],
-            ['HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2']
+            ['2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2'],
+            ['2', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '2'],
+            ['2', '8', '0', '0', '0', '0', '0', '0', '0', '0', '8', '2'],
+            ['2', '8', '0', '1', '1', '1', '1', '1', '1', '0', '8', '2'],
+            ['2', '8', '0', '1', '3', '3', '3', '3', '1', '0', '8', '2'],
+            ['2', '8', '0', '1', '1', '1', '1', '1', '1', '0', '8', '2'],
+            ['2', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '2'],
+            ['2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2']
         ]
     },
 
@@ -448,14 +447,14 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 120,
         grid: [
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['HARD_3', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_3'],
-            ['HARD_3', 'NORMAL', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'NORMAL', 'HARD_3'],
-            ['HARD_3', 'NORMAL', 'INDESTRUCTIBLE', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'INDESTRUCTIBLE', 'NORMAL', 'HARD_3'],
-            ['HARD_3', 'NORMAL', 'EMPTY', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_2', 'EMPTY', 'NORMAL', 'HARD_3'],
-            ['HARD_3', 'NORMAL', 'INDESTRUCTIBLE', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'INDESTRUCTIBLE', 'NORMAL', 'HARD_3'],
-            ['HARD_3', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_3'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'INDESTRUCTIBLE']
+            ['8', '3', '3', '3', '3', '3', '3', '3', '3', '8'],
+            ['3', '1', '1', '1', '1', '1', '1', '1', '1', '3'],
+            ['3', '1', '8', '8', '0', '0', '8', '8', '1', '3'],
+            ['3', '1', '8', '2', '2', '2', '2', '8', '1', '3'],
+            ['3', '1', '0', '2', '3', '3', '2', '0', '1', '3'],
+            ['3', '1', '8', '2', '2', '2', '2', '8', '1', '3'],
+            ['3', '1', '1', '1', '1', '1', '1', '1', '1', '3'],
+            ['8', '3', '3', '3', '3', '3', '3', '3', '3', '8']
         ]
     },
     {
@@ -470,16 +469,16 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 6,
         offsetTop: 100,
         grid: [
-            ['HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3'],
-            ['HARD_3', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_3'],
-            ['HARD_3', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'HARD_3'],
-            ['HARD_3', 'EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY', 'HARD_3'],
-            ['HARD_3', 'EMPTY', 'HARD_2', 'EMPTY', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY', 'HARD_2', 'EMPTY', 'HARD_3'],
-            ['HARD_3', 'EMPTY', 'HARD_2', 'EMPTY', 'NORMAL', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'NORMAL', 'EMPTY', 'HARD_2', 'EMPTY', 'HARD_3'],
-            ['HARD_3', 'EMPTY', 'HARD_2', 'EMPTY', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'EMPTY', 'HARD_2', 'EMPTY', 'HARD_3'],
-            ['HARD_3', 'EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY', 'HARD_3'],
-            ['HARD_3', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'HARD_3'],
-            ['HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3']
+            ['3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3'],
+            ['3', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '3'],
+            ['3', '0', '2', '2', '2', '2', '2', '2', '2', '2', '0', '3'],
+            ['3', '0', '2', '0', '0', '0', '0', '0', '0', '2', '0', '3'],
+            ['3', '0', '2', '0', '1', '1', '1', '1', '0', '2', '0', '3'],
+            ['3', '0', '2', '0', '1', '8', '8', '1', '0', '2', '0', '3'],
+            ['3', '0', '2', '0', '1', '1', '1', '1', '0', '2', '0', '3'],
+            ['3', '0', '2', '0', '0', '0', '0', '0', '0', '2', '0', '3'],
+            ['3', '0', '2', '2', '2', '2', '2', '2', '2', '2', '0', '3'],
+            ['3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3']
         ]
     },
     {
@@ -494,14 +493,14 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 120,
         grid: [
-            ['HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY'],
-            ['EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3'],
-            ['HARD_2', 'EMPTY', 'HARD_2', 'EMPTY', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'EMPTY', 'HARD_2', 'EMPTY', 'HARD_2'],
-            ['EMPTY', 'HARD_2', 'EMPTY', 'HARD_2', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_2', 'EMPTY', 'HARD_2', 'EMPTY'],
-            ['HARD_2', 'EMPTY', 'HARD_2', 'EMPTY', 'HARD_2', 'HARD_2', 'EMPTY', 'HARD_2', 'EMPTY', 'HARD_2'],
-            ['EMPTY', 'HARD_2', 'EMPTY', 'HARD_2', 'EMPTY', 'EMPTY', 'HARD_2', 'EMPTY', 'HARD_2', 'EMPTY'],
-            ['NORMAL', 'EMPTY', 'NORMAL', 'EMPTY', 'NORMAL', 'EMPTY', 'NORMAL', 'EMPTY', 'NORMAL', 'EMPTY'],
-            ['EMPTY', 'NORMAL', 'EMPTY', 'NORMAL', 'EMPTY', 'NORMAL', 'EMPTY', 'NORMAL', 'EMPTY', 'NORMAL']
+            ['3', '0', '3', '0', '3', '0', '3', '0', '3', '0'],
+            ['0', '3', '0', '3', '0', '3', '0', '3', '0', '3'],
+            ['2', '0', '2', '0', '8', '8', '0', '2', '0', '2'],
+            ['0', '2', '0', '2', '8', '8', '2', '0', '2', '0'],
+            ['2', '0', '2', '0', '2', '2', '0', '2', '0', '2'],
+            ['0', '2', '0', '2', '0', '0', '2', '0', '2', '0'],
+            ['1', '0', '1', '0', '1', '0', '1', '0', '1', '0'],
+            ['0', '1', '0', '1', '0', '1', '0', '1', '0', '1']
         ]
     },
     {
@@ -516,15 +515,15 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 110,
         grid: [
-            ['HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3'],
-            ['EMPTY', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'EMPTY'],
-            ['HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3']
+            ['3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3'],
+            ['0', '3', '3', '3', '3', '3', '3', '3', '3', '3', '0'],
+            ['0', '0', '2', '2', '2', '2', '2', '2', '2', '0', '0'],
+            ['0', '0', '0', '2', '1', '1', '1', '2', '0', '0', '0'],
+            ['0', '0', '0', '0', '8', '8', '8', '0', '0', '0', '0'],
+            ['0', '0', '0', '2', '1', '1', '1', '2', '0', '0', '0'],
+            ['0', '0', '2', '2', '2', '2', '2', '2', '2', '0', '0'],
+            ['0', '3', '3', '3', '3', '3', '3', '3', '3', '3', '0'],
+            ['3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3']
         ]
     },
     {
@@ -539,14 +538,14 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 6,
         offsetTop: 100,
         grid: [
-            ['HARD_3', 'HARD_3', 'HARD_3', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_3', 'HARD_3', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'HARD_2', 'HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'HARD_3', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_2', 'HARD_3', 'HARD_2', 'HARD_3'],
-            ['INDESTRUCTIBLE', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'INDESTRUCTIBLE'],
-            ['HARD_3', 'HARD_2', 'HARD_3', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_2', 'HARD_3', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'HARD_2', 'HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_3', 'HARD_3', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_3', 'HARD_3', 'HARD_3']
+            ['3', '3', '3', '8', '8', '8', '8', '8', '8', '3', '3', '3'],
+            ['3', '2', '2', '2', '1', '1', '1', '1', '2', '2', '2', '3'],
+            ['3', '2', '3', '2', '3', '3', '3', '3', '2', '3', '2', '3'],
+            ['8', '1', '2', '1', '2', '3', '3', '2', '1', '2', '1', '8'],
+            ['8', '1', '2', '1', '2', '3', '3', '2', '1', '2', '1', '8'],
+            ['3', '2', '3', '2', '3', '3', '3', '3', '2', '3', '2', '3'],
+            ['3', '2', '2', '2', '1', '1', '1', '1', '2', '2', '2', '3'],
+            ['3', '3', '3', '8', '8', '8', '8', '8', '8', '3', '3', '3']
         ]
     },
     // --- EXPERT (26-40) ---
@@ -562,15 +561,15 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 110,
         grid: [
-            ['EMPTY', 'EMPTY', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_3', 'EMPTY'],
-            ['HARD_3', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'EMPTY', 'HARD_3', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_3', 'EMPTY', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'EMPTY', 'INDESTRUCTIBLE', 'NORMAL', 'NORMAL', 'INDESTRUCTIBLE', 'EMPTY', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'EMPTY', 'HARD_3', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_3', 'EMPTY', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'HARD_3'],
-            ['EMPTY', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_3', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'EMPTY', 'EMPTY']
+            ['0', '0', '3', '3', '3', '3', '3', '3', '0', '0'],
+            ['0', '3', '2', '2', '2', '2', '2', '2', '3', '0'],
+            ['3', '2', '0', '0', '0', '0', '0', '0', '2', '3'],
+            ['3', '2', '0', '3', '8', '8', '3', '0', '2', '3'],
+            ['3', '2', '0', '8', '1', '1', '8', '0', '2', '3'],
+            ['3', '2', '0', '3', '8', '8', '3', '0', '2', '3'],
+            ['3', '2', '0', '0', '0', '0', '0', '0', '2', '3'],
+            ['0', '3', '2', '2', '2', '2', '2', '2', '3', '0'],
+            ['0', '0', '3', '3', '3', '3', '3', '3', '0', '0']
         ]
     },
     {
@@ -585,14 +584,14 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 10,
         offsetTop: 120,
         grid: [
-            ['HARD_3', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_3', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_3', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'HARD_3', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2', 'HARD_3'],
-            ['INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE'],
-            ['HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3'],
-            ['NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'INDESTRUCTIBLE', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'INDESTRUCTIBLE', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2']
+            ['3', '0', '0', '0', '0', '3', '0', '0', '0', '0', '3'],
+            ['3', '2', '0', '0', '0', '3', '0', '0', '0', '2', '3'],
+            ['3', '2', '1', '0', '0', '3', '0', '0', '1', '2', '3'],
+            ['8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8'],
+            ['3', '3', '3', '3', '3', '8', '3', '3', '3', '3', '3'],
+            ['1', '1', '1', '1', '1', '8', '1', '1', '1', '1', '1'],
+            ['0', '0', '0', '0', '0', '8', '0', '0', '0', '0', '0'],
+            ['2', '2', '2', '2', '2', '8', '2', '2', '2', '2', '2']
         ]
     },
     {
@@ -607,13 +606,13 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 6,
         offsetTop: 140,
         grid: [
-            ['EMPTY', 'EMPTY', 'HARD_3', 'HARD_3', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_3', 'HARD_3', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_3', 'EMPTY', 'EMPTY', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_3', 'EMPTY'],
-            ['HARD_3', 'HARD_2', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_2', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_2', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_3'],
-            ['EMPTY', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_3', 'EMPTY', 'EMPTY', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_3', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'HARD_3', 'HARD_3', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_3', 'HARD_3', 'EMPTY', 'EMPTY'],
-            ['INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE']
+            ['0', '0', '3', '3', '0', '0', '0', '0', '3', '3', '0', '0'],
+            ['0', '3', '2', '2', '3', '0', '0', '3', '2', '2', '3', '0'],
+            ['3', '2', '1', '1', '2', '3', '3', '2', '1', '1', '2', '3'],
+            ['3', '2', '1', '1', '2', '3', '3', '2', '1', '1', '2', '3'],
+            ['0', '3', '2', '2', '3', '0', '0', '3', '2', '2', '3', '0'],
+            ['0', '0', '3', '3', '0', '0', '0', '0', '3', '3', '0', '0'],
+            ['8', '8', '0', '0', '8', '8', '8', '8', '0', '0', '8', '8']
         ]
     },
     {
@@ -628,12 +627,12 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 12,
         offsetTop: 130,
         grid: [
-            ['HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'HARD_3', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_3', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'HARD_2'],
-            ['HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2']
+            ['2', '2', '2', '2', '2', '2', '2', '2', '2', '2'],
+            ['2', '0', '0', '0', '0', '0', '0', '0', '0', '2'],
+            ['2', '0', '3', '3', '3', '3', '3', '3', '0', '2'],
+            ['2', '0', '3', '1', '1', '1', '1', '3', '0', '2'],
+            ['2', '0', '0', '0', '0', '0', '0', '0', '0', '2'],
+            ['2', '2', '2', '2', '2', '2', '2', '2', '2', '2']
         ]
     },
     {
@@ -648,13 +647,13 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 120,
         grid: [
-            ['NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL'],
-            ['HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2'],
-            ['HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3'],
-            ['INDESTRUCTIBLE', 'EMPTY', 'INDESTRUCTIBLE', 'EMPTY', 'INDESTRUCTIBLE', 'EMPTY', 'INDESTRUCTIBLE', 'EMPTY', 'INDESTRUCTIBLE', 'EMPTY', 'INDESTRUCTIBLE'],
-            ['HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3'],
-            ['HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2'],
-            ['NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL']
+            ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'],
+            ['2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2'],
+            ['3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3'],
+            ['8', '0', '8', '0', '8', '0', '8', '0', '8', '0', '8'],
+            ['3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3'],
+            ['2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2'],
+            ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']
         ]
     },
 
@@ -671,16 +670,16 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 6,
         offsetTop: 100,
         grid: [
-            ['HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'NORMAL', 'HARD_3', 'NORMAL', 'HARD_3', 'NORMAL', 'NORMAL', 'HARD_3', 'NORMAL', 'HARD_3', 'NORMAL', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'NORMAL', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_2', 'NORMAL', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'NORMAL', 'HARD_3', 'NORMAL', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'NORMAL', 'HARD_3', 'NORMAL', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'NORMAL', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_2', 'NORMAL', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'NORMAL', 'HARD_3', 'NORMAL', 'HARD_3', 'NORMAL', 'NORMAL', 'HARD_3', 'NORMAL', 'HARD_3', 'NORMAL', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'HARD_2', 'NORMAL', 'HARD_2', 'NORMAL', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'NORMAL', 'HARD_3', 'NORMAL', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'NORMAL', 'HARD_3', 'NORMAL', 'HARD_3'],
-            ['HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3']
+            ['3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3'],
+            ['3', '2', '1', '2', '1', '2', '2', '1', '2', '1', '2', '3'],
+            ['3', '1', '3', '1', '3', '1', '1', '3', '1', '3', '1', '3'],
+            ['3', '2', '1', '3', '1', '2', '2', '1', '3', '1', '2', '3'],
+            ['3', '1', '3', '1', '8', '8', '8', '8', '1', '3', '1', '3'],
+            ['3', '2', '1', '3', '1', '2', '2', '1', '3', '1', '2', '3'],
+            ['3', '1', '3', '1', '3', '1', '1', '3', '1', '3', '1', '3'],
+            ['3', '2', '1', '2', '1', '2', '2', '1', '2', '1', '2', '3'],
+            ['3', '1', '3', '1', '3', '3', '3', '3', '1', '3', '1', '3'],
+            ['3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3']
         ]
     },
     {
@@ -695,16 +694,16 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 90,
         grid: [
-            ['INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3'],
-            ['HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3'],
-            ['HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'NORMAL', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_2', 'NORMAL', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3'],
-            ['HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3']
+            ['8', '3', '8', '3', '8', '3', '8', '3', '8', '3'],
+            ['3', '8', '3', '8', '3', '8', '3', '8', '3', '8'],
+            ['8', '3', '8', '3', '8', '3', '8', '3', '8', '3'],
+            ['3', '8', '3', '1', '1', '1', '1', '8', '3', '8'],
+            ['8', '3', '1', '2', '2', '2', '2', '1', '3', '8'],
+            ['8', '3', '1', '2', '3', '3', '2', '1', '3', '8'],
+            ['3', '8', '3', '1', '1', '1', '1', '8', '3', '8'],
+            ['8', '3', '8', '3', '8', '3', '8', '3', '8', '3'],
+            ['3', '8', '3', '8', '3', '8', '3', '8', '3', '8'],
+            ['8', '3', '8', '3', '8', '3', '8', '3', '8', '3']
         ]
     },
     {
@@ -719,16 +718,16 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 6,
         offsetTop: 90,
         grid: [
-            ['EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3'],
-            ['HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY'],
-            ['EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3'],
-            ['HARD_3', 'EMPTY', 'HARD_3', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3'],
-            ['EMPTY', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY'],
-            ['HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'EMPTY', 'HARD_3'],
-            ['EMPTY', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY'],
-            ['HARD_3', 'EMPTY', 'HARD_3', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3'],
-            ['EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3'],
-            ['HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY', 'HARD_3', 'EMPTY']
+            ['0', '3', '0', '3', '0', '3', '0', '3', '0', '3', '0', '3'],
+            ['3', '0', '3', '0', '3', '0', '3', '0', '3', '0', '3', '0'],
+            ['0', '3', '0', '3', '0', '3', '0', '3', '0', '3', '0', '3'],
+            ['3', '0', '3', '8', '8', '8', '8', '3', '0', '3', '0', '3'],
+            ['0', '3', '8', '3', '3', '3', '3', '8', '3', '0', '3', '0'],
+            ['3', '8', '3', '3', '3', '3', '3', '3', '8', '3', '0', '3'],
+            ['0', '3', '8', '3', '3', '3', '3', '8', '3', '0', '3', '0'],
+            ['3', '0', '3', '8', '8', '8', '8', '3', '0', '3', '0', '3'],
+            ['0', '3', '0', '3', '0', '3', '0', '3', '0', '3', '0', '3'],
+            ['3', '0', '3', '0', '3', '0', '3', '0', '3', '0', '3', '0']
         ]
     },
     {
@@ -743,16 +742,16 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 90,
         grid: [
-            ['HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3'],
-            ['INDESTRUCTIBLE', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'INDESTRUCTIBLE'],
-            ['HARD_3', 'HARD_2', 'HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_2', 'HARD_3'],
-            ['INDESTRUCTIBLE', 'HARD_2', 'NORMAL', 'HARD_2', 'HARD_2', 'HARD_3', 'HARD_2', 'HARD_2', 'NORMAL', 'HARD_2', 'INDESTRUCTIBLE'],
-            ['HARD_3', 'HARD_3', 'NORMAL', 'HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2', 'NORMAL', 'HARD_3', 'HARD_3'],
-            ['HARD_3', 'HARD_3', 'NORMAL', 'HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2', 'NORMAL', 'HARD_3', 'HARD_3'],
-            ['INDESTRUCTIBLE', 'HARD_2', 'NORMAL', 'HARD_2', 'HARD_2', 'HARD_3', 'HARD_2', 'HARD_2', 'NORMAL', 'HARD_2', 'INDESTRUCTIBLE'],
-            ['HARD_3', 'HARD_2', 'HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_2', 'HARD_3'],
-            ['INDESTRUCTIBLE', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'INDESTRUCTIBLE'],
-            ['HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3', 'INDESTRUCTIBLE', 'HARD_3']
+            ['3', '8', '3', '8', '3', '8', '3', '8', '3', '8', '3'],
+            ['8', '2', '2', '2', '2', '3', '2', '2', '2', '2', '8'],
+            ['3', '2', '2', '1', '1', '1', '1', '1', '2', '2', '3'],
+            ['8', '2', '1', '2', '2', '3', '2', '2', '1', '2', '8'],
+            ['3', '3', '1', '2', '8', '0', '8', '2', '1', '3', '3'],
+            ['3', '3', '1', '2', '8', '0', '8', '2', '1', '3', '3'],
+            ['8', '2', '1', '2', '2', '3', '2', '2', '1', '2', '8'],
+            ['3', '2', '2', '1', '1', '1', '1', '1', '2', '2', '3'],
+            ['8', '2', '2', '2', '2', '3', '2', '2', '2', '2', '8'],
+            ['3', '8', '3', '8', '3', '8', '3', '8', '3', '8', '3']
         ]
     },
     {
@@ -767,18 +766,18 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 6,
         offsetTop: 80,
         grid: [
-            ['INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'HARD_3', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'HARD_3', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE']
+            ['8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8'],
+            ['8', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '8'],
+            ['8', '3', '2', '2', '2', '2', '2', '2', '2', '2', '3', '8'],
+            ['8', '3', '2', '1', '1', '1', '1', '1', '1', '2', '3', '8'],
+            ['8', '3', '2', '1', '3', '3', '3', '3', '1', '2', '3', '8'],
+            ['8', '3', '2', '1', '3', '8', '8', '3', '1', '2', '3', '8'],
+            ['8', '3', '2', '1', '3', '8', '8', '3', '1', '2', '3', '8'],
+            ['8', '3', '2', '1', '3', '3', '3', '3', '1', '2', '3', '8'],
+            ['8', '3', '2', '1', '1', '1', '1', '1', '1', '2', '3', '8'],
+            ['8', '3', '2', '2', '2', '2', '2', '2', '2', '2', '3', '8'],
+            ['8', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '8'],
+            ['8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8']
         ]
     },
     {
@@ -793,16 +792,16 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 90,
         grid: [
-            ['HARD_3', 'EMPTY', 'INDESTRUCTIBLE', 'EMPTY', 'HARD_3', 'HARD_3', 'EMPTY', 'INDESTRUCTIBLE', 'EMPTY', 'HARD_3'],
-            ['EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY'],
-            ['INDESTRUCTIBLE', 'HARD_2', 'NORMAL', 'HARD_2', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_2', 'NORMAL', 'HARD_2', 'INDESTRUCTIBLE'],
-            ['EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY'],
-            ['HARD_3', 'EMPTY', 'INDESTRUCTIBLE', 'EMPTY', 'HARD_3', 'HARD_3', 'EMPTY', 'INDESTRUCTIBLE', 'EMPTY', 'HARD_3'],
-            ['HARD_3', 'EMPTY', 'INDESTRUCTIBLE', 'EMPTY', 'HARD_3', 'HARD_3', 'EMPTY', 'INDESTRUCTIBLE', 'EMPTY', 'HARD_3'],
-            ['EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY'],
-            ['INDESTRUCTIBLE', 'HARD_2', 'NORMAL', 'HARD_2', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_2', 'NORMAL', 'HARD_2', 'INDESTRUCTIBLE'],
-            ['EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY'],
-            ['HARD_3', 'EMPTY', 'INDESTRUCTIBLE', 'EMPTY', 'HARD_3', 'HARD_3', 'EMPTY', 'INDESTRUCTIBLE', 'EMPTY', 'HARD_3']
+            ['3', '0', '8', '0', '3', '3', '0', '8', '0', '3'],
+            ['0', '2', '2', '2', '0', '0', '2', '2', '2', '0'],
+            ['8', '2', '1', '2', '8', '8', '2', '1', '2', '8'],
+            ['0', '2', '2', '2', '0', '0', '2', '2', '2', '0'],
+            ['3', '0', '8', '0', '3', '3', '0', '8', '0', '3'],
+            ['3', '0', '8', '0', '3', '3', '0', '8', '0', '3'],
+            ['0', '2', '2', '2', '0', '0', '2', '2', '2', '0'],
+            ['8', '2', '1', '2', '8', '8', '2', '1', '2', '8'],
+            ['0', '2', '2', '2', '0', '0', '2', '2', '2', '0'],
+            ['3', '0', '8', '0', '3', '3', '0', '8', '0', '3']
         ]
     },
     {
@@ -817,17 +816,17 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 8,
         offsetTop: 80,
         grid: [
-            ['HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'EMPTY', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'EMPTY', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'INDESTRUCTIBLE', 'NORMAL', 'NORMAL', 'EMPTY', 'NORMAL', 'NORMAL', 'INDESTRUCTIBLE', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'INDESTRUCTIBLE', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'INDESTRUCTIBLE', 'HARD_2', 'HARD_3'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['HARD_3', 'HARD_2', 'INDESTRUCTIBLE', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'INDESTRUCTIBLE', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'INDESTRUCTIBLE', 'NORMAL', 'NORMAL', 'EMPTY', 'NORMAL', 'NORMAL', 'INDESTRUCTIBLE', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'EMPTY', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'EMPTY', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'EMPTY', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3']
+            ['3', '3', '3', '3', '3', '0', '3', '3', '3', '3', '3'],
+            ['3', '2', '2', '2', '2', '0', '2', '2', '2', '2', '3'],
+            ['3', '2', '8', '8', '8', '0', '8', '8', '8', '2', '3'],
+            ['3', '2', '8', '1', '1', '0', '1', '1', '8', '2', '3'],
+            ['3', '2', '8', '1', '0', '0', '0', '1', '8', '2', '3'],
+            ['0', '0', '0', '0', '0', '8', '0', '0', '0', '0', '0'],
+            ['3', '2', '8', '1', '0', '0', '0', '1', '8', '2', '3'],
+            ['3', '2', '8', '1', '1', '0', '1', '1', '8', '2', '3'],
+            ['3', '2', '8', '8', '8', '0', '8', '8', '8', '2', '3'],
+            ['3', '2', '2', '2', '2', '0', '2', '2', '2', '2', '3'],
+            ['3', '3', '3', '3', '3', '0', '3', '3', '3', '3', '3']
         ]
     },
     {
@@ -842,15 +841,15 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 6,
         offsetTop: 100,
         grid: [
-            ['EMPTY', 'EMPTY', 'EMPTY', 'HARD_3', 'HARD_3', 'EMPTY', 'EMPTY', 'HARD_3', 'HARD_3', 'EMPTY', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_3', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'HARD_3', 'HARD_2', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_2', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_3', 'EMPTY'],
-            ['HARD_3', 'HARD_2', 'NORMAL', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'NORMAL', 'NORMAL', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'NORMAL', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'NORMAL', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'NORMAL', 'NORMAL', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'NORMAL', 'HARD_2', 'HARD_3'],
-            ['HARD_3', 'HARD_2', 'NORMAL', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'NORMAL', 'NORMAL', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'NORMAL', 'HARD_2', 'HARD_3'],
-            ['EMPTY', 'HARD_3', 'HARD_2', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_2', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_3', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_3', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_3', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'EMPTY', 'HARD_3', 'HARD_3', 'EMPTY', 'EMPTY', 'HARD_3', 'HARD_3', 'EMPTY', 'EMPTY', 'EMPTY']
+            ['0', '0', '0', '3', '3', '0', '0', '3', '3', '0', '0', '0'],
+            ['0', '0', '3', '2', '2', '3', '3', '2', '2', '3', '0', '0'],
+            ['0', '3', '2', '1', '1', '2', '2', '1', '1', '2', '3', '0'],
+            ['3', '2', '1', '8', '8', '1', '1', '8', '8', '1', '2', '3'],
+            ['3', '2', '1', '8', '8', '1', '1', '8', '8', '1', '2', '3'],
+            ['3', '2', '1', '8', '8', '1', '1', '8', '8', '1', '2', '3'],
+            ['0', '3', '2', '1', '1', '2', '2', '1', '1', '2', '3', '0'],
+            ['0', '0', '3', '2', '2', '3', '3', '2', '2', '3', '0', '0'],
+            ['0', '8', '0', '3', '3', '0', '0', '3', '3', '0', '8', '0']
         ]
     },
     {
@@ -865,18 +864,18 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 6,
         offsetTop: 90,
         grid: [
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['HARD_3', 'HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2', 'HARD_3'],
-            ['HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2'],
-            ['NORMAL', 'EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2', 'HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY', 'NORMAL'],
-            ['EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2', 'NORMAL', 'NORMAL', 'HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY'],
-            ['EMPTY', 'INDESTRUCTIBLE', 'HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2', 'INDESTRUCTIBLE', 'EMPTY'],
-            ['EMPTY', 'INDESTRUCTIBLE', 'HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2', 'INDESTRUCTIBLE', 'EMPTY'],
-            ['EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2', 'NORMAL', 'NORMAL', 'HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY'],
-            ['NORMAL', 'EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'HARD_2', 'HARD_2', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY', 'NORMAL'],
-            ['HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2'],
-            ['HARD_3', 'HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2', 'HARD_3'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'EMPTY', 'EMPTY', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE']
+            ['8', '3', '2', '1', '0', '0', '1', '2', '3', '8'],
+            ['3', '2', '1', '0', '0', '0', '0', '1', '2', '3'],
+            ['2', '1', '0', '0', '8', '8', '0', '0', '1', '2'],
+            ['1', '0', '0', '8', '2', '2', '8', '0', '0', '1'],
+            ['0', '0', '8', '2', '1', '1', '2', '8', '0', '0'],
+            ['0', '8', '2', '1', '0', '0', '1', '2', '8', '0'],
+            ['0', '8', '2', '1', '0', '0', '1', '2', '8', '0'],
+            ['0', '0', '8', '2', '1', '1', '2', '8', '0', '0'],
+            ['1', '0', '0', '8', '2', '2', '8', '0', '0', '1'],
+            ['2', '1', '0', '0', '8', '8', '0', '0', '1', '2'],
+            ['3', '2', '1', '0', '0', '0', '0', '1', '2', '3'],
+            ['8', '8', '2', '1', '0', '0', '1', '2', '8', '8']
         ]
     },
     {
@@ -891,19 +890,19 @@ export const LEVELS: LevelConfig[] = [
         brickPaddingY: 4,
         offsetTop: 70,
         grid: [
-            ['INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'HARD_3', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'HARD_3', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'HARD_3', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'NORMAL', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_2', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'HARD_3', 'INDESTRUCTIBLE'],
-            ['INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE', 'INDESTRUCTIBLE']
+            ['8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8', '8'],
+            ['8', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '8'],
+            ['8', '3', '2', '2', '2', '2', '2', '2', '2', '2', '3', '8'],
+            ['8', '3', '2', '1', '1', '1', '1', '1', '1', '2', '3', '8'],
+            ['8', '3', '2', '1', '3', '3', '3', '3', '1', '2', '3', '8'],
+            ['8', '3', '2', '1', '3', '8', '8', '3', '1', '2', '3', '8'],
+            ['8', '3', '2', '1', '3', '8', '8', '3', '1', '2', '3', '8'],
+            ['8', '3', '2', '1', '3', '8', '8', '3', '1', '2', '3', '8'],
+            ['8', '3', '2', '1', '3', '3', '3', '3', '1', '2', '3', '8'],
+            ['8', '3', '2', '1', '1', '1', '1', '1', '1', '2', '3', '8'],
+            ['8', '3', '2', '2', '2', '2', '2', '2', '2', '2', '3', '8'],
+            ['8', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '8'],
+            ['8', '3', '8', '8', '8', '8', '8', '8', '8', '8', '3', '8']
         ]
     },
 ];

@@ -38,7 +38,7 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
     }
 
     hit(instant: boolean = false): { destroyed: boolean, points: number } {
-        if (this.brickType === 'INDESTRUCTIBLE') {
+        if (this.brickType === '8') {
             return { destroyed: false, points: 0 };
         }
 
@@ -69,12 +69,12 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
     reset(x: number, y: number, type: BrickType): void {
         this.brickType = type;
         
-        // Organic upgrade: 15% chance for a NORMAL brick to become HARD_2
-        if (this.brickType === 'NORMAL' && Math.random() < 0.15) {
-            this.brickType = 'HARD_2';
+        // Organic upgrade: 15% chance for a '1' brick to become '2'
+        if (this.brickType === '1' && Math.random() < 0.15) {
+            this.brickType = '2';
         }
 
-        this._hp = this.brickType === 'INDESTRUCTIBLE' ? Infinity : (this.brickType === 'HARD_3' ? 3 : this.brickType === 'HARD_2' ? 2 : 1);
+        this._hp = this.brickType === '8' ? Infinity : (this.brickType === '3' ? 3 : this.brickType === '2' ? 2 : 1);
         this.maxHp = this._hp;
         
         // Organic shading (slight darkening, up to 15%)
@@ -90,7 +90,6 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
         this.setPosition(x, y);
         this.crackGraphics.setPosition(x, y); // Sync graphics pos
         this.crackGraphics.clear(); // Clear old cracks
-        this.setVisible(true);
         this.crackGraphics.setVisible(true);
         this.setPoolActive(true);
         this.updateAppearance();
@@ -101,22 +100,22 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
         let finalTexture = this.baseTextureKey;
 
         switch (this.brickType) {
-            case 'INDESTRUCTIBLE':
-                baseColor = GameConfig.COLORS.BRICK_INDESTRUCTIBLE;
+            case '8':
+                baseColor = GameConfig.COLORS.BRICK_8;
                 finalTexture = 'brick_metal';
                 break;
-            case 'HARD_3':
-                baseColor = GameConfig.COLORS.BRICK_HARD_3;
+            case '3':
+                baseColor = GameConfig.COLORS.BRICK_3;
                 break;
-            case 'HARD_2':
-                baseColor = GameConfig.COLORS.BRICK_HARD_2;
+            case '2':
+                baseColor = GameConfig.COLORS.BRICK_2;
                 break;
-            default:
-                baseColor = GameConfig.COLORS.BRICK_NORMAL;
+            default: // '1'
+                baseColor = GameConfig.COLORS.BRICK_1;
         }
 
         // Determine damage texture (if not indestructible)
-        if (this.brickType !== 'INDESTRUCTIBLE') {
+        if (this.brickType !== '8') {
             const damage = this.maxHp - this._hp;
             if (damage === 1 && this.maxHp >= 2) {
                 // To make crack entirely random on hit, we re-roll the seed here
@@ -229,7 +228,7 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
     }
 
     get isIndestructible(): boolean {
-        return this.brickType === 'INDESTRUCTIBLE';
+        return this.brickType === '8';
     }
 
     get hp(): number {

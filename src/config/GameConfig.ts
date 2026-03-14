@@ -41,10 +41,10 @@ export const GameConfig = {
         BG: '#050510',
         PADDLE: '#FFFFFF',
         BALL: '#FFFFFF',
-        BRICK_NORMAL: 0x00e5ff,       // Hyper Azure
-        BRICK_HARD_2: 0xffea00,       // Hyper Yellow
-        BRICK_HARD_3: 0xff00d4,       // Hyper Magenta
-        BRICK_INDESTRUCTIBLE: 0xffffff// Bright Platinum
+        BRICK_1: 0x00e5ff,       // Hyper Azure (Normal)
+        BRICK_2: 0xffea00,       // Hyper Yellow (Hard 2)
+        BRICK_3: 0xff00d4,       // Hyper Magenta (Hard 3)
+        BRICK_8: 0xffffff// Bright Platinum (Indestructible)
     }
 };
 
