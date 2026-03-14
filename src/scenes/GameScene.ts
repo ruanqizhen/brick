@@ -35,6 +35,7 @@ export class GameScene extends Phaser.Scene {
     private fireballTimer: Phaser.Time.TimerEvent | null = null;
     private speedUpTimer: Phaser.Time.TimerEvent | null = null;
     private speedDownTimer: Phaser.Time.TimerEvent | null = null;
+    private isFireballActive: boolean = false;
 
     constructor() {
         super(SCENE_KEYS.GAME);
@@ -59,6 +60,7 @@ export class GameScene extends Phaser.Scene {
         const world = this.physics.world as Phaser.Physics.Arcade.World;
         world.TILE_BIAS = 40;
         world.OVERLAP_BIAS = 4;
+        this.isFireballActive = false;
 
         this.starfield = new Starfield(this);
 
@@ -449,6 +451,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     private setFireball(active: boolean) {
+        this.isFireballActive = active;
         const balls = this.balls.getChildren();
         const ballCount = balls.length;
         for (let i = 0; i < ballCount; i++) {
@@ -470,6 +473,9 @@ export class GameScene extends Phaser.Scene {
 
             newBall.setBallRadius(ball.displayWidth / 2);
             newBall.isFireball = ball.isFireball;
+            if (this.isFireballActive) {
+                newBall.activeFire(true);
+            }
             newBall.setTint(ball.isFireball ? 0xffaa00 : 0xffffff);
             newBall.setData('targetSpeed', ball.getData('targetSpeed'));
 
@@ -754,6 +760,9 @@ export class GameScene extends Phaser.Scene {
                 const b = this.ballPool.get();
                 b.setPosition(this.paddle.x, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION - 50);
                 b.setData('targetSpeed', baseSpeed * totalMultiplier);
+                if (this.isFireballActive) {
+                    b.activeFire(true);
+                }
                 this.balls.add(b);
                 this.showLaunchInstruction();
             }

@@ -312,11 +312,27 @@ export class BootScene extends Phaser.Scene {
             graphics.lineStyle(2, 0xddeeff, 0.6);
             graphics.strokeRoundedRect(1, 1, bW - 2, bH - 2, 6);
 
-            // Diamond sparkle dots
-            graphics.fillStyle(0xffffff, 0.65);
-            graphics.fillCircle(12, bH / 2, 2);
-            graphics.fillCircle(bW - 12, bH / 2, 2);
-            graphics.fillCircle(bW / 2, 6, 1.5);
+            // Corner rivets — Industrial look
+            const rivetRadius = 3.5;
+            const inset = 10;
+            const rivetCoords = [
+                { x: inset, y: inset },
+                { x: bW - inset, y: inset },
+                { x: inset, y: bH - inset },
+                { x: bW - inset, y: bH - inset }
+            ];
+
+            rivetCoords.forEach(coord => {
+                // Outer shadow/rim
+                graphics.fillStyle(0x334455, 0.8);
+                graphics.fillCircle(coord.x + 1, coord.y + 1, rivetRadius);
+                // Main rivet body
+                graphics.fillStyle(0xccddee, 1.0);
+                graphics.fillCircle(coord.x, coord.y, rivetRadius);
+                // Top specular highlight
+                graphics.fillStyle(0xffffff, 0.9);
+                graphics.fillCircle(coord.x - 1, coord.y - 1, rivetRadius * 0.4);
+            });
 
             graphics.generateTexture('brick_metal', bW, bH);
         }
