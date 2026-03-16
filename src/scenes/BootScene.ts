@@ -89,36 +89,67 @@ export class BootScene extends Phaser.Scene {
         }
 
         // ============================================
-        // 3. BALL — Crystal energy sphere (high-res)
+        // 3. BALL — Light Green Baseball (high-res)
         // ============================================
         if (!this.textures.exists('ball')) {
             const radius = 128;
             const size = radius * 2;
             graphics.clear();
 
-            // Main glass body
-            graphics.fillStyle(0xbbff44, 0.95);
+            // 1. Base light green ball
+            graphics.fillStyle(0xccffaa, 1.0);
             graphics.fillCircle(radius, radius, radius);
 
-            // Inner light core
-            graphics.fillStyle(0xeeffaa, 0.8);
-            graphics.fillCircle(radius, radius, radius * 0.75);
+            // 2. Subtle internal depth shading
+            graphics.fillStyle(0x99cc77, 0.4);
+            graphics.fillCircle(radius, radius, radius * 0.95);
 
-            // Bright center
-            graphics.fillStyle(0xffffff, 0.9);
-            graphics.fillCircle(radius, radius, radius * 0.4);
+            // 3. Draw curved baseball seams
+            // We'll draw two large arcs to simulate the stitching groove
+            graphics.lineStyle(12, 0x88bb66, 0.8);
+            
+            // Left-top seam
+            graphics.beginPath();
+            graphics.arc(radius * 0.4, radius * 0.4, radius * 0.8, -Math.PI * 0.2, Math.PI * 0.7);
+            graphics.strokePath();
 
-            // Specular highlight (top-left crescent)
-            graphics.fillStyle(0xffffff, 0.8);
-            graphics.fillEllipse(radius * 0.6, radius * 0.55, radius * 0.5, radius * 0.35);
+            // Right-bottom seam
+            graphics.beginPath();
+            graphics.arc(radius * 1.6, radius * 1.6, radius * 0.8, Math.PI * 0.8, -Math.PI * 0.3);
+            graphics.strokePath();
 
-            // Secondary caustic reflection (bottom-right)
-            graphics.fillStyle(0xffffff, 0.35);
-            graphics.fillEllipse(radius * 1.3, radius * 1.35, radius * 0.3, radius * 0.2);
+            // 4. Draw stitching (ticks along the seams) - MUCH thicker and longer per user request
+            graphics.lineStyle(10, 0x447733, 1.0);
+            
+            const drawStitches = (cx: number, cy: number, r: number, startAngle: number, endAngle: number) => {
+                const stitchCount = 12;
+                for (let i = 0; i <= stitchCount; i++) {
+                    const angle = startAngle + (endAngle - startAngle) * (i / stitchCount);
+                    const sx = cx + Math.cos(angle) * r;
+                    const sy = cy + Math.sin(angle) * r;
+                    
+                    // Stitch line perpendicular to arc curve (approximate)
+                    const length = 24;
+                    graphics.beginPath();
+                    graphics.moveTo(sx - Math.cos(angle) * (length/2), sy - Math.sin(angle) * (length/2));
+                    graphics.lineTo(sx + Math.cos(angle) * (length/2), sy + Math.sin(angle) * (length/2));
+                    graphics.strokePath();
+                }
+            };
 
-            // Glass rim highlight
-            graphics.lineStyle(6, 0xffffff, 0.4);
-            graphics.strokeCircle(radius, radius, radius - 3);
+            drawStitches(radius * 0.4, radius * 0.4, radius * 0.8, -Math.PI * 0.2, Math.PI * 0.7);
+            drawStitches(radius * 1.6, radius * 1.6, radius * 0.8, Math.PI * 0.8, -Math.PI * 0.3);
+
+            // 5. Specular top-right highlight (Glossy finish)
+            graphics.fillStyle(0xffffff, 0.4);
+            graphics.fillEllipse(radius * 1.4, radius * 0.6, radius * 0.4, radius * 0.25);
+            
+            graphics.fillStyle(0xffffff, 0.25);
+            graphics.fillCircle(radius * 1.5, radius * 0.5, radius * 0.1);
+
+            // 6. Rim highlight for definition
+            graphics.lineStyle(4, 0xffffff, 0.3);
+            graphics.strokeCircle(radius, radius, radius - 4);
 
             graphics.generateTexture('ball', size, size);
         }
