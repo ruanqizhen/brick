@@ -108,28 +108,46 @@ export class BootScene extends Phaser.Scene {
             // We'll draw two large arcs to simulate the stitching groove
             graphics.lineStyle(12, 0x88bb66, 0.8);
             
-            // Left-top seam
-            graphics.beginPath();
-            graphics.arc(radius * 0.4, radius * 0.4, radius * 0.8, -Math.PI * 0.2, Math.PI * 0.7);
-            graphics.strokePath();
-
-            // Right-bottom seam
-            graphics.beginPath();
-            graphics.arc(radius * 1.6, radius * 1.6, radius * 0.8, Math.PI * 0.8, -Math.PI * 0.3);
-            graphics.strokePath();
-
-            // 4. Draw stitching (ticks along the seams) - MUCH thicker and longer per user request
-            graphics.lineStyle(10, 0x447733, 1.0);
+            // Draw BOTH seams symmetrically
+            // TL seam center: (0.45, 0.45) -> (57.6, 57.6)
+            // BR seam center: (1.55, 1.55) -> (198.4, 198.4)
+            const seamDist = radius * 0.55; 
             
-            const drawStitches = (cx: number, cy: number, r: number, startAngle: number, endAngle: number) => {
-                const stitchCount = 12;
+            // TL Arc
+            graphics.beginPath();
+            graphics.arc(radius - seamDist, radius - seamDist, radius * 0.8, -Math.PI * 0.15, Math.PI * 0.65);
+            graphics.strokePath();
+
+            // BR Arc
+            graphics.beginPath();
+            graphics.arc(radius + seamDist, radius + seamDist, radius * 0.8, Math.PI * 0.85, Math.PI * 1.65);
+            graphics.strokePath();
+
+            // 4. Draw stitching (ticks along the seams)
+            // We use the same loop logic to ensure they are identical
+            const drawUnifiedStitches = (isTL: boolean) => {
+                const cx = isTL ? radius - seamDist : radius + seamDist;
+                const cy = isTL ? radius - seamDist : radius + seamDist;
+                const startAngle = isTL ? -Math.PI * 0.15 : Math.PI * 0.85;
+                const endAngle = isTL ? Math.PI * 0.65 : Math.PI * 1.65;
+                const stitchCount = 14;
+                const length = 32; // Even longer and more prominent (28 -> 32)
+                const r = radius * 0.8;
+
                 for (let i = 0; i <= stitchCount; i++) {
                     const angle = startAngle + (endAngle - startAngle) * (i / stitchCount);
                     const sx = cx + Math.cos(angle) * r;
                     const sy = cy + Math.sin(angle) * r;
                     
-                    // Stitch line perpendicular to arc curve (approximate)
-                    const length = 24;
+                    // Draw a subtle shadow for the stitch first
+                    graphics.lineStyle(12, 0x000000, 0.3);
+                    graphics.beginPath();
+                    graphics.moveTo(sx - Math.cos(angle) * (length/2) + 2, sy - Math.sin(angle) * (length/2) + 2);
+                    graphics.lineTo(sx + Math.cos(angle) * (length/2) + 2, sy + Math.sin(angle) * (length/2) + 2);
+                    graphics.strokePath();
+
+                    // Draw the actual stitch
+                    graphics.lineStyle(12, 0x447733, 1.0);
                     graphics.beginPath();
                     graphics.moveTo(sx - Math.cos(angle) * (length/2), sy - Math.sin(angle) * (length/2));
                     graphics.lineTo(sx + Math.cos(angle) * (length/2), sy + Math.sin(angle) * (length/2));
@@ -137,8 +155,8 @@ export class BootScene extends Phaser.Scene {
                 }
             };
 
-            drawStitches(radius * 0.4, radius * 0.4, radius * 0.8, -Math.PI * 0.2, Math.PI * 0.7);
-            drawStitches(radius * 1.6, radius * 1.6, radius * 0.8, Math.PI * 0.8, -Math.PI * 0.3);
+            drawUnifiedStitches(true);  // Top-Left
+            drawUnifiedStitches(false); // Bottom-Right
 
             // 5. Specular top-right highlight (Glossy finish)
             graphics.fillStyle(0xffffff, 0.4);
