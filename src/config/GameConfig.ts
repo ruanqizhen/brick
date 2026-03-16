@@ -6,7 +6,7 @@ export const ASPECT_RATIO = DESIGN_WIDTH / DESIGN_HEIGHT;
 
 export const GameConfig = {
     // 物理参数
-    BALL_BASE_SPEED: 20,
+    BALL_BASE_SPEED: 1200,
     BALL_RADIUS: 10,
     PADDLE_WIDTH: 200,
     PADDLE_HEIGHT: 24,
@@ -63,8 +63,7 @@ export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
             arcade: {
                 gravity: { x: 0, y: 0 },
                 debug: false,
-                fps: 120,
-                fixedStep: true
+                fixedStep: false
             }
         },
         fps: {

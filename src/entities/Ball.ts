@@ -71,7 +71,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         if (this.body) {
             this.body.enable = true; // 发射时激活物理，在此之前它是禁用的
         }
-        const speed = (this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED) * 60;
+        const speed = this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED;
 
         const angle = Phaser.Math.DegToRad(-90 + Phaser.Math.Between(-15, 15));
         this.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
@@ -103,7 +103,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         if (this.isFireball) {
             color = 0xffaa00; // 火球橙黄金色
         } else {
-            const currentSpeed = body.velocity.length() / 60;
+            const currentSpeed = body.velocity.length();
             const baseSpeed = GameConfig.BALL_BASE_SPEED;
 
             if (currentSpeed >= baseSpeed * 2.0) {
@@ -145,13 +145,11 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         if (!body) return;
 
         const currentSpeed = body.velocity.length();
-        const baseSpeed = this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED;
-        let targetSpeed = baseSpeed * 60;
+        const targetSpeed = this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED;
 
         const MAX_SAFE_SPEED = GameConfig.BALL_MAX_SAFE_SPEED;
         if (targetSpeed > MAX_SAFE_SPEED) {
-            targetSpeed = MAX_SAFE_SPEED;
-            this.setData('targetSpeed', MAX_SAFE_SPEED / 60);
+            this.setData('targetSpeed', MAX_SAFE_SPEED);
         }
 
         if (currentSpeed < 100) {
@@ -194,7 +192,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         this.lastPaddleHitTime = now;
 
         const hitFactor = Phaser.Math.Clamp((this.x - paddle.x) / (paddle.displayWidth / 2), -1, 1);
-        const speed = (this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED) * 60;
+        const speed = this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED;
 
         let angle = Phaser.Math.DegToRad(-90 + (hitFactor * 60));
         const angleModifier = Math.atan(0.1 * paddle.velocityX);
