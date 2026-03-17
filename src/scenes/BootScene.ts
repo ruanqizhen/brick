@@ -147,7 +147,7 @@ export class BootScene extends Phaser.Scene {
                     graphics.strokePath();
 
                     // Draw the actual stitch
-                    graphics.lineStyle(12, 0x447733, 1.0);
+                    graphics.lineStyle(12, 0xcc0000, 1.0);
                     graphics.beginPath();
                     graphics.moveTo(sx - Math.cos(angle) * (length/2), sy - Math.sin(angle) * (length/2));
                     graphics.lineTo(sx + Math.cos(angle) * (length/2), sy + Math.sin(angle) * (length/2));
