@@ -185,7 +185,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         const body = this.body as Phaser.Physics.Arcade.Body;
         if (!body) return;
 
-        if (body.velocity.y > 0) return;
+        if (body.velocity.y < 0) return;
 
         const now = this.scene.time.now;
         if (now - this.lastPaddleHitTime < GameConfig.PADDLE_HIT_COOLDOWN) return;

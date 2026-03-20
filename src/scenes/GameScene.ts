@@ -110,9 +110,6 @@ export class GameScene extends Phaser.Scene {
         mainBall.setData('targetSpeed', baseSpeed);
         this.balls.add(mainBall);
 
-        // 碰撞绑定
-        this.physics.add.collider(this.balls, this.paddle, (b, p) => (b as Ball).onPaddleHit(p as Paddle));
-
         // 使用 Overlap 替代 Collider 处理砖块，以便支持“火球穿透”
         this.physics.add.overlap(this.balls, this.bricks, (b, br) => this.handleBrickHit(b as Ball, br as Brick));
 
@@ -159,18 +156,47 @@ export class GameScene extends Phaser.Scene {
                 const stepDistance = velLen * delta / 1000;
                 const radius = ball.displayWidth / 2;
 
-                if (stepDistance > radius * 0.8) {
-                    // Create a movement line from current center to next frame center
-                    const line = new Phaser.Geom.Line(
-                        ball.x, ball.y, 
-                        ball.x + body.velocity.x * delta / 1000, 
-                        ball.y + body.velocity.y * delta / 1000
+                // Create a movement line from current center to next frame center
+                const line = new Phaser.Geom.Line(
+                    ball.x, ball.y, 
+                    ball.x + body.velocity.x * delta / 1000, 
+                    ball.y + body.velocity.y * delta / 1000
+                );
+
+                let closestIntersection: Phaser.Geom.Point | null = null;
+                let closestBrick: Brick | null = null;
+                let hitPaddle: boolean = false;
+                let closestDistSq = Infinity;
+
+                // 1. Check Paddle (Only if ball is moving DOWN towards it)
+                if (this.paddle && body.velocity.y > 0) {
+                    const pRect = new Phaser.Geom.Rectangle(
+                        this.paddle.x - this.paddle.displayWidth/2 - radius,
+                        this.paddle.y - this.paddle.displayHeight/2 - radius,
+                        this.paddle.displayWidth + radius*2,
+                        this.paddle.displayHeight + radius*2
                     );
+                    
+                    const pPoints = [
+                        this.getLineIntersection(line, new Phaser.Geom.Line(pRect.left, pRect.top, pRect.right, pRect.top)),
+                        this.getLineIntersection(line, new Phaser.Geom.Line(pRect.right, pRect.top, pRect.right, pRect.bottom)),
+                        this.getLineIntersection(line, new Phaser.Geom.Line(pRect.right, pRect.bottom, pRect.left, pRect.bottom)),
+                        this.getLineIntersection(line, new Phaser.Geom.Line(pRect.left, pRect.bottom, pRect.left, pRect.top))
+                    ].filter(p => p !== null) as Phaser.Geom.Point[];
 
-                    let closestIntersection: Phaser.Geom.Point | null = null;
-                    let closestBrick: Brick | null = null;
-                    let closestDistSq = Infinity;
+                    for (const p of pPoints) {
+                        const distSq = Phaser.Math.Distance.Squared(ball.x, ball.y, p.x, p.y);
+                        if (distSq < closestDistSq) {
+                            closestDistSq = distSq;
+                            closestIntersection = p;
+                            hitPaddle = true;
+                            closestBrick = null;
+                        }
+                    }
+                }
 
+                // 2. Check Bricks (Only if distance to be traveled this frame is high/tunneling risk)
+                if (stepDistance > radius * 0.8) {
                     for (let j = 0; j < bricks.length; j++) {
                         const brick = bricks[j] as Brick;
                         if (!brick.active) continue;
@@ -183,13 +209,11 @@ export class GameScene extends Phaser.Scene {
                             brick.displayHeight + radius*2
                         );
 
-                        // Use Phaser's built-in intersection utilities
-                        // getEdgeIntersects returns points if the line crosses the rectangle
                         const points = [
-                            this.getLineIntersection(line, new Phaser.Geom.Line(rect.left, rect.top, rect.right, rect.top)),       // Top
-                            this.getLineIntersection(line, new Phaser.Geom.Line(rect.right, rect.top, rect.right, rect.bottom)),   // Right
-                            this.getLineIntersection(line, new Phaser.Geom.Line(rect.right, rect.bottom, rect.left, rect.bottom)), // Bottom
-                            this.getLineIntersection(line, new Phaser.Geom.Line(rect.left, rect.bottom, rect.left, rect.top))      // Left
+                            this.getLineIntersection(line, new Phaser.Geom.Line(rect.left, rect.top, rect.right, rect.top)),
+                            this.getLineIntersection(line, new Phaser.Geom.Line(rect.right, rect.top, rect.right, rect.bottom)),
+                            this.getLineIntersection(line, new Phaser.Geom.Line(rect.right, rect.bottom, rect.left, rect.bottom)),
+                            this.getLineIntersection(line, new Phaser.Geom.Line(rect.left, rect.bottom, rect.left, rect.top))
                         ].filter(p => p !== null) as Phaser.Geom.Point[];
 
                         for (const p of points) {
@@ -198,20 +222,24 @@ export class GameScene extends Phaser.Scene {
                                 closestDistSq = distSq;
                                 closestIntersection = p;
                                 closestBrick = brick;
+                                hitPaddle = false; // Override paddle if brick is closer
                             }
                         }
                     }
 
                     // Preemptively handle the collision
-                    if (closestIntersection && closestBrick) {
+                    if (closestIntersection) {
                         // Move ball to point of impact (pull back slightly to avoid getting stuck)
                         const angle = Phaser.Math.Angle.Between(closestIntersection.x, closestIntersection.y, ball.x, ball.y);
                         ball.x = closestIntersection.x + Math.cos(angle) * 2;
                         ball.y = closestIntersection.y + Math.sin(angle) * 2;
                         body.updateFromGameObject();
 
-                        // Call standard hit logic which handles velocity flips and logic
-                        this.handleBrickHit(ball, closestBrick);
+                        if (hitPaddle) {
+                            ball.onPaddleHit(this.paddle);
+                        } else if (closestBrick) {
+                            this.handleBrickHit(ball, closestBrick);
+                        }
                     }
                 }
             }
