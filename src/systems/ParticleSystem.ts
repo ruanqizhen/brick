@@ -41,6 +41,13 @@ export class ParticleSystem {
         this.sparkEmitter.explode(Phaser.Math.Between(15, 20), x, y);
     }
 
+    spawnExplosion(x: number, y: number): void {
+        this.brickEmitter.setParticleTint(0xff3300, 0xffaa00, 0xff0000);
+        this.brickEmitter.explode(40, x, y); // Large burst
+        this.sparkEmitter.setParticleTint(0xffffff, 0xffff00);
+        this.sparkEmitter.explode(30, x, y); // Extra sparks
+    }
+
     /**
      * Clean up emitters to prevent memory leaks
      */

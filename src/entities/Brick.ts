@@ -3,7 +3,7 @@ import { BrickType } from '../config/LevelData';
 import { GameConfig } from '../config/GameConfig';
 
 export class Brick extends Phaser.Physics.Arcade.Sprite {
-    private brickType: BrickType;
+    public brickType: BrickType;
     private _hp: number;
     private maxHp: number;
     private isPooledActive: boolean = false;
@@ -55,6 +55,16 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
             return { destroyed: true, points: 100 };
         }
         
+        if (this.brickType === '5' && this.alpha === 0) {
+            // Reveal invisible brick on first hit
+            this.sceneRef.tweens.add({
+                targets: this,
+                alpha: 1,
+                duration: 250,
+                ease: 'Power2'
+            });
+        }
+        
         this.updateAppearance();
         if (!this.isIndestructible) {
             this.drawRandomCracks(2);
@@ -74,7 +84,17 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
             this.brickType = '2';
         }
 
-        this._hp = this.brickType === '8' ? Infinity : (this.brickType === '3' ? 3 : this.brickType === '2' ? 2 : 1);
+        if (this.brickType === '8') {
+            this._hp = Infinity;
+        } else if (this.brickType === '5') {
+            this._hp = 2; // 1 to reveal, 1 to destroy
+        } else if (this.brickType === '3') {
+            this._hp = 3;
+        } else if (this.brickType === '2') {
+            this._hp = 2;
+        } else {
+            this._hp = 1; // 1, 4, 6
+        }
         this.maxHp = this._hp;
         
         // Organic shading (slight darkening, up to 15%)
@@ -92,6 +112,27 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
         this.crackGraphics.clear(); // Clear old cracks
         this.crackGraphics.setVisible(true);
         this.setPoolActive(true);
+        
+        // Reset specific behavioral effects
+        this.sceneRef.tweens.killTweensOf(this);
+        this.setAlpha(this.brickType === '5' ? 0 : 1);
+        
+        if (this.brickType === '6') {
+            this.x -= 30; // Shift starting pos
+            this.sceneRef.tweens.add({
+                targets: this,
+                x: this.x + 60,
+                duration: Math.random() * 500 + 1500, // 1.5s - 2.0s
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut',
+                onUpdate: () => {
+                    if (this.body) this.body.updateFromGameObject();
+                    this.crackGraphics.setPosition(this.x, this.y);
+                }
+            });
+        }
+
         this.updateAppearance();
     }
 
@@ -103,6 +144,15 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
             case '8':
                 baseColor = GameConfig.COLORS.BRICK_8;
                 finalTexture = 'brick_metal';
+                break;
+            case '6':
+                baseColor = 0xcc00ff; // Purple/Pink for moving
+                break;
+            case '5':
+                baseColor = 0x00ffff; // Cyan/Ghost for invisible
+                break;
+            case '4':
+                baseColor = 0xff3300; // Bright orange/red for explosive
                 break;
             case '3':
                 baseColor = GameConfig.COLORS.BRICK_3;

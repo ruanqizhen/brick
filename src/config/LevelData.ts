@@ -1,4 +1,4 @@
-export type BrickType = '1' | '2' | '3' | '8' | '0';
+export type BrickType = '1' | '2' | '3' | '4' | '5' | '6' | '8' | '0';
 
 export interface BrickRow {
     type: BrickType;
@@ -34,7 +34,7 @@ export const LEVELS: LevelConfig[] = [
         offsetTop: 150,
         grid: [
             ['1', '1', '1', '1', '1', '1', '1',],
-            ['1', '1', '1', '1', '1', '1', '1',],
+            ['1', '1', '5', '4', '6', '1', '1',],
             ['1', '1', '1', '1', '1', '1', '1',]
         ]
     },

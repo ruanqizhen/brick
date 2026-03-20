@@ -352,11 +352,19 @@ export class GameScene extends Phaser.Scene {
 
                 // 砖块销毁逻辑：从组和场景中移除，并回收到池
                 // 在回收前先读取声音类型
-                const soundType = brick.hp > 1 ? 'hard' : 'normal';
+                const isHardSound = ['2', '3', '5', '8'].includes(brick.brickType);
+                const soundType = isHardSound ? 'hard' : 'normal';
 
                 if (res.destroyed) {
                     this.bricks.remove(brick, false);
                     this.brickPool.release(brick);
+
+                    if (brick.brickType === '4') {
+                        // Delay explosion slightly to allow full hit resolution
+                        this.time.delayedCall(10, () => {
+                            this.triggerExplosion(brickX, brickY);
+                        });
+                    }
                 }
 
                 audioManager.play(soundType as any);
@@ -387,6 +395,78 @@ export class GameScene extends Phaser.Scene {
             }
         } catch (error) {
             console.error('handleBrickHit error:', error);
+        }
+    }
+
+    private triggerExplosion(cx: number, cy: number) {
+        const explosionRadius = 140; // Pixels
+        
+        ScreenShake.shake(this.cameras.main, 0.015, 200);
+        this.triggerHitstop(60); // slightly longer hitstop for powerful feel
+        
+        if (this.particles && this.particles.spawnExplosion) {
+            this.particles.spawnExplosion(cx, cy);
+            audioManager.play('hard'); // Reusing hard hit sound for explosion
+        }
+        
+        // Find visible active bricks within radius
+        const activeBricks = this.bricks.getChildren() as Brick[];
+        const bricksToHit: Brick[] = [];
+        
+        for (const b of activeBricks) {
+            if (!b.active || !b.visible) continue;
+            
+            const dx = b.x - cx;
+            const dy = b.y - cy;
+            const distSq = dx * dx + dy * dy;
+            
+            if (distSq <= explosionRadius * explosionRadius) {
+                bricksToHit.push(b);
+            }
+        }
+        
+        // Chain reaction slight delay sorting by distance
+        bricksToHit.sort((a, b) => {
+            const da = (a.x - cx)**2 + (a.y - cy)**2;
+            const db = (b.x - cx)**2 + (b.y - cy)**2;
+            return da - db;
+        }).forEach((b, index) => {
+            this.time.delayedCall(index * 25, () => {
+                if (!b.active || !b.visible) return;
+                this.handleExplosionHit(b);
+            });
+        });
+    }
+
+    private handleExplosionHit(brick: Brick) {
+        if (!brick.active || !brick.visible) return;
+        
+        const res = brick.hit(true); // Instant kill for most bricks in explosion radius
+        const brickX = brick.x;
+        const brickY = brick.y;
+        const color = (brick.tintTopLeft === 0xffffff) ? 0x00d4ff : brick.tintTopLeft;
+
+        this.hud.updateScore(res.points);
+
+        if (res.destroyed) {
+            this.bricks.remove(brick, false);
+            this.brickPool.release(brick);
+            
+            if (brick.brickType === '4') {
+                this.time.delayedCall(10, () => {
+                    this.triggerExplosion(brickX, brickY);
+                });
+            }
+        }
+
+        if (this.particles) {
+            try {
+                this.particles.spawnBrickParticles(brickX, brickY, color);
+            } catch (e) {}
+        }
+
+        if (this.checkWin()) {
+            this.handleWin();
         }
     }
 
