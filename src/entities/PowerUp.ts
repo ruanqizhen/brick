@@ -88,7 +88,7 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
     /**
      * Create a texture for the powerup with a fluorescent glow ring
      */
-    private static createPowerUpTexture(scene: Phaser.Scene, type: PowerUpType, textureKey: string): void {
+    public static createPowerUpTexture(scene: Phaser.Scene, type: PowerUpType, textureKey: string): void {
         const graphics = scene.make.graphics({ x: 0, y: 0 });
         const size = 64; // Slightly larger for glow
         const center = size / 2;

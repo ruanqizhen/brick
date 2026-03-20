@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { UIButton } from '../ui/UIButton';
 import { audioManager } from '../audio/AudioManager';
 import { saveManager } from '../storage/SaveManager';
+import { SCENE_KEYS } from '../config/EventConstants';
 
 export class MenuScene extends Phaser.Scene {
     private highScoreText!: Phaser.GameObjects.Text;
@@ -116,7 +117,7 @@ export class MenuScene extends Phaser.Scene {
             label: '游戏帮助',
             isPrimary: false,
             onClick: () => {
-                alert("帮助界面功能开发中！");
+                this.scene.start(SCENE_KEYS.HELP);
             }
         });
         this.add.existing(helpBtn);

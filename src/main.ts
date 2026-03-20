@@ -5,9 +5,10 @@ import { MenuScene } from './scenes/MenuScene';
 import { GameScene } from './scenes/GameScene';
 import { GameOverScene } from './scenes/GameOverScene';
 import { PauseMenu } from './scenes/PauseMenu';
+import { HelpScene } from './scenes/HelpScene';
 const initGame = () => {
     const config = createPhaserConfig();
-    config.scene = [BootScene, MenuScene, GameScene, GameOverScene, PauseMenu];
+    config.scene = [BootScene, MenuScene, GameScene, GameOverScene, PauseMenu, HelpScene];
     new Phaser.Game(config);
 };
 

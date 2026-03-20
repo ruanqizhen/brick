@@ -9,6 +9,7 @@ export const SCENE_KEYS = {
     GAME: 'GameScene',
     GAME_OVER: 'GameOverScene',
     PAUSE: 'PauseMenu',
+    HELP: 'HelpScene'
 } as const;
 
 export const GAME_EVENTS = {
