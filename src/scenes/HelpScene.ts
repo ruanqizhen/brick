@@ -103,8 +103,22 @@ export class HelpScene extends Phaser.Scene {
             }).setOrigin(0.5);
         });
 
+        // Documentation Link
+        const docLink = this.add.text(DESIGN_WIDTH / 2, DESIGN_HEIGHT - 120, '查看更详细的在线帮助手册 (GitHub)', {
+            fontSize: '20px',
+            fontFamily: '"Microsoft YaHei", sans-serif',
+            color: '#00ffff'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        docLink.on('pointerdown', () => {
+            window.open('https://github.com/ruanqizhen/brick/blob/main/README.md', '_blank');
+        });
+
+        docLink.on('pointerover', () => docLink.setColor('#ffffff'));
+        docLink.on('pointerout', () => docLink.setColor('#00ffff'));
+
         // Back Button
-        const backBtn = new UIButton(this, DESIGN_WIDTH / 2, DESIGN_HEIGHT - 60, {
+        const backBtn = new UIButton(this, DESIGN_WIDTH / 2, DESIGN_HEIGHT - 50, {
             label: '返回主菜单',
             onClick: () => {
                 this.scene.start(SCENE_KEYS.MENU);
