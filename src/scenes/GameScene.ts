@@ -143,14 +143,80 @@ export class GameScene extends Phaser.Scene {
         const ballCount = balls.length;
         let maxVel = 0;
 
+        // Custom CCD (Continuous Collision Detection) Pass
+        // Perform raycasting to prevent tunneling through bricks at high speeds
+        const bricks = this.bricks.getChildren();
+        
         for (let i = 0; i < ballCount; i++) {
             const ball = balls[i] as Ball;
-            ball.update();
             const body = ball.body as Phaser.Physics.Arcade.Body;
-            if (body?.enable) {
-                const vel = body.velocity.length();
-                if (vel > maxVel) maxVel = vel;
+            
+            if (body?.enable && ball.active) {
+                const velLen = body.velocity.length();
+                if (velLen > maxVel) maxVel = velLen;
+
+                // CCD Logic: Check if distance to be traveled this frame is greater than radius
+                const stepDistance = velLen * delta / 1000;
+                const radius = ball.displayWidth / 2;
+
+                if (stepDistance > radius * 0.8) {
+                    // Create a movement line from current center to next frame center
+                    const line = new Phaser.Geom.Line(
+                        ball.x, ball.y, 
+                        ball.x + body.velocity.x * delta / 1000, 
+                        ball.y + body.velocity.y * delta / 1000
+                    );
+
+                    let closestIntersection: Phaser.Geom.Point | null = null;
+                    let closestBrick: Brick | null = null;
+                    let closestDistSq = Infinity;
+
+                    for (let j = 0; j < bricks.length; j++) {
+                        const brick = bricks[j] as Brick;
+                        if (!brick.active) continue;
+
+                        // Inflate brick bounds by ball radius for swept-sphere collision
+                        const rect = new Phaser.Geom.Rectangle(
+                            brick.x - brick.displayWidth/2 - radius,
+                            brick.y - brick.displayHeight/2 - radius,
+                            brick.displayWidth + radius*2,
+                            brick.displayHeight + radius*2
+                        );
+
+                        // Use Phaser's built-in intersection utilities
+                        // getEdgeIntersects returns points if the line crosses the rectangle
+                        const points = [
+                            this.getLineIntersection(line, new Phaser.Geom.Line(rect.left, rect.top, rect.right, rect.top)),       // Top
+                            this.getLineIntersection(line, new Phaser.Geom.Line(rect.right, rect.top, rect.right, rect.bottom)),   // Right
+                            this.getLineIntersection(line, new Phaser.Geom.Line(rect.right, rect.bottom, rect.left, rect.bottom)), // Bottom
+                            this.getLineIntersection(line, new Phaser.Geom.Line(rect.left, rect.bottom, rect.left, rect.top))      // Left
+                        ].filter(p => p !== null) as Phaser.Geom.Point[];
+
+                        for (const p of points) {
+                            const distSq = Phaser.Math.Distance.Squared(ball.x, ball.y, p.x, p.y);
+                            if (distSq < closestDistSq) {
+                                closestDistSq = distSq;
+                                closestIntersection = p;
+                                closestBrick = brick;
+                            }
+                        }
+                    }
+
+                    // Preemptively handle the collision
+                    if (closestIntersection && closestBrick) {
+                        // Move ball to point of impact (pull back slightly to avoid getting stuck)
+                        const angle = Phaser.Math.Angle.Between(closestIntersection.x, closestIntersection.y, ball.x, ball.y);
+                        ball.x = closestIntersection.x + Math.cos(angle) * 2;
+                        ball.y = closestIntersection.y + Math.sin(angle) * 2;
+                        body.updateFromGameObject();
+
+                        // Call standard hit logic which handles velocity flips and logic
+                        this.handleBrickHit(ball, closestBrick);
+                    }
+                }
             }
+
+            ball.update();
         }
 
         // Dynamic physics bias adjustment for high-speed prevention
@@ -911,5 +977,12 @@ export class GameScene extends Phaser.Scene {
             this.brickPool.releaseAll();
             this.brickPool.destroy();
         }
+    }
+
+    private getLineIntersection(line1: Phaser.Geom.Line, line2: Phaser.Geom.Line): Phaser.Geom.Point | null {
+        // Wrapper for Phaser's line intersection utility that returns a Point or null
+        const point = new Phaser.Geom.Point();
+        const intersects = Phaser.Geom.Intersects.LineToLine(line1, line2, point);
+        return intersects ? point : null;
     }
 }
