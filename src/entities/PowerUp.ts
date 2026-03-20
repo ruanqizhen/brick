@@ -9,7 +9,6 @@ export type PowerUpType =
 
 export class PowerUp extends Phaser.Physics.Arcade.Sprite {
     public powerUpType: PowerUpType;
-    private iconText: Phaser.GameObjects.Text | null = null;
     private isPooledActive: boolean = false;
     private sceneRef: Phaser.Scene;
 
@@ -30,27 +29,11 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
         this.setVelocityY(200);
         this.setCircle(25);
 
-        this.createIconText(scene);
         this.setPoolActive(false);
     }
 
-    private createIconText(scene: Phaser.Scene): void {
-        const icon = PowerUp.getIcon(this.powerUpType);
-        const color = PowerUp.getColor(this.powerUpType);
-        const colorStr = `#${color.toString(16).padStart(6, '0')}`;
-
-        this.iconText = scene.add.text(this.x, this.y, icon, {
-            fontSize: '32px',
-            fontStyle: 'bold'
-        })
-            .setOrigin(0.5)
-            .setShadow(0, 0, colorStr, 12, true, true);
-    }
-
     override update(): void {
-        if (this.iconText) {
-            this.iconText.setPosition(this.x, this.y);
-        }
+        // Rotational animation or pulse could be added here in the future
     }
 
     // Pool methods
@@ -63,13 +46,7 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
             if (this.body) {
                 this.body.enable = false;
             }
-            // Destroy icon text when returning to pool
-            if (this.iconText) {
-                this.iconText.destroy();
-                this.iconText = null;
-            }
         }
-        // Don't set velocity here - it will be set by the scene after position is set
     }
 
     onRelease(): void {
@@ -77,11 +54,6 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
         this.setVisible(false);
         if (this.body) {
             this.body.enable = false;
-        }
-        // Destroy icon text to prevent memory leaks and visual artifacts
-        if (this.iconText) {
-            this.iconText.destroy();
-            this.iconText = null;
         }
     }
 
@@ -99,21 +71,10 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
             PowerUp.createPowerUpTexture(this.sceneRef, type, textureKey);
         }
         this.setTexture(textureKey);
-
-        // Destroy existing icon text if any
-        if (this.iconText) {
-            this.iconText.destroy();
-        }
-        
-        // Create new icon text at current position
-        this.createIconText(this.sceneRef);
     }
 
     override destroy(fromScene?: boolean): void {
         if (!this.sceneRef) return;
-        if (this.iconText) {
-            this.iconText.destroy();
-        }
         super.destroy(fromScene);
     }
 
@@ -151,26 +112,98 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
         graphics.lineStyle(0.5, 0xFFFFFF, 0.8);
         graphics.strokeCircle(center, center, radius);
 
+        // --- DRAW VECTOR ICON ---
+        graphics.fillStyle(color, 1);
+        
+        switch (type) {
+            case 'PADDLE_EXPAND':
+                // Two outward arrows < >
+                graphics.beginPath();
+                graphics.moveTo(22, 32); graphics.lineTo(28, 26); graphics.lineTo(28, 38); graphics.closePath();
+                graphics.moveTo(42, 32); graphics.lineTo(36, 26); graphics.lineTo(36, 38); graphics.closePath();
+                graphics.fillPath();
+                graphics.fillRect(26, 30, 12, 4);
+                break;
+            case 'PADDLE_SHRINK':
+                // Two inward arrows > <
+                graphics.beginPath();
+                graphics.moveTo(28, 32); graphics.lineTo(22, 26); graphics.lineTo(22, 38); graphics.closePath();
+                graphics.moveTo(36, 32); graphics.lineTo(42, 26); graphics.lineTo(42, 38); graphics.closePath();
+                graphics.fillPath();
+                graphics.fillRect(26, 30, 12, 4);
+                break;
+            case 'FIREBALL':
+                // Flame using precise overlapping geometry
+                graphics.fillStyle(0xFF4500, 1);
+                graphics.fillCircle(32, 38, 10);
+                graphics.fillTriangle(22, 38, 42, 38, 32, 18);
+                // Inner yellow core
+                graphics.fillStyle(0xFFFF00, 1);
+                graphics.fillCircle(32, 38, 5);
+                graphics.fillTriangle(27, 38, 37, 38, 32, 26);
+                break;
+            case 'MULTI_BALL':
+                // Three circles
+                graphics.fillCircle(32, 22, 5);
+                graphics.fillCircle(25, 36, 5);
+                graphics.fillCircle(39, 36, 5);
+                // Connecting lines
+                graphics.lineStyle(2, color, 0.8);
+                graphics.beginPath();
+                graphics.moveTo(32, 22); graphics.lineTo(25, 36); graphics.lineTo(39, 36); graphics.closePath();
+                graphics.strokePath();
+                break;
+            case 'BALL_ENLARGE':
+                // Big expanding circle
+                graphics.fillCircle(32, 32, 10);
+                // Cutout +
+                graphics.fillStyle(0x000000, 1); 
+                graphics.fillRect(29, 30, 6, 4);
+                graphics.fillRect(30, 29, 4, 6);
+                break;
+            case 'BALL_SHRINK':
+                // Tiny circle with inward lines
+                graphics.fillCircle(32, 32, 4);
+                graphics.lineStyle(2, color, 1);
+                graphics.beginPath();
+                graphics.moveTo(32, 16); graphics.lineTo(32, 24);
+                graphics.moveTo(32, 48); graphics.lineTo(32, 40);
+                graphics.moveTo(16, 32); graphics.lineTo(24, 32);
+                graphics.moveTo(48, 32); graphics.lineTo(40, 32);
+                graphics.strokePath();
+                break;
+            case 'SPEED_UP':
+                // Lightning bolt
+                graphics.beginPath();
+                graphics.moveTo(35, 18);
+                graphics.lineTo(25, 33);
+                graphics.lineTo(32, 33);
+                graphics.lineTo(29, 46);
+                graphics.lineTo(39, 29);
+                graphics.lineTo(32, 29);
+                graphics.closePath();
+                graphics.fillPath();
+                break;
+            case 'SPEED_DOWN':
+                // Glowing hourglass
+                graphics.beginPath();
+                graphics.moveTo(25, 21); graphics.lineTo(39, 21);
+                graphics.lineTo(25, 43); graphics.lineTo(39, 43);
+                graphics.closePath();
+                graphics.fillPath();
+                graphics.fillRect(23, 19, 18, 2);
+                graphics.fillRect(23, 43, 18, 2);
+                break;
+            case 'EXTRA_LIFE':
+                // Full elegant heart via geometry
+                graphics.fillCircle(27, 26, 6);
+                graphics.fillCircle(37, 26, 6);
+                graphics.fillTriangle(21, 28, 43, 28, 32, 42);
+                break;
+        }
+
         graphics.generateTexture(textureKey, size, size);
         graphics.destroy();
-    }
-
-    /**
-     * Get the icon symbol for each powerup type
-     */
-    static getIcon(type: PowerUpType): string {
-        switch (type) {
-            case 'PADDLE_EXPAND': return '↔️';
-            case 'PADDLE_SHRINK': return '🔹';
-            case 'FIREBALL': return '🔥';
-            case 'MULTI_BALL': return '🧬';
-            case 'BALL_ENLARGE': return '➕';
-            case 'BALL_SHRINK': return '➖';
-            case 'SPEED_UP': return '⚡';
-            case 'SPEED_DOWN': return '🐌';
-            case 'EXTRA_LIFE': return '❤️';
-            default: return '❓';
-        }
     }
 
     /**
