@@ -143,11 +143,11 @@ export class GameScene extends Phaser.Scene {
         // Custom CCD (Continuous Collision Detection) Pass
         // Perform raycasting to prevent tunneling through bricks at high speeds
         const bricks = this.bricks.getChildren();
-        
+
         for (let i = 0; i < ballCount; i++) {
             const ball = balls[i] as Ball;
             const body = ball.body as Phaser.Physics.Arcade.Body;
-            
+
             if (body?.enable && ball.active) {
                 const velLen = body.velocity.length();
                 if (velLen > maxVel) maxVel = velLen;
@@ -158,8 +158,8 @@ export class GameScene extends Phaser.Scene {
 
                 // Create a movement line from current center to next frame center
                 const line = new Phaser.Geom.Line(
-                    ball.x, ball.y, 
-                    ball.x + body.velocity.x * delta / 1000, 
+                    ball.x, ball.y,
+                    ball.x + body.velocity.x * delta / 1000,
                     ball.y + body.velocity.y * delta / 1000
                 );
 
@@ -171,12 +171,12 @@ export class GameScene extends Phaser.Scene {
                 // 1. Check Paddle (Only if ball is moving DOWN towards it)
                 if (this.paddle && body.velocity.y > 0) {
                     const pRect = new Phaser.Geom.Rectangle(
-                        this.paddle.x - this.paddle.displayWidth/2 - radius,
-                        this.paddle.y - this.paddle.displayHeight/2 - radius,
-                        this.paddle.displayWidth + radius*2,
-                        this.paddle.displayHeight + radius*2
+                        this.paddle.x - this.paddle.displayWidth / 2 - radius,
+                        this.paddle.y - this.paddle.displayHeight / 2 - radius,
+                        this.paddle.displayWidth + radius * 2,
+                        this.paddle.displayHeight + radius * 2
                     );
-                    
+
                     const pPoints = [
                         this.getLineIntersection(line, new Phaser.Geom.Line(pRect.left, pRect.top, pRect.right, pRect.top)),
                         this.getLineIntersection(line, new Phaser.Geom.Line(pRect.right, pRect.top, pRect.right, pRect.bottom)),
@@ -203,10 +203,10 @@ export class GameScene extends Phaser.Scene {
 
                         // Inflate brick bounds by ball radius for swept-sphere collision
                         const rect = new Phaser.Geom.Rectangle(
-                            brick.x - brick.displayWidth/2 - radius,
-                            brick.y - brick.displayHeight/2 - radius,
-                            brick.displayWidth + radius*2,
-                            brick.displayHeight + radius*2
+                            brick.x - brick.displayWidth / 2 - radius,
+                            brick.y - brick.displayHeight / 2 - radius,
+                            brick.displayWidth + radius * 2,
+                            brick.displayHeight + radius * 2
                         );
 
                         const points = [
@@ -399,8 +399,6 @@ export class GameScene extends Phaser.Scene {
     }
 
     private triggerExplosion(cx: number, cy: number) {
-        const explosionRadius = 140; // Pixels
-        
         ScreenShake.shake(this.cameras.main, 0.015, 200);
         this.triggerHitstop(60); // slightly longer hitstop for powerful feel
         
@@ -409,26 +407,35 @@ export class GameScene extends Phaser.Scene {
             audioManager.play('hard'); // Reusing hard hit sound for explosion
         }
         
-        // Find visible active bricks within radius
+        // Use level configuration to determine exact 3x3 adjacent area
+        const conf = LEVELS[this.currentLevelIndex];
+        const stepX = conf.brickWidth + conf.brickPaddingX;
+        const stepY = conf.brickHeight + conf.brickPaddingY;
+        const maxDx = stepX * 1.5;
+        const maxDy = stepY * 1.5;
+        
+        // Find visible active bricks within the 3x3 grid
         const activeBricks = this.bricks.getChildren() as Brick[];
         const bricksToHit: Brick[] = [];
         
         for (const b of activeBricks) {
             if (!b.active || !b.visible) continue;
+            // Skip the exploding brick itself
+            if (b.x === cx && b.y === cy) continue;
             
-            const dx = b.x - cx;
-            const dy = b.y - cy;
-            const distSq = dx * dx + dy * dy;
+            const dx = Math.abs(b.x - cx);
+            const dy = Math.abs(b.y - cy);
             
-            if (distSq <= explosionRadius * explosionRadius) {
+            // Check if within 1 grid cell in any direction (including diagonals)
+            if (dx < maxDx && dy < maxDy) {
                 bricksToHit.push(b);
             }
         }
         
         // Chain reaction slight delay sorting by distance
         bricksToHit.sort((a, b) => {
-            const da = (a.x - cx)**2 + (a.y - cy)**2;
-            const db = (b.x - cx)**2 + (b.y - cy)**2;
+            const da = (a.x - cx) ** 2 + (a.y - cy) ** 2;
+            const db = (b.x - cx) ** 2 + (b.y - cy) ** 2;
             return da - db;
         }).forEach((b, index) => {
             this.time.delayedCall(index * 25, () => {
@@ -440,7 +447,7 @@ export class GameScene extends Phaser.Scene {
 
     private handleExplosionHit(brick: Brick) {
         if (!brick.active || !brick.visible) return;
-        
+
         const res = brick.hit(true); // Instant kill for most bricks in explosion radius
         const brickX = brick.x;
         const brickY = brick.y;
@@ -451,7 +458,7 @@ export class GameScene extends Phaser.Scene {
         if (res.destroyed) {
             this.bricks.remove(brick, false);
             this.brickPool.release(brick);
-            
+
             if (brick.brickType === '4') {
                 this.time.delayedCall(10, () => {
                     this.triggerExplosion(brickX, brickY);
@@ -462,7 +469,7 @@ export class GameScene extends Phaser.Scene {
         if (this.particles) {
             try {
                 this.particles.spawnBrickParticles(brickX, brickY, color);
-            } catch (e) {}
+            } catch (e) { }
         }
 
         if (this.checkWin()) {
@@ -1031,7 +1038,62 @@ export class GameScene extends Phaser.Scene {
         this.bricks.clear(true, true);
         this.brickPool.releaseAll();
 
-        conf.grid.forEach((row, rI) => {
+        // 深度复制关卡网格
+        const gridCopied = conf.grid.map(row => [...row]);
+
+        let normalBrickCount = 0;
+        gridCopied.forEach(row => {
+            row.forEach(cell => {
+                if (cell === '1' || cell === '2' || cell === '3') normalBrickCount++;
+            });
+        });
+
+        // 从第三关 (idx >= 2) 开始，随机加入特殊砖块
+        if (idx >= 2) {
+            // 每 20 个普通砖块产生 1 个特殊砖块
+            let numSpecial = Math.floor(normalBrickCount / 20);
+            if (Math.random() < (normalBrickCount % 20) / 20) {
+                numSpecial++;
+            }
+            // 确保至少有 1 个特殊砖块
+            numSpecial = Math.max(1, numSpecial);
+
+            for (let i = 0; i < numSpecial; i++) {
+                const specialTypes: import('../config/LevelData').BrickType[] = ['4', '5', '6'];
+                const st = Phaser.Math.RND.pick(specialTypes);
+
+                let possibleCoords: { r: number, c: number }[] = [];
+                // 隐形砖块允许在现有网格下方额外生成最多3行空行
+                const maxRows = st === '5' ? conf.rows + 3 : conf.rows;
+
+                for (let r = 0; r < maxRows; r++) {
+                    for (let c = 0; c < conf.cols; c++) {
+                        // 如果超出现有网格，则视为空地 ('0')
+                        const cell = r < gridCopied.length ? gridCopied[r][c] : '0';
+                        if (st === '5') {
+                            // 隐形砖块 ('5') 只能出现在原本没有砖块的地方 ('0') 或扩充的空行
+                            if (cell === '0') possibleCoords.push({ r, c });
+                        } else {
+                            // 爆炸 ('4') 和移动 ('6') 替换普通砖块
+                            if (cell === '1' || cell === '2' || cell === '3') {
+                                possibleCoords.push({ r, c });
+                            }
+                        }
+                    }
+                }
+
+                if (possibleCoords.length > 0) {
+                    const rCoord = Phaser.Math.RND.pick(possibleCoords);
+                    // 动态补全可能缺少的行
+                    while (gridCopied.length <= rCoord.r) {
+                        gridCopied.push(new Array(conf.cols).fill('0'));
+                    }
+                    gridCopied[rCoord.r][rCoord.c] = st;
+                }
+            }
+        }
+
+        gridCopied.forEach((row, rI) => {
             row.forEach((type, cI) => {
                 if (type === '0') return;
                 const x = sX + cI * (conf.brickWidth + conf.brickPaddingX);
