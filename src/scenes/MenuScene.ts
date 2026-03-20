@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { UIButton } from '../ui/UIButton';
 import { audioManager } from '../audio/AudioManager';
 import { saveManager } from '../storage/SaveManager';
 
@@ -6,7 +7,7 @@ export class MenuScene extends Phaser.Scene {
     private highScoreText!: Phaser.GameObjects.Text;
     private titleText!: Phaser.GameObjects.Text;
     private subtitleText!: Phaser.GameObjects.Text;
-    private startBtn!: Phaser.GameObjects.Container;
+    private startBtn!: UIButton;
     private instructions!: Phaser.GameObjects.Text;
     private homepageLink!: Phaser.GameObjects.Text;
     private particles!: Phaser.GameObjects.Particles.ParticleEmitter;
@@ -100,16 +101,25 @@ export class MenuScene extends Phaser.Scene {
         const btnY = height * 0.45;
 
         // Primary Button
-        this.startBtn = this.createCyberButton(width / 2, btnY, '开始游戏', true, () => {
-            audioManager.play('launch');
-            this.scene.start('GameScene');
+        this.startBtn = new UIButton(this, width / 2, btnY, {
+            label: '开始游戏',
+            isPrimary: true,
+            onClick: () => {
+                audioManager.play('launch');
+                this.scene.start('GameScene');
+            }
         });
+        this.add.existing(this.startBtn);
 
         // Secondary Button (Help)
-        const helpBtn = this.createCyberButton(width / 2, btnY + 80, '游戏帮助', false, () => {
-            // Can be tied to a standard alert or help scene. Let's start the game in this case for placeholder, or show alert.
-            alert("帮助界面功能开发中！");
+        const helpBtn = new UIButton(this, width / 2, btnY + 80, {
+            label: '游戏帮助',
+            isPrimary: false,
+            onClick: () => {
+                alert("帮助界面功能开发中！");
+            }
         });
+        this.add.existing(helpBtn);
 
         // ============================================
         // INSTRUCTIONS PANEL
@@ -196,112 +206,6 @@ export class MenuScene extends Phaser.Scene {
         this.cameras.main.fadeIn(500, 0, 0, 0);
     }
 
-    private createCyberButton(x: number, y: number, text: string, isPrimary: boolean, onClick: () => void): Phaser.GameObjects.Container {
-        const container = this.add.container(x, y);
-        const btnWidth = 260;
-        const btnHeight = 54;
-        const radius = btnHeight / 2;
-
-        const mainColor = isPrimary ? 0x00d4ff : 0xffffff;
-        // const accentColor = isPrimary ? 0xff3366 : 0xaaaaaa; // Not used in final implementation
-
-        // Custom drawn pill shape since simple rectangles don't radius easily
-        const graphics = this.add.graphics();
-
-        // Base fill
-        graphics.fillStyle(isPrimary ? 0x00d4ff : 0xffffff, isPrimary ? 0.15 : 0.05);
-        // We use left/right circles + center rect
-        graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
-        graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
-        graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
-
-        // Border
-        graphics.lineStyle(1, mainColor, isPrimary ? 0.4 : 0.2);
-        graphics.beginPath();
-        graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-        graphics.lineTo(btnWidth / 2 - radius, -radius);
-        graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
-        graphics.closePath();
-        graphics.strokePath();
-
-        // Button text
-        const btnText = this.add.text(0, 0, text, {
-            fontSize: '28px',
-            fontFamily: "'Noto Sans SC', sans-serif",
-            color: '#dddddd',
-            fontStyle: 'bold',
-            letterSpacing: 3
-        }).setOrigin(0.5);
-
-        container.add([graphics, btnText]);
-        container.setSize(btnWidth, btnHeight);
-        container.setInteractive({ useHandCursor: true });
-
-        container.on('pointerover', () => {
-            graphics.clear();
-
-            // Hover state fill (brighter + gradient simulated via color blocks)
-            graphics.fillStyle(isPrimary ? 0x00d4ff : 0xffffff, isPrimary ? 0.3 : 0.1);
-            graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
-            graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
-            graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
-
-            // Hover border glow
-            graphics.lineStyle(2, mainColor, 0.8);
-            graphics.beginPath();
-            graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-            graphics.lineTo(btnWidth / 2 - radius, -radius);
-            graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
-            graphics.closePath();
-            graphics.strokePath();
-
-            this.tweens.add({
-                targets: container,
-                y: y - 2, // Slight lift
-                duration: 200,
-                ease: 'Power2'
-            });
-        });
-
-        container.on('pointerout', () => {
-            graphics.clear();
-
-            // Normal state fill
-            graphics.fillStyle(isPrimary ? 0x00d4ff : 0xffffff, isPrimary ? 0.15 : 0.05);
-            graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
-            graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
-            graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
-
-            // Normal Border
-            graphics.lineStyle(1, mainColor, isPrimary ? 0.4 : 0.2);
-            graphics.beginPath();
-            graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-            graphics.lineTo(btnWidth / 2 - radius, -radius);
-            graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
-            graphics.closePath();
-            graphics.strokePath();
-
-            this.tweens.add({
-                targets: container,
-                y: y,
-                duration: 200,
-                ease: 'Power2'
-            });
-        });
-
-        container.on('pointerdown', () => {
-            this.tweens.add({
-                targets: container,
-                scale: 0.95,
-                duration: 100,
-                yoyo: true,
-                onComplete: onClick
-            });
-        });
-
-        return container;
-    }
-
     private handleResize(gameSize: Phaser.Structs.Size): void {
         const width = gameSize.width;
         const height = gameSize.height;
@@ -319,20 +223,8 @@ export class MenuScene extends Phaser.Scene {
 
         const btnY = height * 0.45;
         this.startBtn.setPosition(width / 2, btnY);
-        // Assuming helpBtn is not a class property, so we can't directly access it here.
-        // If it were, we'd update its position similarly.
-        // For now, we'll skip resizing the help button if it's not a class property.
-        // If it was a class property, it would be: this.helpBtn.setPosition(width / 2, btnY + 70);
-
-        // Resize instructions panel and its contents
-        const panelWidth = 320;
-        const panelY = height * 0.7;
-        // Find and update panelBg and instruction rows if they were stored or accessible.
-        // For simplicity, we'll assume they are recreated or not dynamically resized in this example.
-        // If they were class properties, their positions would be updated here.
 
         this.homepageLink.setPosition(width / 2, height * 0.9);
-        // Also update linkBg position if it's a class property
     }
 
     shutdown(): void {

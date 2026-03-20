@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { UIButton } from '../ui/UIButton';
 import { audioManager } from '../audio/AudioManager';
 import { saveManager } from '../storage/SaveManager';
 
@@ -16,8 +17,8 @@ export class GameOverScene extends Phaser.Scene {
     private titleText!: Phaser.GameObjects.Text;
     private newHighScoreText!: Phaser.GameObjects.Text;
     private scoreContainer!: Phaser.GameObjects.Container;
-    private restartBtn!: Phaser.GameObjects.Container;
-    private menuBtn!: Phaser.GameObjects.Container;
+    private restartBtn!: UIButton;
+    private menuBtn!: UIButton;
     private hintText!: Phaser.GameObjects.Text;
     private particles!: Phaser.GameObjects.Particles.ParticleEmitter;
 
@@ -197,15 +198,25 @@ export class GameOverScene extends Phaser.Scene {
         // ============================================
         const buttonsY = height * 0.72;
 
-        this.restartBtn = this.createCyberButton(width / 2 - 135, buttonsY, '再来一局', true, () => {
-            audioManager.play('launch');
-            this.scene.start('GameScene', { level: this.level - 1 });
+        this.restartBtn = new UIButton(this, width / 2 - 135, buttonsY, {
+            label: '再来一局',
+            isPrimary: true,
+            onClick: () => {
+                audioManager.play('launch');
+                this.scene.start('GameScene', { level: this.level - 1 });
+            }
         });
+        this.add.existing(this.restartBtn);
 
-        this.menuBtn = this.createCyberButton(width / 2 + 135, buttonsY, '返回菜单', false, () => {
-            audioManager.play('launch');
-            this.scene.start('MenuScene');
+        this.menuBtn = new UIButton(this, width / 2 + 135, buttonsY, {
+            label: '返回菜单',
+            isPrimary: false,
+            onClick: () => {
+                audioManager.play('launch');
+                this.scene.start('MenuScene');
+            }
         });
+        this.add.existing(this.menuBtn);
 
         // Keyboard
         this.input.keyboard?.on('keydown-ENTER', () => this.scene.start('GameScene', { level: this.level - 1 }));
@@ -230,88 +241,6 @@ export class GameOverScene extends Phaser.Scene {
         this.scale.on('resize', this.handleResize, this);
     }
 
-    private createCyberButton(x: number, y: number, textStr: string, isPrimary: boolean, onClick: () => void): Phaser.GameObjects.Container {
-        const container = this.add.container(x, y);
-        const btnWidth = 260;
-        const btnHeight = 54;
-        const radius = btnHeight / 2;
-
-        const mainColor = isPrimary ? 0x00d4ff : 0xffffff;
-
-        const graphics = this.add.graphics();
-
-        // Base fill
-        graphics.fillStyle(isPrimary ? 0x00d4ff : 0xffffff, isPrimary ? 0.15 : 0.05);
-        graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
-        graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
-        graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
-
-        // Border
-        graphics.lineStyle(1, mainColor, isPrimary ? 0.4 : 0.2);
-        graphics.beginPath();
-        graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-        graphics.lineTo(btnWidth / 2 - radius, -radius);
-        graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
-        graphics.closePath();
-        graphics.strokePath();
-
-        // Button text
-        const btnText = this.add.text(0, 0, textStr, {
-            fontSize: '28px',
-            fontFamily: "'Noto Sans SC', sans-serif",
-            color: '#dddddd',
-            fontStyle: 'bold',
-            letterSpacing: 3
-        }).setOrigin(0.5);
-
-        // Reliable Hit Zone
-        const hitZone = this.add.rectangle(0, 0, btnWidth, btnHeight, 0x000000, 0);
-        hitZone.setInteractive({ useHandCursor: true });
-        
-        container.add([graphics, btnText, hitZone]);
-        container.setSize(btnWidth, btnHeight);
-
-        hitZone.on('pointerover', () => {
-            graphics.clear();
-            graphics.fillStyle(isPrimary ? 0x00d4ff : 0xffffff, isPrimary ? 0.3 : 0.1);
-            graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
-            graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
-            graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
-
-            graphics.lineStyle(1, mainColor, isPrimary ? 0.4 : 0.2);
-            graphics.beginPath();
-            graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-            graphics.lineTo(btnWidth / 2 - radius, -radius);
-            graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
-            graphics.closePath();
-            graphics.strokePath();
-        });
-
-        hitZone.on('pointerout', () => {
-            graphics.clear();
-            graphics.fillStyle(isPrimary ? 0x00d4ff : 0xffffff, isPrimary ? 0.15 : 0.05);
-            graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
-            graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
-            graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
-
-            graphics.lineStyle(1, mainColor, isPrimary ? 0.4 : 0.2);
-            graphics.beginPath();
-            graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-            graphics.lineTo(btnWidth / 2 - radius, -radius);
-            graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
-            graphics.closePath();
-            graphics.strokePath();
-
-            this.tweens.add({ targets: container, y: y, duration: 200, ease: 'Power2' });
-        });
-
-        hitZone.on('pointerdown', () => {
-            this.tweens.add({ targets: container, scale: 0.95, duration: 100, yoyo: true, onComplete: onClick });
-        });
-
-        return container;
-    }
-
     private handleResize(gameSize: Phaser.Structs.Size): void {
         const width = gameSize.width;
         const height = gameSize.height;
@@ -320,8 +249,8 @@ export class GameOverScene extends Phaser.Scene {
         this.titleText.setPosition(width / 2, height * 0.16);
         if (this.newHighScoreText) this.newHighScoreText.setPosition(width / 2, height * 0.255);
         this.scoreContainer.setPosition(width / 2, height * 0.42);
-        this.restartBtn.setPosition(width / 2 - 155, height * 0.72);
-        this.menuBtn.setPosition(width / 2 + 155, height * 0.72);
+        this.restartBtn.setPosition(width / 2 - 135, height * 0.72);
+        this.menuBtn.setPosition(width / 2 + 135, height * 0.72);
         this.hintText.setPosition(width / 2, height * 0.88);
     }
 

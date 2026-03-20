@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
+import { UIButton } from '../ui/UIButton';
 
 export class PauseMenu extends Phaser.Scene {
     private isPaused: boolean = false;
     private pauseContainer!: Phaser.GameObjects.Container;
-    private resumeBtn!: Phaser.GameObjects.Container;
-    private restartBtn!: Phaser.GameObjects.Container;
-    private menuBtn!: Phaser.GameObjects.Container;
+    private resumeBtn!: UIButton;
+    private restartBtn!: UIButton;
+    private menuBtn!: UIButton;
     private overlay!: Phaser.GameObjects.Rectangle;
     private titleText!: Phaser.GameObjects.Text;
     private panelBg!: Phaser.GameObjects.Rectangle;
@@ -65,10 +66,24 @@ export class PauseMenu extends Phaser.Scene {
             }
         }).setOrigin(0.5);
 
-        // Buttons — pill-shaped with gradient
-        this.resumeBtn = this.createButton(0, -50, '继续游戏', 0x00cc66, () => this.resumeGame());
-        this.restartBtn = this.createButton(0, 35, '重新开始', 0xff8800, () => this.restartGame());
-        this.menuBtn = this.createButton(0, 120, '返回菜单', 0x4488ff, () => this.goToMenu());
+        // Buttons using standardized UIButton class
+        this.resumeBtn = new UIButton(this, 0, -50, {
+            label: '继续游戏',
+            isPrimary: true,
+            onClick: () => this.resumeGame()
+        });
+        
+        this.restartBtn = new UIButton(this, 0, 35, {
+            label: '重新开始',
+            isPrimary: false,
+            onClick: () => this.restartGame()
+        });
+        
+        this.menuBtn = new UIButton(this, 0, 120, {
+            label: '返回菜单',
+            isPrimary: false,
+            onClick: () => this.goToMenu()
+        });
 
         this.pauseContainer.add([this.panelBg, this.titleText, this.resumeBtn, this.restartBtn, this.menuBtn]);
 
@@ -106,90 +121,6 @@ export class PauseMenu extends Phaser.Scene {
         });
 
         this.scale.on('resize', this.handleResize, this);
-    }
-
-    private createButton(x: number, y: number, textStr: string, mainColor: number, callback: () => void): Phaser.GameObjects.Container {
-        const container = this.add.container(x, y);
-        const btnWidth = 260;
-        const btnHeight = 54;
-        const radius = btnHeight / 2;
-
-        const graphics = this.add.graphics();
-
-        const fillAlpha = 0.15;
-
-        // Base fill
-        graphics.fillStyle(mainColor, fillAlpha);
-        graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
-        graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
-        graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
-
-        // Border
-        graphics.lineStyle(2, mainColor, 0.6);
-        graphics.beginPath();
-        graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-        graphics.lineTo(btnWidth / 2 - radius, -radius);
-        graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
-        graphics.closePath();
-        graphics.strokePath();
-
-        // Button text
-        const btnText = this.add.text(0, 0, textStr, {
-            fontSize: '28px',
-            fontFamily: "'Noto Sans SC', sans-serif",
-            color: '#dddddd',
-            fontStyle: 'bold',
-            letterSpacing: 3
-        }).setOrigin(0.5);
-
-        // Reliable Hit Zone
-        const hitZone = this.add.rectangle(0, 0, btnWidth, btnHeight, 0x000000, 0);
-        hitZone.setInteractive({ useHandCursor: true });
-
-        container.add([graphics, btnText, hitZone]);
-        container.setSize(btnWidth, btnHeight);
-
-        hitZone.on('pointerover', () => {
-            graphics.clear();
-            graphics.fillStyle(mainColor, 0.3);
-            graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
-            graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
-            graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
-
-            graphics.lineStyle(3, mainColor, 1);
-            graphics.beginPath();
-            graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-            graphics.lineTo(btnWidth / 2 - radius, -radius);
-            graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
-            graphics.closePath();
-            graphics.strokePath();
-
-            this.tweens.add({ targets: container, y: y - 2, duration: 200, ease: 'Power2' });
-        });
-
-        hitZone.on('pointerout', () => {
-            graphics.clear();
-            graphics.fillStyle(mainColor, fillAlpha);
-            graphics.fillCircle(-btnWidth / 2 + radius, 0, radius);
-            graphics.fillCircle(btnWidth / 2 - radius, 0, radius);
-            graphics.fillRect(-btnWidth / 2 + radius, -radius, btnWidth - radius * 2, btnHeight);
-
-            graphics.lineStyle(2, mainColor, 0.6);
-            graphics.beginPath();
-            graphics.arc(-btnWidth / 2 + radius, 0, radius, Math.PI * 0.5, Math.PI * 1.5);
-            graphics.lineTo(btnWidth / 2 - radius, -radius);
-            graphics.arc(btnWidth / 2 - radius, 0, radius, Math.PI * 1.5, Math.PI * 0.5);
-            graphics.closePath();
-            graphics.strokePath();
-
-            this.tweens.add({ targets: container, y: y, duration: 200, ease: 'Power2' });
-        });
-
-        hitZone.on('pointerdown', () => {
-            this.tweens.add({ targets: container, scale: 0.95, duration: 100, yoyo: true, onComplete: callback });
-        });
-
-        return container;
     }
 
     private handleResize(gameSize: Phaser.Structs.Size): void {
