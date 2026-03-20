@@ -46,13 +46,13 @@ export class HelpScene extends Phaser.Scene {
             { color: 0xff00d4, name: '重装砖块', desc: '最坚固的核心，需要击中3次消除' },
             { color: 0xff3300, name: '爆炸砖块', desc: '击碎后瞬间炸毁周围的相邻砖块' },
             { color: 0xcc00ff, name: '移动砖块', desc: '在空中来回游走，难以瞄准' },
-            { color: 0x00ffff, name: '隐形砖块', desc: '幽灵砖块，首次击中才会显现实体' },
+            { color: 0x33ff99, name: '隐形砖块', desc: '幽灵砖块，首次击中才会显现实体' },
             { texture: 'brick_metal', color: 0xcccccc, name: '金属砖块', desc: '坚不可摧的阻挡物，用来借力反弹' }
         ];
 
         normalBrickTypes.forEach((b, i) => {
-            const bx = 160;
-            const by = 520 + i * 50;
+            const bx = 270;
+            const by = 540 + i * 50;
             this.add.image(bx, by, 'brick').setDisplaySize(80, 24).setTint(b.color);
             this.add.text(bx + 80, by, `[${b.name}]  -  ${b.desc}`, {
                 fontSize: '22px', fontFamily: '"Microsoft YaHei", sans-serif', color: '#dddddd'
@@ -62,28 +62,28 @@ export class HelpScene extends Phaser.Scene {
         // ==========================================
         // Section 4: PowerUps
         // ==========================================
-        this.add.text(DESIGN_WIDTH / 2, 820, '【 道具说明 】', {
+        this.add.text(DESIGN_WIDTH / 2, 920, '【 道具说明 】', {
             fontSize: '32px', fontFamily: '"Microsoft YaHei", sans-serif', color: '#ffdd00', fontStyle: 'bold'
         }).setOrigin(0.5);
 
         const powerups: { type: PowerUpType, name: string }[] = [
             { type: 'PADDLE_EXPAND', name: '挡板变长' },
-            { type: 'FIREBALL', name: '烈火球' },
+            { type: 'BALL_ENLARGE', name: '小球变大' },
             { type: 'SPEED_DOWN', name: '小球减速' },
 
             { type: 'PADDLE_SHRINK', name: '挡板变短' },
-            { type: 'MULTI_BALL', name: '分裂球' },
-            { type: 'BALL_ENLARGE', name: '小球变大' },
-
+            { type: 'BALL_SHRINK', name: '小球变小' },
             { type: 'SPEED_UP', name: '小球加速' },
+
+            { type: 'MULTI_BALL', name: '分裂球' },
             { type: 'EXTRA_LIFE', name: '增加生命' },
-            { type: 'BALL_SHRINK', name: '小球变小' }
+            { type: 'FIREBALL', name: '烈火球' }
         ];
 
         const cols = 3;
         const startX = 240;
         const spacingX = 300;
-        const startY = 1110;
+        const startY = 1030;
         const spacingY = 110;
 
         powerups.forEach((pu, index) => {

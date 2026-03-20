@@ -149,7 +149,7 @@ export class Brick extends Phaser.Physics.Arcade.Sprite {
                 baseColor = 0xcc00ff; // Purple/Pink for moving
                 break;
             case '5':
-                baseColor = 0x00ffff; // Cyan/Ghost for invisible
+                baseColor = 0x33ff99; // More greenish for invisible
                 break;
             case '4':
                 baseColor = 0xff3300; // Bright orange/red for explosive
