@@ -42,9 +42,9 @@ export class ParticleSystem {
     }
 
     spawnExplosion(x: number, y: number): void {
-        this.brickEmitter.setParticleTint(0xff3300, 0xffaa00, 0xff0000);
+        this.brickEmitter.setParticleTint(0xff3300); // Using main explosion color
         this.brickEmitter.explode(40, x, y); // Large burst
-        this.sparkEmitter.setParticleTint(0xffffff, 0xffff00);
+        this.sparkEmitter.setParticleTint(0xffffff); // Using white for sparks
         this.sparkEmitter.explode(30, x, y); // Extra sparks
     }
 
