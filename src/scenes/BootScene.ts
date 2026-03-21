@@ -183,50 +183,28 @@ export class BootScene extends Phaser.Scene {
             const drawBrick = (textureKey: string, noiseFactor: number, crackLevel: number) => {
                 graphics.clear();
 
-                // 1. Base vibrant block
-                graphics.fillStyle(0xffffff, 0.95); // White base, will be tinted
-                graphics.fillRect(0, 0, bW, bH);
+                const radius = 5;
 
-                // 2. Bevels (3D edge effect)
+                // 1. Base vibrant block with rounded corners
+                graphics.fillStyle(0xffffff, 0.95); // White base, will be tinted
+                graphics.fillRoundedRect(0, 0, bW, bH, radius);
+
+                // 2. Bevels (3D edge effect) - Adjusted for rounded corners
                 // Top bevel (bright)
                 graphics.fillStyle(0xffffff, 0.4);
-                graphics.beginPath();
-                graphics.moveTo(0, 0);
-                graphics.lineTo(bW, 0);
-                graphics.lineTo(bW - 4, 4);
-                graphics.lineTo(4, 4);
-                graphics.closePath();
-                graphics.fillPath();
+                graphics.fillRoundedRect(2, 2, bW - 4, 4, 2);
 
                 // Left bevel (bright)
                 graphics.fillStyle(0xffffff, 0.25);
-                graphics.beginPath();
-                graphics.moveTo(0, 0);
-                graphics.lineTo(4, 4);
-                graphics.lineTo(4, bH - 4);
-                graphics.lineTo(0, bH);
-                graphics.closePath();
-                graphics.fillPath();
+                graphics.fillRoundedRect(2, 2, 4, bH - 4, 2);
 
                 // Bottom bevel (dark)
                 graphics.fillStyle(0x000000, 0.3);
-                graphics.beginPath();
-                graphics.moveTo(0, bH);
-                graphics.lineTo(4, bH - 4);
-                graphics.lineTo(bW - 4, bH - 4);
-                graphics.lineTo(bW, bH);
-                graphics.closePath();
-                graphics.fillPath();
+                graphics.fillRoundedRect(2, bH - 6, bW - 4, 4, 2);
 
                 // Right bevel (dark)
                 graphics.fillStyle(0x000000, 0.2);
-                graphics.beginPath();
-                graphics.moveTo(bW, 0);
-                graphics.lineTo(bW, bH);
-                graphics.lineTo(bW - 4, bH - 4);
-                graphics.lineTo(bW - 4, 4);
-                graphics.closePath();
-                graphics.fillPath();
+                graphics.fillRoundedRect(bW - 6, 2, 4, bH - 4, 2);
 
                 // 3. Procedural Grit / Noise (Highly randomized)
                 graphics.fillStyle(0x000000, 0.15 + (Math.random() * 0.15)); // Dark grit
@@ -333,19 +311,20 @@ export class BootScene extends Phaser.Scene {
         if (!this.textures.exists('brick_metal')) {
             const bW = 100;
             const bH = 36;
+            const radius = 5;
             graphics.clear();
 
             // Frosted glass base (lighter)
             graphics.fillStyle(0x99aabb, 0.95);
-            graphics.fillRoundedRect(0, 0, bW, bH, 7);
+            graphics.fillRoundedRect(0, 0, bW, bH, radius);
 
             // Inner frosted layer (brighter)
             graphics.fillStyle(0xbbccdd, 0.6);
-            graphics.fillRoundedRect(3, 3, bW - 6, bH - 6, 5);
+            graphics.fillRoundedRect(3, 3, bW - 6, bH - 6, Math.max(0, radius - 2));
 
             // Top specular band
             graphics.fillStyle(0xffffff, 0.5);
-            graphics.fillRoundedRect(5, 2, bW - 10, bH * 0.3, 4);
+            graphics.fillRoundedRect(5, 2, bW - 10, bH * 0.3, 2);
 
             // Diagonal caustic shimmer
             graphics.fillStyle(0xffffff, 0.2);
@@ -359,7 +338,7 @@ export class BootScene extends Phaser.Scene {
 
             // Crystal outline
             graphics.lineStyle(2, 0xddeeff, 0.6);
-            graphics.strokeRoundedRect(1, 1, bW - 2, bH - 2, 6);
+            graphics.strokeRoundedRect(1, 1, bW - 2, bH - 2, radius - 1);
 
             // Corner rivets — Industrial look
             const rivetRadius = 3.5;
