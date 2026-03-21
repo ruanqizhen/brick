@@ -198,6 +198,20 @@ export class GameScene extends Phaser.Scene {
                 }
             }
 
+            // Ball hit side/top walls
+            const isWall = [GameScene.WALL_LEFT, GameScene.WALL_RIGHT, GameScene.WALL_TOP].includes(labelA as any) || 
+                           [GameScene.WALL_LEFT, GameScene.WALL_RIGHT, GameScene.WALL_TOP].includes(labelB as any);
+            if (isWall && (labelA === 'ball' || labelB === 'ball')) {
+                const ballBody = labelA === 'ball' ? bodyA : bodyB;
+                const ball = ballBody.gameObject as Ball;
+                if (ball) {
+                    // Slight delay to let the physics engine process the initial bounce
+                    this.time.delayedCall(10, () => {
+                        if (ball.active) ball.enforceMinimumVerticalAngle();
+                    });
+                }
+            }
+
             // Ball hit brick
             if ((labelA === 'ball' && labelB === 'brick') ||
                 (labelB === 'ball' && labelA === 'brick')) {
@@ -316,8 +330,11 @@ export class GameScene extends Phaser.Scene {
             // Ball bounce logic for non-fireball or indestructible
             if (!isFireball || isIndestructible) {
                 // Matter Physics handles the bounce automatically with restitution:1
-                // Add jitter to avoid infinite loops
+                // Add jitter to avoid infinite loops and enforce minimum vertical angle
                 ball.applyJitter(1.0);
+                this.time.delayedCall(10, () => {
+                    if (ball.active) ball.enforceMinimumVerticalAngle();
+                });
             }
 
             if (isIndestructible) {

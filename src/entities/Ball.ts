@@ -190,6 +190,33 @@ export class Ball extends Phaser.Physics.Matter.Image {
         this.setVelocityPxPerSec(Math.cos(newAngle) * speed, Math.sin(newAngle) * speed);
     }
 
+    /**
+     * Ensures the ball never moves too horizontally (prevents horizontal traps).
+     * Called after wall or brick hits.
+     */
+    public enforceMinimumVerticalAngle() {
+        const v = this.getVelocityPxPerSec();
+        const currentSpeed = this.getSpeedPxPerSec();
+        if (currentSpeed < 10) return;
+
+        let angle = Math.atan2(v.y, v.x);
+        let deg = Phaser.Math.RadToDeg(angle);
+
+        // Define a safe vertical zone (at least 15 degrees away from perfectly horizontal)
+        const minAngle = 15; 
+
+        if (v.y <= 0) {
+            // Moving UP: Avoid -180 and 0. Clamp between -180 + minAngle and -minAngle.
+            deg = Phaser.Math.Clamp(deg, -180 + minAngle, -minAngle);
+        } else {
+            // Moving DOWN: Avoid 180 and 0. Clamp between minAngle and 180 - minAngle.
+            deg = Phaser.Math.Clamp(deg, minAngle, 180 - minAngle);
+        }
+
+        const newRad = Phaser.Math.DegToRad(deg);
+        this.setVelocityPxPerSec(Math.cos(newRad) * currentSpeed, Math.sin(newRad) * currentSpeed);
+    }
+
     onPaddleHit(paddle: Paddle) {
         const v = this.getVelocityPxPerSec();
 
