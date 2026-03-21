@@ -46,7 +46,6 @@ export class GameScene extends Phaser.Scene {
     private static readonly WALL_LEFT = 'wall_left';
     private static readonly WALL_RIGHT = 'wall_right';
     private static readonly WALL_BOTTOM = 'wall_bottom';
-
     constructor() {
         super(SCENE_KEYS.GAME);
     }
@@ -64,6 +63,11 @@ export class GameScene extends Phaser.Scene {
     }
 
     create() {
+        // Essential Arcade Physics Fix: Prevent Matter.js from killing velocity on shallow collisions
+        if ((Phaser.Physics.Matter as any).Matter?.Resolver) {
+            (Phaser.Physics.Matter as any).Matter.Resolver._restingThresh = 0.001;
+        }
+
         this.balls = [];
         this.powerUps = [];
         this.bricks = [];
@@ -132,17 +136,20 @@ export class GameScene extends Phaser.Scene {
 
         // Top wall
         const topWall = this.matter.add.rectangle(w / 2, -thickness / 2, w + thickness * 2, thickness, {
-            isStatic: true, label: GameScene.WALL_TOP
+            isStatic: true, label: GameScene.WALL_TOP,
+            restitution: 1, friction: 0, frictionStatic: 0, frictionAir: 0
         });
 
         // Left wall
         const leftWall = this.matter.add.rectangle(-thickness / 2, h / 2, thickness, h + thickness * 2, {
-            isStatic: true, label: GameScene.WALL_LEFT
+            isStatic: true, label: GameScene.WALL_LEFT,
+            restitution: 1, friction: 0, frictionStatic: 0, frictionAir: 0
         });
 
         // Right wall
         const rightWall = this.matter.add.rectangle(w + thickness / 2, h / 2, thickness, h + thickness * 2, {
-            isStatic: true, label: GameScene.WALL_RIGHT
+            isStatic: true, label: GameScene.WALL_RIGHT,
+            restitution: 1, friction: 0, frictionStatic: 0, frictionAir: 0
         });
 
         // Bottom trigger (sensor) – detects ball lost

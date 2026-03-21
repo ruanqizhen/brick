@@ -18,6 +18,8 @@ export class Brick extends Phaser.Physics.Matter.Image {
             isStatic: true,
             label: 'brick',
             friction: 0,
+            frictionStatic: 0,
+            frictionAir: 0,
             restitution: 1,
             isSensor: false
         });

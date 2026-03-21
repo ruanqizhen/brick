@@ -16,6 +16,8 @@ export class Paddle extends Phaser.Physics.Matter.Image {
             isStatic: true,
             label: 'paddle',
             friction: 0,
+            frictionStatic: 0,
+            frictionAir: 0,
             restitution: 1,
             isSensor: false
         });
@@ -30,6 +32,8 @@ export class Paddle extends Phaser.Physics.Matter.Image {
             (this.body as MatterJS.BodyType).label = 'paddle';
             (this.body as MatterJS.BodyType).restitution = 1;
             (this.body as MatterJS.BodyType).friction = 0;
+            (this.body as MatterJS.BodyType).frictionStatic = 0;
+            (this.body as MatterJS.BodyType).frictionAir = 0;
         }
 
         if (scene.input.keyboard) {
