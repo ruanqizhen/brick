@@ -4,30 +4,38 @@ import { Paddle } from './Paddle';
 import { audioManager } from '../audio/AudioManager';
 import { GameScene } from '../scenes/GameScene';
 
-export class Ball extends Phaser.Physics.Arcade.Sprite {
+export class Ball extends Phaser.Physics.Matter.Image {
     public isFireball: boolean = false;
     private trailEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
     private fireEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
-    private trailScale: number = (GameConfig.BALL_RADIUS * 2) / 32; // Particle is 32x32
+    private trailScale: number = (GameConfig.BALL_RADIUS * 2) / 32;
     private lastPaddleHitTime: number = 0;
     private isPooledActive: boolean = false;
     private sceneRef: Phaser.Scene;
     public lastHitBrickId: string | null = null;
     public lastHitTime: number = 0;
+    private _radius: number = GameConfig.BALL_RADIUS;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, x, y, 'ball');
+        // Create with a circular Matter body matching the ball radius
+        super(scene.matter.world, x, y, 'ball', undefined, {
+            shape: { type: 'circle', radius: 128 }, // 128 = half of 256px texture
+            restitution: 1,
+            friction: 0,
+            frictionAir: 0,
+            frictionStatic: 0,
+            label: 'ball',
+            isSensor: false
+        });
 
         this.sceneRef = scene;
         scene.add.existing(this);
-        scene.physics.add.existing(this);
 
-        this.setCollideWorldBounds(true);
-        (this.body as Phaser.Physics.Arcade.Body).onWorldBounds = true;
-        this.setBounce(1, 1);
-
-        this.setCircle(128);
         this.setDisplaySize(GameConfig.BALL_RADIUS * 2, GameConfig.BALL_RADIUS * 2);
+        this.setFixedRotation();
+        this.setCollisionGroup(-1); // Balls don't collide with each other
+        this.setSensor(false);
+        this.setStatic(false);
 
         this.trailEmitter = scene.add.particles(0, 0, 'particle', {
             lifespan: 200,
@@ -57,24 +65,27 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         this.fireEmitter.setDepth(this.depth - 1);
 
         this.setData('state', 'READY');
-        if (this.body) {
-            this.body.enable = false;
-        }
-
-        this.setPoolActive(false);
+        this.setIgnoreGravity(true);
+        this.setActive(false);
+        this.setVisible(false);
+        this.setSensor(true); // disabled-sensor trick to keep it in world but not collide
     }
 
     launch() {
         if (this.getData('state') !== 'READY') return;
 
         this.setData('state', 'MOVING');
-        if (this.body) {
-            this.body.enable = true; // 发射时激活物理，在此之前它是禁用的
-        }
-        const speed = this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED;
+        this.setSensor(false); // enable collision
+        this.setActive(true);
+        this.setVisible(true);
 
+        const speed = this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED;
         const angle = Phaser.Math.DegToRad(-90 + Phaser.Math.Between(-15, 15));
-        this.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+
+        // Matter uses pixels/second but set via setVelocity which takes pixels/step (60fps base)
+        const vx = Math.cos(angle) * speed;
+        const vy = Math.sin(angle) * speed;
+        this.setVelocity(vx / 60, vy / 60);
     }
 
     override update() {
@@ -84,7 +95,6 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
             const paddle = gameScene.paddle;
             if (paddle) {
                 this.setPosition(paddle.x, paddle.y - paddle.displayHeight / 2 - this.displayHeight / 2);
-                if (this.body) this.body.updateFromGameObject();
             }
             this.trailEmitter.stop();
         } else if (state === 'MOVING') {
@@ -95,39 +105,63 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     }
 
     private updateTrailEffect() {
-        const body = this.body as Phaser.Physics.Arcade.Body;
-        if (!body) return;
-
-        let color = 0x4FC3F7; // 默认冷蓝色
+        const vx = (this.body as MatterJS.BodyType).velocity.x;
+        const vy = (this.body as MatterJS.BodyType).velocity.y;
+        const currentSpeed = Math.sqrt(vx * vx + vy * vy) * 60; // Convert from per-step to px/s
+        let color = 0x4FC3F7;
 
         if (this.isFireball) {
-            color = 0xffaa00; // 火球橙黄金色
+            color = 0xffaa00;
         } else {
-            const currentSpeed = body.velocity.length();
             const baseSpeed = GameConfig.BALL_BASE_SPEED;
-
             if (currentSpeed >= baseSpeed * 2.0) {
-                color = 0xFF1744; // 赤红色
+                color = 0xFF1744;
             } else if (currentSpeed >= baseSpeed * 1.5) {
-                color = 0xFF8C00; // 橙色
+                color = 0xFF8C00;
             } else if (currentSpeed >= baseSpeed * 1.0) {
-                color = 0xFFFFFF; // 白色
+                color = 0xFFFFFF;
             }
         }
 
         this.trailEmitter.setParticleTint(color);
     }
 
+    getVelocityPxPerSec(): { x: number, y: number } {
+        const b = this.body as MatterJS.BodyType;
+        return { x: b.velocity.x * 60, y: b.velocity.y * 60 };
+    }
+
+    setVelocityPxPerSec(vx: number, vy: number) {
+        this.setVelocity(vx / 60, vy / 60);
+    }
+
+    getSpeedPxPerSec(): number {
+        const v = this.getVelocityPxPerSec();
+        return Math.sqrt(v.x * v.x + v.y * v.y);
+    }
+
     setBallRadius(radius: number) {
+        this._radius = radius;
+        this.setDisplaySize(radius * 2, radius * 2);
+        const scaleFactor = radius / 128; // 128 is the texture half-size
+        this.setScale(scaleFactor * 2);
+        
+        // Reset display size override
         this.setDisplaySize(radius * 2, radius * 2);
 
-        // 修复：始终基于高分辨率纹理半径 (128) 设置圆周，由 Sprite 的 Scale 机制处理最终碰撞尺寸。
-        // 不传递偏移量，允许 Phaser 自动居中。
-        if (this.body) {
-            this.setCircle(128);
-        }
+        // Safely rebuild the Matter body
+        this.setCircle(radius, {
+            restitution: 1,
+            friction: 0,
+            frictionAir: 0,
+            frictionStatic: 0,
+            label: 'ball',
+            isSensor: this.isSensor()
+        });
 
-        // 动态调整粒子缩放系数以完全包裹小球宽幅 (particle=32)
+        this.setFixedRotation();
+        this.setIgnoreGravity(true);
+
         this.trailScale = (radius * 2) / 32;
     }
 
@@ -141,51 +175,40 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
     }
 
     private normalizeSpeed() {
-        const body = this.body as Phaser.Physics.Arcade.Body;
-        if (!body) return;
-
-        const currentSpeed = body.velocity.length();
         const targetSpeed = this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED;
+        const MAX_SAFE = GameConfig.BALL_MAX_SAFE_SPEED;
+        const clampedTarget = Math.min(targetSpeed, MAX_SAFE);
+        if (targetSpeed > MAX_SAFE) this.setData('targetSpeed', MAX_SAFE);
 
-        const MAX_SAFE_SPEED = GameConfig.BALL_MAX_SAFE_SPEED;
-        if (targetSpeed > MAX_SAFE_SPEED) {
-            this.setData('targetSpeed', MAX_SAFE_SPEED);
-        }
+        const currentSpeed = this.getSpeedPxPerSec();
 
         if (currentSpeed < 100) {
             const angle = Phaser.Math.DegToRad(-90 + Phaser.Math.Between(-30, 30));
-            this.setVelocity(Math.cos(angle) * targetSpeed, Math.sin(angle) * targetSpeed);
+            this.setVelocityPxPerSec(Math.cos(angle) * clampedTarget, Math.sin(angle) * clampedTarget);
         } else {
-            const factor = targetSpeed / currentSpeed;
-            body.velocity.x *= factor;
-            body.velocity.y *= factor;
+            const factor = clampedTarget / currentSpeed;
+            const v = this.getVelocityPxPerSec();
+            this.setVelocityPxPerSec(v.x * factor, v.y * factor);
         }
     }
 
-    /**
-     * 为小球当前速度注入一个细微的随机角度偏差（默认 ±0.5度）
-     * 用于防止进入物理死循环，并增加真实感
-     */
     public applyJitter(degrees: number = 1.0) {
-        const body = this.body as Phaser.Physics.Arcade.Body;
-        if (!body) return;
+        const speed = this.getSpeedPxPerSec();
+        if (speed === 0) return;
 
-        const currentSpeed = body.velocity.length();
-        if (currentSpeed === 0) return;
-
+        const v = this.getVelocityPxPerSec();
         const jitterRad = Phaser.Math.DegToRad(Phaser.Math.FloatBetween(-degrees, degrees));
-        const currentAngle = Math.atan2(body.velocity.y, body.velocity.x);
+        const currentAngle = Math.atan2(v.y, v.x);
         const newAngle = currentAngle + jitterRad;
 
-        body.velocity.x = Math.cos(newAngle) * currentSpeed;
-        body.velocity.y = Math.sin(newAngle) * currentSpeed;
+        this.setVelocityPxPerSec(Math.cos(newAngle) * speed, Math.sin(newAngle) * speed);
     }
 
     onPaddleHit(paddle: Paddle) {
-        const body = this.body as Phaser.Physics.Arcade.Body;
-        if (!body) return;
+        const v = this.getVelocityPxPerSec();
 
-        if (body.velocity.y < 0) return;
+        // Only handle ball coming down towards paddle
+        if (v.y < 0) return;
 
         const now = this.scene.time.now;
         if (now - this.lastPaddleHitTime < GameConfig.PADDLE_HIT_COOLDOWN) return;
@@ -202,15 +225,14 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
         deg = Phaser.Math.Clamp(deg, -170, -10);
 
         const finalAngle = Phaser.Math.DegToRad(deg);
-        this.setVelocity(speed * Math.cos(finalAngle), -Math.abs(speed * Math.sin(finalAngle)));
-
+        this.setVelocityPxPerSec(speed * Math.cos(finalAngle), -Math.abs(speed * Math.sin(finalAngle)));
         this.applyJitter(1.0);
 
-        if (this.body) {
-            this.body.updateFromGameObject();
-        }
-
         audioManager.play('paddle');
+    }
+
+    isSensor(): boolean {
+        return (this.body as MatterJS.BodyType).isSensor;
     }
 
     // Pool methods
@@ -225,21 +247,21 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
             this.setTint(0xffffff);
             this.fireEmitter.stop();
             this.trailEmitter.stop();
-            if (this.body) {
-                this.body.enable = false;
-                this.body.velocity.set(0, 0);
-            }
+            this.setSensor(true);
+            this.setActive(false);
             this.setVisible(false);
+            this.setVelocity(0, 0);
         } else {
+            this.setActive(true);
             this.setVisible(true);
         }
     }
 
     onRelease(): void {
         this.setPosition(0, -100);
-        if (this.body) {
-            this.body.enable = false;
-        }
+        this.setSensor(true);
+        this.setActive(false);
+        this.setVelocity(0, 0);
     }
 
     isPoolActive(): boolean {
@@ -248,7 +270,7 @@ export class Ball extends Phaser.Physics.Arcade.Sprite {
 
     override destroy(fromScene?: boolean): void {
         if (!this.sceneRef) return;
-        
+
         if (this.trailEmitter) {
             this.trailEmitter.destroy();
         }

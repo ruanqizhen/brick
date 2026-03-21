@@ -24,7 +24,7 @@ export const GameConfig = {
         EASY_COUNT: 5,
         MEDIUM_COUNT: 10,
         HARD_COUNT: 5,
-        SPEED_MULTIPLIER_MAX_LEVEL: 30, // Level at which ball speed reaches 2x
+        SPEED_MULTIPLIER_MAX_LEVEL: 30,
     },
 
     // 道具持续时间 (毫秒)
@@ -41,10 +41,10 @@ export const GameConfig = {
         BG: '#050510',
         PADDLE: '#FFFFFF',
         BALL: '#FFFFFF',
-        BRICK_1: 0x00e5ff,       // Hyper Azure (Normal)
-        BRICK_2: 0xffea00,       // Hyper Yellow (Hard 2)
-        BRICK_3: 0xff00d4,       // Hyper Magenta (Hard 3)
-        BRICK_8: 0xffffff// Bright Platinum (Indestructible)
+        BRICK_1: 0x00e5ff,
+        BRICK_2: 0xffea00,
+        BRICK_3: 0xff00d4,
+        BRICK_8: 0xffffff
     }
 };
 
@@ -59,11 +59,13 @@ export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
             autoCenter: Phaser.Scale.NO_CENTER
         },
         physics: {
-            default: 'arcade',
-            arcade: {
+            default: 'matter',
+            matter: {
                 gravity: { x: 0, y: 0 },
                 debug: false,
-                fixedStep: false
+                positionIterations: 10,
+                velocityIterations: 10,
+                enableSleeping: false
             }
         },
         fps: {

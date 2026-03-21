@@ -1,32 +1,43 @@
 import Phaser from 'phaser';
 import { DESIGN_WIDTH, GameConfig } from '../config/GameConfig';
 
-export class Paddle extends Phaser.Physics.Arcade.Sprite {
+export class Paddle extends Phaser.Physics.Matter.Image {
     private prevX: number = 0;
     private _velocityX: number = 0;
     private cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
     private aKey: Phaser.Input.Keyboard.Key | undefined;
     private dKey: Phaser.Input.Keyboard.Key | undefined;
-    private keyboardSpeed: number = 18; // 键盘移动速度 (像素/帧)
+    private keyboardSpeed: number = 18;
     private lastClientX: number = 0;
     private wasPointerDown: boolean = false;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, x, y, 'paddle');
+        super(scene.matter.world, x, y, 'paddle', undefined, {
+            isStatic: true,
+            label: 'paddle',
+            friction: 0,
+            restitution: 1,
+            isSensor: false
+        });
         scene.add.existing(this);
-        scene.physics.add.existing(this, true); // 静态物体，由于手动控制位置
-
         this.setOrigin(0.5);
         this.prevX = x;
+        this.setIgnoreGravity(true);
 
-        // 设置键盘控制
+        this.setBody({ type: 'rectangle', width: GameConfig.PADDLE_WIDTH, height: GameConfig.PADDLE_HEIGHT });
+        this.setStatic(true);
+        if (this.body) {
+            (this.body as MatterJS.BodyType).label = 'paddle';
+            (this.body as MatterJS.BodyType).restitution = 1;
+            (this.body as MatterJS.BodyType).friction = 0;
+        }
+
         if (scene.input.keyboard) {
             this.cursors = scene.input.keyboard.createCursorKeys();
             this.aKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
             this.dKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         }
 
-        // 全局全域追踪
         window.addEventListener('pointerdown', this.handleWindowPointerDown);
         window.addEventListener('pointermove', this.handleWindowPointerMove);
         window.addEventListener('pointerup', this.handleWindowPointerUp);
@@ -43,8 +54,6 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
 
         const currentClientX = event.clientX;
         const clientDeltaX = currentClientX - this.lastClientX;
-
-        // 重要修正：使用 CSS 层级的缩放比例来保持 1:1 的手感
         const cssScale = this.scene.scale.displaySize.width / DESIGN_WIDTH;
         const gameDeltaX = clientDeltaX / (cssScale || 1);
 
@@ -58,16 +67,11 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
         this.wasPointerDown = false;
     };
 
-    override update(time: number, delta: number) {
+    update(time: number, delta: number) {
         this.prevX = this.x;
 
-        // 1. 无需在 update 中处理 Phaser 指针，改用 window 全局事件捕获 (已在成员方法中实现)
-
-        // 2. 键盘输入 (独立处理，允许共存)
+        // Keyboard input
         if (this.cursors || this.aKey || this.dKey) {
-            // 使用 (1000 / 60) 作为基准，delta 是当前帧经过的毫秒数
-            // 如果是 60Hz，delta 约为 16.6ms -> ratio 为 1.0
-            // 如果是 120Hz，delta 约为 8.3ms -> ratio 为 0.5
             const frameRatio = delta / (1000 / 60);
             if (this.cursors?.left.isDown || this.aKey?.isDown) {
                 this.x -= this.keyboardSpeed * frameRatio;
@@ -76,26 +80,28 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
-        // 约束边界：严格贴合边界，防止边界角落遗留夹缝导致小球漏过
+        // Clamp to bounds
         const halfWidth = this.displayWidth / 2;
         this.x = Phaser.Math.Clamp(this.x, halfWidth, DESIGN_WIDTH - halfWidth);
 
-        // 计算速度用于球的摩擦力反弹
+        // Calculate velocity for ball angle calculation
         this._velocityX = this.x - this.prevX;
 
-        // 必须同步物理体（StaticBody 不会自动跟随 GameObject 移动）
+        // Sync Matter body position — static bodies don't auto-follow GameObject
+        this.setPosition(this.x, this.y);
+    }
+
+    updateBodyWidth() {
+        // Rebuild the Matter body to match new display width
+        const w = this.displayWidth + 10; // extra margin for sub-pixel safety
+        const h = GameConfig.PADDLE_HEIGHT;
+        this.setBody({ type: 'rectangle', width: w, height: h });
+        this.setStatic(true);
         if (this.body) {
-            const body = this.body as Phaser.Physics.Arcade.StaticBody;
-
-            // 鲁棒性检查：仅在宽度发生物理变化时更新 Body 尺寸，避免每帧重设导致碰撞丢失
-            const targetWidth = this.displayWidth + 10;
-            if (body.width !== targetWidth) {
-                body.setSize(targetWidth, GameConfig.PADDLE_HEIGHT);
-                body.setOffset(-5, 0);
-            }
-
-            body.updateFromGameObject();
+            (this.body as MatterJS.BodyType).label = 'paddle';
+            (this.body as MatterJS.BodyType).restitution = 1;
         }
+        this.setPosition(this.x, this.y);
     }
 
     get velocityX(): number {
@@ -107,10 +113,6 @@ export class Paddle extends Phaser.Physics.Arcade.Sprite {
         super.destroy(fromScene);
     }
 
-    /**
-     * Clean up window event listeners to prevent memory leaks
-     * Should be called when scene shuts down
-     */
     public cleanupEventListeners(): void {
         window.removeEventListener('pointerdown', this.handleWindowPointerDown);
         window.removeEventListener('pointermove', this.handleWindowPointerMove);
