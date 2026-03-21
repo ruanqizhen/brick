@@ -34,6 +34,7 @@ export class GameScene extends Phaser.Scene {
     private lives: number = 3;
     private currentLevelIndex: number = 0;
     private activeSpeedMultipliers: number[] = [];
+    private difficulty: string = 'EASY';
 
     // Timed powerup trackers
     private fireballTimer: Phaser.Time.TimerEvent | null = null;
@@ -50,11 +51,15 @@ export class GameScene extends Phaser.Scene {
         super(SCENE_KEYS.GAME);
     }
 
-    init(data?: { level?: number, resetLives?: boolean }) {
+    init(data?: { level?: number, resetLives?: boolean, difficulty?: string }) {
         if (data && typeof data.level === 'number') {
             this.currentLevelIndex = data.level;
         } else {
             this.currentLevelIndex = 0;
+        }
+
+        if (data?.difficulty) {
+            this.difficulty = data.difficulty;
         }
 
         if (data?.resetLives || this.currentLevelIndex === 0) {
@@ -210,6 +215,7 @@ export class GameScene extends Phaser.Scene {
             // Paddle hit powerup
             if ((labelA === 'paddle' && labelB === 'powerup') ||
                 (labelB === 'paddle' && labelA === 'powerup')) {
+                pair.isSensor = true; // Tell physics engine to NOT bounce the powerup off the paddle!
                 const puBody = labelA === 'powerup' ? bodyA : bodyB;
                 const pu = puBody.gameObject as PowerUp;
                 if (pu && pu.isPoolActive()) {
@@ -434,7 +440,11 @@ export class GameScene extends Phaser.Scene {
 
     private getBaseSpeedForLevel(levelIndex: number): number {
         const multiplier = 1 + (levelIndex / GameConfig.LEVELS.SPEED_MULTIPLIER_MAX_LEVEL);
-        return GameConfig.BALL_BASE_SPEED * multiplier;
+        let base = GameConfig.BALL_BASE_SPEED * multiplier;
+        if (this.difficulty === 'HARD') {
+            base *= 1.5;
+        }
+        return base;
     }
 
     private spawnPowerUp(x: number, y: number) {
@@ -691,7 +701,7 @@ export class GameScene extends Phaser.Scene {
         hitZone.on('pointerdown', () => {
             audioManager.play('launch');
             this.currentLevelIndex++;
-            this.scene.restart({ level: this.currentLevelIndex });
+            this.scene.restart({ level: this.currentLevelIndex, difficulty: this.difficulty });
         });
 
         void overlay;
@@ -770,7 +780,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     private restartGame(): void {
-        this.scene.restart();
+        this.scene.restart({ level: this.currentLevelIndex, difficulty: this.difficulty });
     }
 
     private handleBallLaunch() {

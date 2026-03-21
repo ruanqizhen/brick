@@ -20,11 +20,13 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
 
         super(scene.matter.world, x, y, textureKey, undefined, {
             label: 'powerup',
-            isSensor: true,    // Initially sensor (inactive)
+            isSensor: false,    // Active physical entity!
             ignoreGravity: true,
-            restitution: 0,
+            restitution: 1,
             friction: 0,
-            frictionAir: 0
+            frictionAir: 0,
+            frictionStatic: 0,
+            density: 0.1 // Give it some weight against the ball
         });
         this.sceneRef = scene;
         this.powerUpType = type;
@@ -33,7 +35,7 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
         this.setCircle(25);
         if (this.body) {
             (this.body as MatterJS.BodyType).label = 'powerup';
-            (this.body as MatterJS.BodyType).isSensor = true;
+            (this.body as MatterJS.BodyType).isSensor = false;
             this.setIgnoreGravity(true);
         }
 
@@ -41,11 +43,15 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
     }
 
     override update(): void {
-        // Move downward at constant speed
-            this.setPosition(this.x, this.y + 3);
+        // Movement is now natively handled by Matter.js velocity rather than position overrides!
+        // We constrain its max speed slightly so it doesn't fly off screen instantly if hit
+        if (this.body && this.isPooledActive) {
+            const v = this.body.velocity;
+            // Introduce a soft drag towards downward drifting
+            if (v.y < 3) this.applyForce(new Phaser.Math.Vector2(0, 0.0005));
+        }
     }
 
-    // Pool methods
     setPoolActive(active: boolean): void {
         this.isPooledActive = active;
         this.setVisible(active);
@@ -55,6 +61,9 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
         }
         if (!active) {
             this.setPosition(0, -100);
+            this.setVelocity(0, 0);
+        } else {
+            this.setVelocity(0, 3);
         }
     }
 
@@ -79,7 +88,9 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
         // setTexture can recreate the body, wiping our custom properties. Re-apply them.
         if (this.body) {
             (this.body as MatterJS.BodyType).label = 'powerup';
-            (this.body as MatterJS.BodyType).isSensor = true;
+            (this.body as MatterJS.BodyType).isSensor = false;
+            this.setIgnoreGravity(true);
+            this.setMass(0.5); // Ensure it has good bouncy mass
         }
     }
 

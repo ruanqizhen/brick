@@ -97,6 +97,58 @@ export class MenuScene extends Phaser.Scene {
         });
 
         // ============================================
+        // DIFFICULTY SELECTION
+        // ============================================
+        let selectedDifficulty = 'EASY';
+
+        const difficultyY = height * 0.7; 
+        
+        // Emulate a Radio Button Group
+        const createRadioBtn = (x: number, y: number, label: string, value: string, isSelected: boolean) => {
+            const container = this.add.container(x, y);
+            
+            // Outer ring
+            const outerCircle = this.add.graphics();
+            outerCircle.lineStyle(2, 0x00d4ff, 1);
+            outerCircle.strokeCircle(0, 0, 15);
+            
+            // Inner dot
+            const innerDot = this.add.graphics();
+            innerDot.fillStyle(0x00d4ff, 1);
+            innerDot.fillCircle(0, 0, 8);
+            innerDot.setVisible(isSelected);
+            
+            // Label
+            const text = this.add.text(25, 0, label, {
+                fontSize: '24px',
+                fontFamily: "'Noto Sans SC', sans-serif",
+                color: '#ffffff'
+            }).setOrigin(0, 0.5);
+            
+            // Hit Zone
+            const hitZoneWidth = 40 + text.width;
+            const hitZone = this.add.rectangle(hitZoneWidth/2 - 20, 0, hitZoneWidth, 40, 0x000, 0)
+                .setInteractive({ useHandCursor: true });
+                
+            container.add([outerCircle, innerDot, text, hitZone]);
+            
+            return { container, innerDot, value, hitZone };
+        };
+
+        const easyBtn = createRadioBtn(width/2 - 120, difficultyY, '简单模式', 'EASY', true);
+        const hardBtn = createRadioBtn(width/2 + 50, difficultyY, '困难模式', 'HARD', false);
+        
+        const updateSelection = (val: string) => {
+            selectedDifficulty = val;
+            easyBtn.innerDot.setVisible(val === 'EASY');
+            hardBtn.innerDot.setVisible(val === 'HARD');
+            audioManager.play('paddle'); // Some UI click sound
+        };
+
+        easyBtn.hitZone.on('pointerdown', () => updateSelection('EASY'));
+        hardBtn.hitZone.on('pointerdown', () => updateSelection('HARD'));
+
+        // ============================================
         // BUTTONS
         // ============================================
         const btnY = height * 0.45;
@@ -107,7 +159,7 @@ export class MenuScene extends Phaser.Scene {
             isPrimary: true,
             onClick: () => {
                 audioManager.play('launch');
-                this.scene.start('GameScene');
+                this.scene.start('GameScene', { difficulty: selectedDifficulty });
             }
         });
         this.add.existing(this.startBtn);
@@ -121,50 +173,6 @@ export class MenuScene extends Phaser.Scene {
             }
         });
         this.add.existing(helpBtn);
-
-        // ============================================
-        // INSTRUCTIONS PANEL
-        // ============================================
-        const panelWidth = 400;
-        const panelY = height * 0.7;
-        const panelBg = this.add.rectangle(width / 2, panelY, panelWidth, 140, 0xffffff, 0.04);
-        panelBg.setStrokeStyle(1, 0xffffff, 0.08);
-        panelBg.setOrigin(0.5);
-
-        const createKeyTag = (x: number, y: number, text: string) => {
-            const tagBg = this.add.rectangle(x, y, 0, 0, 0xffffff, 0.08).setStrokeStyle(1, 0xffffff, 0.15);
-            const tagText = this.add.text(x, y, text, {
-                fontSize: '20px',
-                fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
-                fontStyle: '700',
-                color: '#00d4ff',
-                letterSpacing: 1
-            }).setOrigin(0.5);
-            tagBg.setSize(tagText.width + 24, tagText.height + 10);
-            return [tagBg, tagText];
-        };
-
-        const createInstructionRow = (y: number, keyText: string, actionText: string) => {
-            const centerX = width / 2;
-            const yOffset = panelY + y;
-            const tagElements = createKeyTag(centerX - 40, yOffset, keyText);
-            const descText = this.add.text(centerX + 30, yOffset, actionText, {
-                fontSize: '24px',
-                fontFamily: "'Noto Sans SC', sans-serif",
-                color: 'rgba(255, 255, 255, 0.6)'
-            }).setOrigin(0, 0.5);
-
-            // Re-align based on actual width
-            const totalRowWidth = (tagElements[0] as Phaser.GameObjects.Rectangle).width + descText.width + 15;
-            const startX = centerX - totalRowWidth / 2;
-            (tagElements[0] as Phaser.GameObjects.Rectangle).setX(startX + (tagElements[0] as Phaser.GameObjects.Rectangle).width / 2);
-            (tagElements[1] as Phaser.GameObjects.Text).setX(startX + (tagElements[0] as Phaser.GameObjects.Rectangle).width / 2);
-            descText.setX(startX + (tagElements[0] as Phaser.GameObjects.Rectangle).width + 15);
-        };
-
-        createInstructionRow(-40, 'WASD / ↑↓←→', '移动');
-        createInstructionRow(0, '触控 / 拖拽', '移动');
-        createInstructionRow(40, '触控 / 点击', '射击');
 
         // ============================================
         // FOOTER LINK
