@@ -15,6 +15,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
     public lastHitBrickId: string | null = null;
     public lastHitTime: number = 0;
     private _radius: number = GameConfig.BALL_RADIUS;
+    private isLocked: boolean = false;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         // Create with a circular Matter body matching the ball radius
@@ -89,6 +90,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
     }
 
     override update() {
+        if (this.isLocked) return;
         const state = this.getData('state');
         if (state === 'READY') {
             const gameScene = this.scene as GameScene;
@@ -235,6 +237,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
             this.setActive(false);
             this.setVisible(false);
             this.setVelocity(0, 0);
+            this.isLocked = false;
         } else {
             this.setActive(true);
             this.setVisible(true);
@@ -250,6 +253,16 @@ export class Ball extends Phaser.Physics.Matter.Image {
 
     isPoolActive(): boolean {
         return this.isPooledActive;
+    }
+
+    setLocked(locked: boolean) {
+        this.isLocked = locked;
+        if (locked) {
+            this.setVelocity(0, 0);
+            this.setAngularVelocity(0);
+            this.trailEmitter.stop();
+            this.fireEmitter.stop();
+        }
     }
 
     override destroy(fromScene?: boolean): void {

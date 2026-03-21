@@ -10,6 +10,7 @@ export class Paddle extends Phaser.Physics.Matter.Image {
     private keyboardSpeed: number = 18;
     private lastClientX: number = 0;
     private wasPointerDown: boolean = false;
+    private isLocked: boolean = false;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene.matter.world, x, y, 'paddle', undefined, {
@@ -49,12 +50,13 @@ export class Paddle extends Phaser.Physics.Matter.Image {
     }
 
     private handleWindowPointerDown = (event: PointerEvent) => {
+        if (this.isLocked) return;
         this.wasPointerDown = true;
         this.lastClientX = event.clientX;
     };
 
     private handleWindowPointerMove = (event: PointerEvent) => {
-        if (!this.wasPointerDown) return;
+        if (this.isLocked || !this.wasPointerDown) return;
 
         const currentClientX = event.clientX;
         const clientDeltaX = currentClientX - this.lastClientX;
@@ -72,6 +74,7 @@ export class Paddle extends Phaser.Physics.Matter.Image {
     };
 
     update(time: number, delta: number) {
+        if (this.isLocked) return;
         this.prevX = this.x;
 
         // Keyboard input
@@ -110,6 +113,11 @@ export class Paddle extends Phaser.Physics.Matter.Image {
 
     get velocityX(): number {
         return this._velocityX;
+    }
+
+    setLocked(locked: boolean) {
+        this.isLocked = locked;
+        if (locked) this.wasPointerDown = false;
     }
 
     override destroy(fromScene?: boolean) {

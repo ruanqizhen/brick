@@ -12,6 +12,7 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
     private isPooledActive: boolean = false;
     private sceneRef: Phaser.Scene;
     private difficulty: 'SIMPLE' | 'HARD' = 'SIMPLE';
+    private isLocked: boolean = false;
 
     constructor(scene: Phaser.Scene, x: number, y: number, type: PowerUpType) {
         const textureKey = `powerup_${type}`;
@@ -44,6 +45,7 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
     }
 
     override update(): void {
+        if (this.isLocked) return;
         // Movement is now natively handled by Matter.js velocity rather than position overrides!
         // We constrain its max speed slightly so it doesn't fly off screen instantly if hit
         if (this.body && this.isPooledActive) {
@@ -67,8 +69,17 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
         if (!active) {
             this.setPosition(0, -100);
             this.setVelocity(0, 0);
+            this.isLocked = false;
         } else {
             this.setVelocity(0, 3);
+        }
+    }
+
+    setLocked(locked: boolean): void {
+        this.isLocked = locked;
+        if (locked) {
+            this.setVelocity(0, 0);
+            this.setAngularVelocity(0);
         }
     }
 

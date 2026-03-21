@@ -646,6 +646,20 @@ export class GameScene extends Phaser.Scene {
 
     private handleWin() {
         this.matter.world.enabled = false;
+        
+        // Freeze all moving entities immediately
+        this.balls.forEach(ball => {
+            ball.setLocked(true);
+        });
+        
+        this.powerUps.forEach(pu => {
+            if (pu.active) pu.setLocked(true);
+        });
+        
+        if (this.paddle) {
+            this.paddle.setLocked(true);
+        }
+
         audioManager.play('win');
         this.add.text(DESIGN_WIDTH / 2, DESIGN_HEIGHT / 2, '关卡完成!', { fontSize: '64px', color: '#00ff00' }).setOrigin(0.5);
         this.time.delayedCall(2000, () => {
