@@ -49,11 +49,12 @@ export const GameConfig = {
 };
 
 export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
-    return {
+    const config: any = {
         type: Phaser.AUTO,
         parent: 'game-wrapper',
         width: DESIGN_WIDTH,
         height: DESIGN_HEIGHT,
+        resolution: window.devicePixelRatio || 1,
         scale: {
             mode: Phaser.Scale.FIT,
             autoCenter: Phaser.Scale.NO_CENTER
@@ -73,6 +74,13 @@ export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
             smoothStep: true,
             forceSetTimeOut: false
         },
-        backgroundColor: GameConfig.COLORS.BG
+        backgroundColor: GameConfig.COLORS.BG,
+        antialias: true,
+        render: {
+            pixelArt: false,
+            antialias: true,
+            roundPixels: true
+        }
     };
+    return config as Phaser.Types.Core.GameConfig;
 }

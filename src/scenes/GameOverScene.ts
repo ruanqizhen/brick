@@ -67,9 +67,9 @@ export class GameOverScene extends Phaser.Scene {
         // ============================================
         this.titleText = this.add.text(width / 2, height * 0.16, '游戏结束', {
             fontSize: '72px',
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: '#ffffff',
-            fontStyle: '900',
+            fontStyle: 'bold',
             stroke: '#ff3366',
             strokeThickness: 6,
             letterSpacing: 4,
@@ -95,7 +95,7 @@ export class GameOverScene extends Phaser.Scene {
         if (this.isNewHighScore) {
             this.newHighScoreText = this.add.text(width / 2, height * 0.255, '🏆 新纪录！🏆', {
                 fontSize: '36px',
-                fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+                fontFamily: "'Noto Sans SC', sans-serif",
                 color: '#ffcc00', // Gold
                 fontStyle: 'bold',
                 shadow: {
@@ -141,14 +141,14 @@ export class GameOverScene extends Phaser.Scene {
 
         const scoreLabel = this.add.text(-210, -85, 'SCORE', {
             fontSize: '20px',
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: 'rgba(255, 255, 255, 0.6)',
             fontStyle: 'bold'
         }).setOrigin(0, 0.5);
 
         const scoreValue = this.add.text(0, -25, '0', {
             fontSize: '64px',
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: '#00d4ff', // Cyan
             fontStyle: 'bold',
             shadow: {
@@ -162,14 +162,14 @@ export class GameOverScene extends Phaser.Scene {
 
         const levelLabel = this.add.text(-210, 50, 'LEVEL', {
             fontSize: '20px',
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: 'rgba(255, 255, 255, 0.6)',
             fontStyle: 'bold'
         }).setOrigin(0, 0.5);
 
         const levelValue = this.add.text(210, 50, `${this.level}`, {
             fontSize: '40px',
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: '#ff3366', // Accent
             fontStyle: 'bold',
             shadow: {
@@ -183,7 +183,7 @@ export class GameOverScene extends Phaser.Scene {
 
         const highScoreLabel = this.add.text(0, 105, `🏆 BEST: ${this.highScore.toLocaleString()}`, {
             fontSize: '24px',
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: '#ffcc00', // Gold
             fontStyle: 'bold'
         }).setOrigin(0.5);

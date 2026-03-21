@@ -22,7 +22,7 @@ export class HUD extends Phaser.GameObjects.Container {
         // Lives display — modern pill with hearts
         this.livesText = scene.add.text(scene.cameras.main.width - 30, 35, '♥ 3', {
             fontSize: '30px',
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: '#ff3366', // Accent red
             fontStyle: 'bold',
             shadow: {
@@ -37,7 +37,7 @@ export class HUD extends Phaser.GameObjects.Container {
         // Level display — centered, monospace, neon glow
         this.levelText = scene.add.text(scene.cameras.main.width / 2, 35, 'LV 01', {
             fontSize: '28px',
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: '#00d4ff', // Primary cyan
             fontStyle: 'bold',
             shadow: {
@@ -67,7 +67,7 @@ export class HUD extends Phaser.GameObjects.Container {
         // Score label — dim accent
         const label = scene.add.text(15, 28, 'SCORE', {
             fontSize: '14px',
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: 'rgba(255, 255, 255, 0.6)',
             fontStyle: 'bold'
         }).setOrigin(0, 0.5);
@@ -75,7 +75,7 @@ export class HUD extends Phaser.GameObjects.Container {
         // Score value — bright monospace digits
         const scoreValue = scene.add.text(90, 28, '0', {
             fontSize: '30px',
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: '#ffcc00', // Gold color from CSS variables
             fontStyle: 'bold',
             shadow: {

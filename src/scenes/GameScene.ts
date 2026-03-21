@@ -348,7 +348,7 @@ export class GameScene extends Phaser.Scene {
                     }
                 }
 
-                const isLargeBall = ball.displayWidth > GameConfig.BALL_RADIUS * 2.2;
+                const isLargeBall = ball.displayWidth > GameConfig.BALL_RADIUS * 4.2;
                 if (isLargeBall) {
                     ScreenShake.shake(this.cameras.main, res.destroyed ? 0.005 : 0.002, 100);
                 }
@@ -491,8 +491,8 @@ export class GameScene extends Phaser.Scene {
         const DURATION = GameConfig.POWERUP_DURATION;
 
         switch (type) {
-            case 'PADDLE_EXPAND':  this.updatePaddleWidth(1.5); break;
-            case 'PADDLE_SHRINK':  this.updatePaddleWidth(0.6); break;
+            case 'PADDLE_EXPAND': this.updatePaddleWidth(1.5); break;
+            case 'PADDLE_SHRINK': this.updatePaddleWidth(0.6); break;
             case 'FIREBALL':
                 if (this.fireballTimer) { this.fireballTimer.remove(); this.fireballTimer = null; }
                 this.setFireball(true);
@@ -502,7 +502,7 @@ export class GameScene extends Phaser.Scene {
                 break;
             case 'MULTI_BALL': this.doubleBalls(); break;
             case 'BALL_ENLARGE': this.updateBallsRadius(1.5); break;
-            case 'BALL_SHRINK':  this.updateBallsRadius(0.7); break;
+            case 'BALL_SHRINK': this.updateBallsRadius(0.7); break;
             case 'SPEED_UP':
                 if (this.speedUpTimer) {
                     this.speedUpTimer.remove(); this.speedUpTimer = null;

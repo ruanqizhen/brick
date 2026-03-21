@@ -53,7 +53,7 @@ export class UIButton extends Phaser.GameObjects.Container {
         // Text
         this.text = scene.add.text(0, 0, config.label, {
             fontSize,
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: '#dddddd',
             fontStyle: 'bold',
             letterSpacing: 3

@@ -398,7 +398,7 @@ export class BootScene extends Phaser.Scene {
         // Create loading text with modern style
         const loadingText = this.add.text(width / 2, height * 0.45, '正在加载', {
             fontSize: '36px',
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: '#00d4ff',
             fontStyle: 'bold',
             shadow: {
@@ -422,7 +422,7 @@ export class BootScene extends Phaser.Scene {
         // Loading percentage
         const percentText = this.add.text(width / 2, height * 0.58, '0%', {
             fontSize: '24px',
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: '#88aaff'
         }).setOrigin(0.5);
 

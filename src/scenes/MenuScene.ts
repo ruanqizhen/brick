@@ -60,8 +60,8 @@ export class MenuScene extends Phaser.Scene {
         // Emulating the linear gradient title text via Tint
         this.titleText = this.add.text(width / 2, iconY + 80, '弹力球打砖块', {
             fontSize: '80px',
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
-            fontStyle: '900',
+            fontFamily: "'Noto Sans SC', sans-serif",
+            fontStyle: '700',
             color: '#ffffff',
             letterSpacing: 4
         }).setOrigin(0.5);
@@ -84,7 +84,7 @@ export class MenuScene extends Phaser.Scene {
         // ============================================
         this.highScoreText = this.add.text(width / 2, iconY + 245, '高分记录: 0', {
             fontSize: '28px',
-            fontFamily: "'Orbitron', 'Noto Sans SC', sans-serif",
+            fontFamily: "'Noto Sans SC', sans-serif",
             fontStyle: '700',
             color: 'rgba(255, 255, 255, 0.7)',
             letterSpacing: 2

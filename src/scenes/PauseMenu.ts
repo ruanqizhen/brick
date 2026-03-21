@@ -52,7 +52,7 @@ export class PauseMenu extends Phaser.Scene {
         // Title with neon glow
         this.titleText = this.add.text(0, -155, '游戏暂停', {
             fontSize: '64px',
-            fontFamily: '"Microsoft YaHei", sans-serif',
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: '#ffffff',
             fontStyle: 'bold',
             stroke: '#8844ff',

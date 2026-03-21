@@ -16,7 +16,7 @@ export class HelpScene extends Phaser.Scene {
         // Title
         this.add.text(DESIGN_WIDTH / 2, 80, '游戏帮助', {
             fontSize: '56px',
-            fontFamily: '"Courier New", Courier, monospace',
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: '#00ffff',
             fontStyle: 'bold'
         }).setOrigin(0.5).setShadow(0, 0, '#00ffff', 15, true, true);
@@ -25,11 +25,11 @@ export class HelpScene extends Phaser.Scene {
         // Section 1: Rules & Controls
         // ==========================================
         this.add.text(DESIGN_WIDTH / 2, 170, '【 玩法指南 】', {
-            fontSize: '32px', fontFamily: '"Microsoft YaHei", sans-serif', color: '#ffdd00', fontStyle: 'bold'
+            fontSize: '32px', fontFamily: "'Noto Sans SC', sans-serif", color: '#ffdd00', fontStyle: 'bold'
         }).setOrigin(0.5);
 
         this.add.text(DESIGN_WIDTH / 2, 230, '• 滑动鼠标或触摸屏幕 控制下方挡板移动\n• 点击屏幕任意位置 发射小球\n• 消除所有普通砖块即可前往下一关\n• 注意接住小球，如果小球掉落将损失生命\n• 打破砖块或接住掉落道具可获得强力效果！', {
-            fontSize: '24px', fontFamily: '"Microsoft YaHei", sans-serif', color: '#ffffff',
+            fontSize: '24px', fontFamily: "'Noto Sans SC', sans-serif", color: '#ffffff',
             align: 'left', lineSpacing: 12
         }).setOrigin(0.5, 0);
 
@@ -37,7 +37,7 @@ export class HelpScene extends Phaser.Scene {
         // Section 2: Normal Bricks
         // ==========================================
         this.add.text(DESIGN_WIDTH / 2, 480, '【 砖块 】', {
-            fontSize: '32px', fontFamily: '"Microsoft YaHei", sans-serif', color: '#ffdd00', fontStyle: 'bold'
+            fontSize: '32px', fontFamily: "'Noto Sans SC', sans-serif", color: '#ffdd00', fontStyle: 'bold'
         }).setOrigin(0.5);
 
         const normalBrickTypes = [
@@ -55,7 +55,7 @@ export class HelpScene extends Phaser.Scene {
             const by = 540 + i * 50;
             this.add.image(bx, by, 'brick').setDisplaySize(80, 24).setTint(b.color);
             this.add.text(bx + 80, by, `[${b.name}]  -  ${b.desc}`, {
-                fontSize: '22px', fontFamily: '"Microsoft YaHei", sans-serif', color: '#dddddd'
+                fontSize: '22px', fontFamily: "'Noto Sans SC', sans-serif", color: '#dddddd'
             }).setOrigin(0, 0.5);
         });
 
@@ -63,7 +63,7 @@ export class HelpScene extends Phaser.Scene {
         // Section 4: PowerUps
         // ==========================================
         this.add.text(DESIGN_WIDTH / 2, 920, '【 道具说明 】', {
-            fontSize: '32px', fontFamily: '"Microsoft YaHei", sans-serif', color: '#ffdd00', fontStyle: 'bold'
+            fontSize: '32px', fontFamily: "'Noto Sans SC', sans-serif", color: '#ffdd00', fontStyle: 'bold'
         }).setOrigin(0.5);
 
         const powerups: { type: PowerUpType, name: string }[] = [
@@ -99,14 +99,14 @@ export class HelpScene extends Phaser.Scene {
 
             this.add.image(px, py - 35, textureKey).setScale(0.9);
             this.add.text(px, py + 20, pu.name, {
-                fontSize: '22px', fontFamily: '"Microsoft YaHei", sans-serif', color: '#dddddd', fontStyle: 'bold'
+                fontSize: '22px', fontFamily: "'Noto Sans SC', sans-serif", color: '#dddddd', fontStyle: 'bold'
             }).setOrigin(0.5);
         });
 
         // Documentation Link
         const docLink = this.add.text(DESIGN_WIDTH / 2, DESIGN_HEIGHT - 120, '查看更详细的在线帮助手册 (GitHub)', {
             fontSize: '20px',
-            fontFamily: '"Microsoft YaHei", sans-serif',
+            fontFamily: "'Noto Sans SC', sans-serif",
             color: '#00ffff'
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
