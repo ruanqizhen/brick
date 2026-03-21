@@ -6,6 +6,7 @@ import { saveManager } from '../storage/SaveManager';
 interface GameOverData {
     score: number;
     level: number;
+    difficulty: 'SIMPLE' | 'HARD';
 }
 
 export class GameOverScene extends Phaser.Scene {
@@ -13,6 +14,7 @@ export class GameOverScene extends Phaser.Scene {
     private level: number = 1;
     private highScore: number = 0;
     private isNewHighScore: boolean = false;
+    private difficulty: 'SIMPLE' | 'HARD' = 'SIMPLE';
     private overlay!: Phaser.GameObjects.Rectangle;
     private titleText!: Phaser.GameObjects.Text;
     private newHighScoreText!: Phaser.GameObjects.Text;
@@ -29,6 +31,7 @@ export class GameOverScene extends Phaser.Scene {
     async init(data: GameOverData) {
         this.score = data.score || 0;
         this.level = data.level || 1;
+        this.difficulty = data.difficulty || 'SIMPLE';
 
         this.highScore = await saveManager.getHighScore();
         this.isNewHighScore = this.score > this.highScore;
@@ -139,7 +142,7 @@ export class GameOverScene extends Phaser.Scene {
         scoreBg.setStrokeStyle(1.5, 0xffffff, 0.08);
         scoreBg.setOrigin(0.5);
 
-        const scoreLabel = this.add.text(-210, -85, 'SCORE', {
+        const scoreLabel = this.add.text(-210, -85, '本次得分', {
             fontSize: '20px',
             fontFamily: "'Noto Sans SC', sans-serif",
             color: 'rgba(255, 255, 255, 0.6)',
@@ -160,7 +163,7 @@ export class GameOverScene extends Phaser.Scene {
             }
         }).setOrigin(0.5);
 
-        const levelLabel = this.add.text(-210, 50, 'LEVEL', {
+        const levelLabel = this.add.text(-210, 50, '到达关卡', {
             fontSize: '20px',
             fontFamily: "'Noto Sans SC', sans-serif",
             color: 'rgba(255, 255, 255, 0.6)',
@@ -181,7 +184,7 @@ export class GameOverScene extends Phaser.Scene {
             }
         }).setOrigin(1, 0.5);
 
-        const highScoreLabel = this.add.text(0, 105, `🏆 BEST: ${this.highScore.toLocaleString()}`, {
+        const highScoreLabel = this.add.text(0, 105, `🏆 最高纪录: ${this.highScore.toLocaleString()}`, {
             fontSize: '24px',
             fontFamily: "'Noto Sans SC', sans-serif",
             color: '#ffcc00', // Gold
@@ -203,7 +206,7 @@ export class GameOverScene extends Phaser.Scene {
             isPrimary: true,
             onClick: () => {
                 audioManager.play('launch');
-                this.scene.start('GameScene', { level: this.level - 1 });
+                this.scene.start('GameScene', { level: this.level - 1, difficulty: this.difficulty });
             }
         });
         this.add.existing(this.restartBtn);

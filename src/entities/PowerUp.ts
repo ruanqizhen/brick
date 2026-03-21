@@ -11,6 +11,7 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
     public powerUpType: PowerUpType;
     private isPooledActive: boolean = false;
     private sceneRef: Phaser.Scene;
+    private difficulty: 'SIMPLE' | 'HARD' = 'SIMPLE';
 
     constructor(scene: Phaser.Scene, x: number, y: number, type: PowerUpType) {
         const textureKey = `powerup_${type}`;
@@ -35,7 +36,7 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
         this.setCircle(25);
         if (this.body) {
             (this.body as MatterJS.BodyType).label = 'powerup';
-            (this.body as MatterJS.BodyType).isSensor = false;
+            this.setSensor(true); // Start as sensor while pooled
             this.setIgnoreGravity(true);
         }
 
@@ -57,7 +58,11 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
         this.setVisible(active);
         this.setActive(active);
         if (this.body) {
-            (this.body as MatterJS.BodyType).isSensor = !active;
+            // In SIMPLE mode, it's always a sensor when active.
+            // In HARD mode, it's a physical body when active.
+            // Always a sensor when inactive (pooled).
+            const targetSensor = active ? (this.difficulty === 'SIMPLE') : true;
+            this.setSensor(targetSensor);
         }
         if (!active) {
             this.setPosition(0, -100);
@@ -77,6 +82,13 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
         return this.isPooledActive;
     }
 
+    setDifficulty(difficulty: 'SIMPLE' | 'HARD'): void {
+        this.difficulty = difficulty;
+        if (this.body && this.isPooledActive) {
+            this.setSensor(difficulty === 'SIMPLE');
+        }
+    }
+
     setPowerUpType(type: PowerUpType): void {
         this.powerUpType = type;
         const textureKey = `powerup_${type}`;
@@ -88,7 +100,8 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
         // setTexture can recreate the body, wiping our custom properties. Re-apply them.
         if (this.body) {
             (this.body as MatterJS.BodyType).label = 'powerup';
-            (this.body as MatterJS.BodyType).isSensor = false;
+            const targetSensor = this.isPooledActive ? (this.difficulty === 'SIMPLE') : true;
+            this.setSensor(targetSensor);
             this.setIgnoreGravity(true);
             this.setMass(0.5); // Ensure it has good bouncy mass
         }

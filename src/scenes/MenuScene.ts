@@ -99,7 +99,7 @@ export class MenuScene extends Phaser.Scene {
         // ============================================
         // DIFFICULTY SELECTION
         // ============================================
-        let selectedDifficulty = 'EASY';
+        let selectedDifficulty: 'SIMPLE' | 'HARD' = 'SIMPLE';
 
         const difficultyY = height * 0.7; 
         
@@ -135,17 +135,17 @@ export class MenuScene extends Phaser.Scene {
             return { container, innerDot, value, hitZone };
         };
 
-        const easyBtn = createRadioBtn(width/2 - 120, difficultyY, '简单模式', 'EASY', true);
+        const easyBtn = createRadioBtn(width/2 - 120, difficultyY, '简单模式', 'SIMPLE', true);
         const hardBtn = createRadioBtn(width/2 + 50, difficultyY, '困难模式', 'HARD', false);
         
-        const updateSelection = (val: string) => {
+        const updateSelection = (val: 'SIMPLE' | 'HARD') => {
             selectedDifficulty = val;
-            easyBtn.innerDot.setVisible(val === 'EASY');
+            easyBtn.innerDot.setVisible(val === 'SIMPLE');
             hardBtn.innerDot.setVisible(val === 'HARD');
             audioManager.play('paddle'); // Some UI click sound
         };
 
-        easyBtn.hitZone.on('pointerdown', () => updateSelection('EASY'));
+        easyBtn.hitZone.on('pointerdown', () => updateSelection('SIMPLE'));
         hardBtn.hitZone.on('pointerdown', () => updateSelection('HARD'));
 
         // ============================================

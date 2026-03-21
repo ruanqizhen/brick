@@ -34,7 +34,7 @@ export class GameScene extends Phaser.Scene {
     private lives: number = 3;
     private currentLevelIndex: number = 0;
     private activeSpeedMultipliers: number[] = [];
-    private difficulty: string = 'EASY';
+    private difficulty: 'SIMPLE' | 'HARD' = 'SIMPLE';
 
     // Timed powerup trackers
     private fireballTimer: Phaser.Time.TimerEvent | null = null;
@@ -51,7 +51,7 @@ export class GameScene extends Phaser.Scene {
         super(SCENE_KEYS.GAME);
     }
 
-    init(data?: { level?: number, resetLives?: boolean, difficulty?: string }) {
+    init(data?: { level?: number, resetLives?: boolean, difficulty?: 'SIMPLE' | 'HARD' }) {
         if (data && typeof data.level === 'number') {
             this.currentLevelIndex = data.level;
         } else {
@@ -93,6 +93,7 @@ export class GameScene extends Phaser.Scene {
         this.hud = new HUD(this);
         this.hud.updateLevel(this.currentLevelIndex + 1);
         this.hud.updateLives(this.lives);
+        this.hud.setDifficulty(this.difficulty);
         this.particles = new ParticleSystem(this);
 
         // Initialize object pools
@@ -212,6 +213,14 @@ export class GameScene extends Phaser.Scene {
                 }
             }
 
+            // Ball hit powerup - extra safety for Simple mode
+            if ((labelA === 'ball' && labelB === 'powerup') ||
+                (labelB === 'ball' && labelA === 'powerup')) {
+                if (this.difficulty === 'SIMPLE') {
+                    pair.isSensor = true;
+                }
+            }
+
             // Paddle hit powerup
             if ((labelA === 'paddle' && labelB === 'powerup') ||
                 (labelB === 'paddle' && labelA === 'powerup')) {
@@ -240,6 +249,14 @@ export class GameScene extends Phaser.Scene {
 
                 // Continuously suppress physical bounce for fireballs inside destructible bricks
                 if (ball && brick && ball.isFireball && !brick.isIndestructible) {
+                    pair.isSensor = true;
+                }
+            }
+
+            // Ball hit powerup active - extra safety for Simple mode
+            if ((labelA === 'ball' && labelB === 'powerup') ||
+                (labelB === 'ball' && labelA === 'powerup')) {
+                if (this.difficulty === 'SIMPLE') {
                     pair.isSensor = true;
                 }
             }
@@ -477,6 +494,7 @@ export class GameScene extends Phaser.Scene {
 
         const pu = this.powerUpPool.get();
         pu.setPosition(x, y);
+        pu.setDifficulty(this.difficulty);
         pu.setPowerUpType(selectedType);
         this.powerUps.push(pu);
     }
@@ -629,7 +647,7 @@ export class GameScene extends Phaser.Scene {
     private handleWin() {
         this.matter.world.enabled = false;
         audioManager.play('win');
-        this.add.text(DESIGN_WIDTH / 2, DESIGN_HEIGHT / 2, 'CLEAR!', { fontSize: '64px', color: '#00ff00' }).setOrigin(0.5);
+        this.add.text(DESIGN_WIDTH / 2, DESIGN_HEIGHT / 2, '关卡完成!', { fontSize: '64px', color: '#00ff00' }).setOrigin(0.5);
         this.time.delayedCall(2000, () => {
             const completedLevel = this.currentLevelIndex + 1;
             saveManager.saveLevel(completedLevel);
@@ -637,7 +655,11 @@ export class GameScene extends Phaser.Scene {
                 this.showWinOverlay(completedLevel, this.hud.getScore);
             } else {
                 const finalScore = this.hud.getScore;
-                this.scene.start(SCENE_KEYS.GAME_OVER, { score: finalScore, level: completedLevel });
+                this.scene.start(SCENE_KEYS.GAME_OVER, { 
+                    score: finalScore, 
+                    level: completedLevel,
+                    difficulty: this.difficulty 
+                });
             }
         });
     }
@@ -724,7 +746,11 @@ export class GameScene extends Phaser.Scene {
             if (this.lives <= 0) {
                 audioManager.play('lose');
                 const finalScore = this.hud.getScore;
-                this.scene.start(SCENE_KEYS.GAME_OVER, { score: finalScore, level: this.currentLevelIndex + 1 });
+                this.scene.start(SCENE_KEYS.GAME_OVER, { 
+                    score: finalScore, 
+                    level: this.currentLevelIndex + 1,
+                    difficulty: this.difficulty
+                });
             } else {
                 const baseSpeed = this.getBaseSpeedForLevel(this.currentLevelIndex);
                 const totalMultiplier = this.activeSpeedMultipliers.reduce((acc, m) => acc * m, 1);
@@ -741,7 +767,7 @@ export class GameScene extends Phaser.Scene {
 
     private showLaunchInstruction() {
         this.clearLaunchInstruction();
-        this.add.text(DESIGN_WIDTH / 2, DESIGN_HEIGHT * 0.5, 'Click to Launch', { fontSize: '32px', color: '#ffffff' })
+        this.add.text(DESIGN_WIDTH / 2, DESIGN_HEIGHT * 0.5, '点击屏幕发射小球', { fontSize: '32px', color: '#ffffff' })
             .setOrigin(0.5).setName('instruction');
     }
 

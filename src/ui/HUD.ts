@@ -1,153 +1,143 @@
 import Phaser from 'phaser';
-import { PowerUpType } from '../entities/PowerUp';
-
-interface ScoreContainer extends Phaser.GameObjects.Container {
-    scoreValue: Phaser.GameObjects.Text;
-}
 
 export class HUD extends Phaser.GameObjects.Container {
-    private scoreText!: Phaser.GameObjects.Text;
-    private livesText!: Phaser.GameObjects.Text;
-    private levelText!: Phaser.GameObjects.Text;
+    private scLabel!: Phaser.GameObjects.Text;
+    private scValue!: Phaser.GameObjects.Text;
+    private lvLabel!: Phaser.GameObjects.Text;
+    private lvValue!: Phaser.GameObjects.Text;
+    private stLabel!: Phaser.GameObjects.Text;
+    private stValue!: Phaser.GameObjects.Text;
+    
+    private scBg!: Phaser.GameObjects.Graphics;
+    private lvBg!: Phaser.GameObjects.Graphics;
+    private stBg!: Phaser.GameObjects.Graphics;
+
     private score: number = 0;
     private lives: number = 3;
-    private scoreContainer!: ScoreContainer;
+    private difficulty: 'SIMPLE' | 'HARD' = 'SIMPLE';
 
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
 
-        // Score container — frosted glass pill
-        this.scoreContainer = this.createScorePanel(scene, 20, 20);
-
-        // Lives display — modern pill with hearts
-        this.livesText = scene.add.text(scene.cameras.main.width - 30, 35, '♥ 3', {
-            fontSize: '30px',
+        const LABEL_STYLE = {
+            fontSize: '14px',
             fontFamily: "'Noto Sans SC', sans-serif",
-            color: '#ff3366', // Accent red
-            fontStyle: 'bold',
-            shadow: {
-                blur: 12,
-                color: 'rgba(255, 51, 102, 0.5)',
-                fill: true,
-                offsetX: 0,
-                offsetY: 0
-            }
-        }).setOrigin(1, 0.5);
+            color: 'rgba(255, 255, 255, 0.5)',
+            fontStyle: 'bold'
+        };
 
-        // Level display — centered, monospace, neon glow
-        this.levelText = scene.add.text(scene.cameras.main.width / 2, 35, 'LV 01', {
-            fontSize: '28px',
+        const VALUE_STYLE = {
+            fontSize: '24px',
             fontFamily: "'Noto Sans SC', sans-serif",
-            color: '#00d4ff', // Primary cyan
-            fontStyle: 'bold',
-            shadow: {
-                blur: 15,
-                color: 'rgba(0, 212, 255, 0.5)',
-                fill: true,
-                offsetX: 0,
-                offsetY: 0
-            }
-        }).setOrigin(0.5, 0.5);
+            color: '#FFFFFF',
+            fontStyle: '700'
+        };
 
-        this.add([this.livesText, this.levelText]);
+        // --- Panel Backdrops ---
+        this.scBg = this.createPanelBg(scene, 20, 10, 200, 50);
+        this.lvBg = this.createPanelBg(scene, scene.cameras.main.width / 2 - 100, 10, 200, 50);
+        this.stBg = this.createPanelBg(scene, scene.cameras.main.width - 320, 10, 300, 50);
+
+        // --- Score Panel ---
+        this.scLabel = scene.add.text(35, 22, '得分记录', LABEL_STYLE);
+        this.scValue = scene.add.text(35, 36, '0', { ...VALUE_STYLE, color: '#ffcc00' });
+
+        // --- Level Panel ---
+        this.lvLabel = scene.add.text(scene.cameras.main.width / 2, 22, '当前关卡', LABEL_STYLE).setOrigin(0.5, 0);
+        this.lvValue = scene.add.text(scene.cameras.main.width / 2, 36, '关卡 01', { ...VALUE_STYLE, color: '#00d4ff' }).setOrigin(0.5, 0);
+
+        // --- Status Panel ---
+        this.stLabel = scene.add.text(scene.cameras.main.width - 35, 22, '游戏状态', LABEL_STYLE).setOrigin(1, 0);
+        this.stValue = scene.add.text(scene.cameras.main.width - 35, 36, '简单模式 | ♥ 3', VALUE_STYLE).setOrigin(1, 0);
+
+        this.add([
+            this.scBg, this.lvBg, this.stBg,
+            this.scLabel, this.scValue,
+            this.lvLabel, this.lvValue,
+            this.stLabel, this.stValue
+        ]);
+
         scene.add.existing(this);
-
-        // Listen for camera resize
         scene.scale.on('resize', this.handleResize, this);
     }
 
-    private createScorePanel(scene: Phaser.Scene, x: number, y: number): ScoreContainer {
-        const container = scene.add.container(x, y) as ScoreContainer;
-
-        // Frosted glass pill background - using the Cyberpunk surface styling
-        const bg = scene.add.rectangle(0, 0, 240, 56, 0xffffff, 0.04);
-        bg.setStrokeStyle(1.5, 0xffffff, 0.08);
-        bg.setOrigin(0);
-
-        // Score label — dim accent
-        const label = scene.add.text(15, 28, 'SCORE', {
-            fontSize: '14px',
-            fontFamily: "'Noto Sans SC', sans-serif",
-            color: 'rgba(255, 255, 255, 0.6)',
-            fontStyle: 'bold'
-        }).setOrigin(0, 0.5);
-
-        // Score value — bright monospace digits
-        const scoreValue = scene.add.text(90, 28, '0', {
-            fontSize: '30px',
-            fontFamily: "'Noto Sans SC', sans-serif",
-            color: '#ffcc00', // Gold color from CSS variables
-            fontStyle: 'bold',
-            shadow: {
-                blur: 10,
-                color: 'rgba(255, 204, 0, 0.5)',
-                fill: true,
-                offsetX: 0,
-                offsetY: 0
-            }
-        }).setOrigin(0, 0.5);
-
-        container.add([bg, label, scoreValue]);
-        container.setSize(240, 56);
-        container.scoreValue = scoreValue;
-
-        return container;
+    private createPanelBg(scene: Phaser.Scene, x: number, y: number, w: number, h: number): Phaser.GameObjects.Graphics {
+        const graphics = scene.add.graphics();
+        // Cyberpunk frosted glass style
+        graphics.fillStyle(0xffffff, 0.05);
+        graphics.fillRoundedRect(x, y, w, h, 8);
+        graphics.lineStyle(1, 0xffffff, 0.1);
+        graphics.strokeRoundedRect(x, y, w, h, 8);
+        return graphics;
     }
 
     updateScore(points: number) {
         this.score += points;
-        if (this.scoreContainer.scoreValue) {
-            this.scoreContainer.scoreValue.setText(this.score.toLocaleString());
-
-            // Animate on score update
-            this.scene.tweens.add({
-                targets: this.scoreContainer.scoreValue,
-                scaleX: 1.2,
-                scaleY: 1.2,
-                duration: 100,
-                yoyo: true,
-                ease: 'Back.out'
-            });
-        }
+        this.scValue.setText(this.score.toLocaleString());
+        
+        // Quick subtle scale pulse
+        this.scene.tweens.add({
+            targets: this.scValue,
+            scale: 1.1,
+            duration: 50,
+            yoyo: true
+        });
     }
 
     updateLives(lives: number) {
         this.lives = lives;
-        const hearts = '♥'.repeat(Math.max(0, lives));
-        this.livesText.setText(hearts + ' ' + lives);
-
-        // Flash effect when life lost
-        if (lives < 3) {
-            this.scene.tweens.add({
-                targets: this.livesText,
-                alpha: 0.3,
-                duration: 100,
-                yoyo: true,
-                repeat: 3
-            });
-        }
+        this.updateStatusText();
     }
 
     updateLevel(level: number) {
         const lvStr = level < 10 ? `0${level}` : `${level}`;
-        this.levelText.setText(`LV ${lvStr}`);
+        this.lvValue.setText(`关卡 ${lvStr}`);
+    }
 
-        // Scale + glow pulse on level change
-        this.scene.tweens.add({
-            targets: this.levelText,
-            scale: 1.3,
-            duration: 300,
-            yoyo: true,
-            ease: 'Back.out'
-        });
+    setDifficulty(difficulty: 'SIMPLE' | 'HARD') {
+        this.difficulty = difficulty;
+        this.updateStatusText();
+    }
+
+    private updateStatusText() {
+        const mode = this.difficulty === 'HARD' ? '困难' : '简单';
+        const hearts = '♥'.repeat(Math.max(0, this.lives));
+        this.stValue.setText(`${mode}模式 | ${hearts} ${this.lives}`);
+        
+        // Color mode specifically
+        const color = this.difficulty === 'HARD' ? '#ff3366' : '#00d4ff';
+        this.stValue.setColor(color);
     }
 
     private handleResize(gameSize: Phaser.Structs.Size): void {
         const width = gameSize.width;
 
-        // Reposition elements
-        this.livesText.x = width - 30;
-        this.levelText.x = width / 2;
+        // Reposition backgrounds
+        this.scBg.clear();
+        this.createPanelBgInto(this.scBg, 20, 10, 200, 50);
+        
+        this.lvBg.clear();
+        this.createPanelBgInto(this.lvBg, width / 2 - 100, 10, 200, 50);
+        
+        this.stBg.clear();
+        this.createPanelBgInto(this.stBg, width - 320, 10, 300, 50);
+
+        // Reposition text
+        this.scLabel.x = 35;
+        this.scValue.x = 35;
+        
+        this.lvLabel.x = width / 2;
+        this.lvValue.x = width / 2;
+        
+        this.stLabel.x = width - 35;
+        this.stValue.x = width - 35;
+    }
+
+    private createPanelBgInto(graphics: Phaser.GameObjects.Graphics, x: number, y: number, w: number, h: number) {
+        graphics.fillStyle(0xffffff, 0.05);
+        graphics.fillRoundedRect(x, y, w, h, 8);
+        graphics.lineStyle(1, 0xffffff, 0.1);
+        graphics.strokeRoundedRect(x, y, w, h, 8);
     }
 
     get getScore(): number {
