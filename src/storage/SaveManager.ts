@@ -10,6 +10,7 @@ export interface GameSaveData {
     totalGamesPlayed: number;
     totalGamesWon: number;
     lastPlayed: number;
+    difficulty: 'SIMPLE' | 'HARD';
 }
 
 const DB_NAME = 'BrickBreakerDB';
@@ -103,7 +104,8 @@ export class SaveManager {
                         unlockedLevels: data.unlockedLevels || [1],
                         totalGamesPlayed: data.totalGamesPlayed || 0,
                         totalGamesWon: data.totalGamesWon || 0,
-                        lastPlayed: data.lastPlayed || Date.now()
+                        lastPlayed: data.lastPlayed || Date.now(),
+                        difficulty: data.difficulty || 'SIMPLE'
                     });
                 } else {
                     resolve(null);
@@ -175,6 +177,21 @@ export class SaveManager {
             totalGamesWon: (data?.totalGamesWon || 0) + (won ? 1 : 0),
             lastPlayed: Date.now()
         });
+    }
+
+    /**
+     * Get preferred difficulty
+     */
+    async getDifficulty(): Promise<'SIMPLE' | 'HARD'> {
+        const data = await this.load();
+        return data?.difficulty || 'SIMPLE';
+    }
+
+    /**
+     * Save preferred difficulty
+     */
+    async saveDifficulty(difficulty: 'SIMPLE' | 'HARD'): Promise<void> {
+        await this.save({ difficulty });
     }
 }
 

@@ -143,7 +143,13 @@ export class MenuScene extends Phaser.Scene {
             easyBtn.innerDot.setVisible(val === 'SIMPLE');
             hardBtn.innerDot.setVisible(val === 'HARD');
             audioManager.play('paddle'); // Some UI click sound
+            saveManager.saveDifficulty(val);
         };
+
+        // Load saved difficulty
+        saveManager.getDifficulty().then(savedDiff => {
+            updateSelection(savedDiff);
+        });
 
         easyBtn.hitZone.on('pointerdown', () => updateSelection('SIMPLE'));
         hardBtn.hitZone.on('pointerdown', () => updateSelection('HARD'));
