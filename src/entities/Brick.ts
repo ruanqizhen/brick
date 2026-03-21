@@ -21,7 +21,8 @@ export class Brick extends Phaser.Physics.Matter.Image {
             frictionStatic: 0,
             frictionAir: 0,
             restitution: 1,
-            isSensor: false
+            isSensor: false,
+            chamfer: { radius: 2 }
         });
         this.sceneRef = scene;
 
