@@ -142,25 +142,9 @@ export class Ball extends Phaser.Physics.Matter.Image {
 
     setBallRadius(radius: number) {
         this._radius = radius;
-        this.setDisplaySize(radius * 2, radius * 2);
-        const scaleFactor = radius / 128; // 128 is the texture half-size
-        this.setScale(scaleFactor * 2);
         
-        // Reset display size override
+        // Phaser 3 Matter automatically scales the underlying physics body when display size/scale changes
         this.setDisplaySize(radius * 2, radius * 2);
-
-        // Safely rebuild the Matter body
-        this.setCircle(radius, {
-            restitution: 1,
-            friction: 0,
-            frictionAir: 0,
-            frictionStatic: 0,
-            label: 'ball',
-            isSensor: this.isSensor()
-        });
-
-        this.setFixedRotation();
-        this.setIgnoreGravity(true);
 
         this.trailScale = (radius * 2) / 32;
     }
