@@ -14,6 +14,10 @@ export class MenuScene extends Phaser.Scene {
     private particles!: Phaser.GameObjects.Particles.ParticleEmitter;
     private bgGradient!: Phaser.GameObjects.Rectangle;
     private bgOverlay!: Phaser.GameObjects.Rectangle;
+    private continueBtn?: UIButton;
+    private restartBtn?: UIButton;
+    private helpBtn!: UIButton;
+    private savedLevel: number = 1;
 
     constructor() {
         super('MenuScene');
@@ -153,32 +157,56 @@ export class MenuScene extends Phaser.Scene {
 
         easyBtn.hitZone.on('pointerdown', () => updateSelection('SIMPLE'));
         hardBtn.hitZone.on('pointerdown', () => updateSelection('HARD'));
+hardBtn.hitZone.on('pointerdown', () => updateSelection('HARD'));
 
         // ============================================
         // BUTTONS
         // ============================================
         const btnY = height * 0.45;
 
-        // Primary Button
+        // Help button (always exists, position depends on showContinue)
+        this.helpBtn = new UIButton(this, width / 2, btnY + 80, {
+            label: '游戏帮助',
+            isPrimary: false,
+            onClick: () => this.scene.start(SCENE_KEYS.HELP)
+        });
+        this.add.existing(this.helpBtn);
+
+        // Load saved level and update buttons
+        saveManager.getLastPlayedLevel().then(level => {
+            this.savedLevel = Number(level);
+            if (level > 1) {
+                // Change Start Button to Continue
+                this.startBtn.setLabel(`继续游戏 (第 ${level} 关)`);
+                
+                // Add Restart Button
+                this.restartBtn = new UIButton(this, width / 2, btnY + 80, {
+                    label: '重新开始',
+                    isPrimary: false,
+                    onClick: () => {
+                        audioManager.play('launch');
+                        this.scene.start('GameScene', { level: 0, difficulty: selectedDifficulty });
+                    }
+                });
+                this.add.existing(this.restartBtn);
+
+                // Move Help button down
+                this.helpBtn.setPosition(width / 2, btnY + 160);
+            }
+        });
+
+        // Primary Button (Start or Continue)
         this.startBtn = new UIButton(this, width / 2, btnY, {
             label: '开始游戏',
             isPrimary: true,
             onClick: () => {
                 audioManager.play('launch');
-                this.scene.start('GameScene', { difficulty: selectedDifficulty });
+                // If saved level is > 1, start from that level (index is level-1)
+                const targetIdx = this.savedLevel > 1 ? this.savedLevel - 1 : 0;
+                this.scene.start('GameScene', { level: targetIdx, difficulty: selectedDifficulty });
             }
         });
         this.add.existing(this.startBtn);
-
-        // Secondary Button (Help)
-        const helpBtn = new UIButton(this, width / 2, btnY + 80, {
-            label: '游戏帮助',
-            isPrimary: false,
-            onClick: () => {
-                this.scene.start(SCENE_KEYS.HELP);
-            }
-        });
-        this.add.existing(helpBtn);
 
         // ============================================
         // FOOTER LINK
@@ -238,6 +266,13 @@ export class MenuScene extends Phaser.Scene {
 
         const btnY = height * 0.45;
         this.startBtn.setPosition(width / 2, btnY);
+        
+        if (this.restartBtn) {
+            this.restartBtn.setPosition(width / 2, btnY + 80);
+            this.helpBtn.setPosition(width / 2, btnY + 160);
+        } else {
+            this.helpBtn.setPosition(width / 2, btnY + 80);
+        }
 
         this.homepageLink.setPosition(width / 2, height * 0.9);
     }

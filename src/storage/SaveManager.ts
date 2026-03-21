@@ -11,6 +11,7 @@ export interface GameSaveData {
     totalGamesWon: number;
     lastPlayed: number;
     difficulty: 'SIMPLE' | 'HARD';
+    lastPlayedLevel: number;
 }
 
 const DB_NAME = 'BrickBreakerDB';
@@ -99,13 +100,14 @@ export class SaveManager {
                 const data = request.result;
                 if (data) {
                     resolve({
-                        highScore: data.highScore || 0,
-                        currentLevel: data.currentLevel || 1,
-                        unlockedLevels: data.unlockedLevels || [1],
-                        totalGamesPlayed: data.totalGamesPlayed || 0,
-                        totalGamesWon: data.totalGamesWon || 0,
-                        lastPlayed: data.lastPlayed || Date.now(),
-                        difficulty: data.difficulty || 'SIMPLE'
+                        highScore: Number(data.highScore) || 0,
+                        currentLevel: Number(data.currentLevel) || 1,
+                        unlockedLevels: (data.unlockedLevels || [1]).map(Number),
+                        totalGamesPlayed: Number(data.totalGamesPlayed) || 0,
+                        totalGamesWon: Number(data.totalGamesWon) || 0,
+                        lastPlayed: Number(data.lastPlayed) || Date.now(),
+                        difficulty: data.difficulty || 'SIMPLE',
+                        lastPlayedLevel: Number(data.lastPlayedLevel) || Number(data.currentLevel) || 1
                     });
                 } else {
                     resolve(null);
@@ -163,7 +165,8 @@ export class SaveManager {
 
         await this.save({ 
             currentLevel: newCurrentLevel,
-            unlockedLevels 
+            unlockedLevels,
+            lastPlayedLevel: level // Always update last played to the requested level
         });
     }
 
@@ -177,6 +180,14 @@ export class SaveManager {
             totalGamesWon: (data?.totalGamesWon || 0) + (won ? 1 : 0),
             lastPlayed: Date.now()
         });
+    }
+
+    /**
+     * Get the last level the user was actually playing
+     */
+    async getLastPlayedLevel(): Promise<number> {
+        const data = await this.load();
+        return data?.lastPlayedLevel || data?.currentLevel || 1;
     }
 
     /**

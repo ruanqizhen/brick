@@ -126,10 +126,20 @@ export class UIButton extends Phaser.GameObjects.Container {
     }
 
     /**
-     * Update button label
+     * Update button label and adjust width if necessary
      */
     setLabel(label: string): void {
         this.text.setText(label);
+        
+        // Auto-expand if text is too long
+        const padding = 60;
+        const requiredWidth = this.text.width + padding;
+        if (requiredWidth > this.btnWidth) {
+            this.btnWidth = requiredWidth;
+            this.hitZone.setSize(this.btnWidth, this.btnHeight);
+            this.setSize(this.btnWidth, this.btnHeight);
+            this.drawState(false);
+        }
     }
 
     /**

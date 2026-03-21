@@ -52,8 +52,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     init(data?: { level?: number, resetLives?: boolean, difficulty?: 'SIMPLE' | 'HARD' }) {
-        if (data && typeof data.level === 'number') {
-            this.currentLevelIndex = data.level;
+        if (data && data.level !== undefined) {
+            this.currentLevelIndex = Number(data.level);
         } else {
             this.currentLevelIndex = 0;
         }
@@ -115,6 +115,7 @@ export class GameScene extends Phaser.Scene {
 
         // Load level
         this.loadLevel(this.currentLevelIndex);
+        saveManager.saveLevel(Number(this.currentLevelIndex) + 1);
 
         // Create paddle
         this.paddle = new Paddle(this, DESIGN_WIDTH / 2, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION);
@@ -663,7 +664,7 @@ export class GameScene extends Phaser.Scene {
         audioManager.play('win');
         this.add.text(DESIGN_WIDTH / 2, DESIGN_HEIGHT / 2, '关卡完成!', { fontSize: '64px', color: '#00ff00' }).setOrigin(0.5);
         this.time.delayedCall(2000, () => {
-            const completedLevel = this.currentLevelIndex + 1;
+            const completedLevel = Number(this.currentLevelIndex) + 1;
             saveManager.saveLevel(completedLevel);
             if (completedLevel < LEVELS.length) {
                 this.showWinOverlay(completedLevel, this.hud.getScore);
