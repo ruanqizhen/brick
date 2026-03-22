@@ -66,7 +66,10 @@ export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
                 debug: false,
                 positionIterations: 30,
                 velocityIterations: 30,
-                enableSleeping: false
+                enableSleeping: false,
+                runner: {
+                    subSteps: 3
+                }
             }
         },
         fps: {
