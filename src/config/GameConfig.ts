@@ -24,7 +24,7 @@ export const GameConfig = {
         EASY_COUNT: 5,
         MEDIUM_COUNT: 10,
         HARD_COUNT: 5,
-        SPEED_MULTIPLIER_MAX_LEVEL: 30,
+        SPEED_MULTIPLIER_MAX_LEVEL: 60,
     },
 
     // 道具持续时间 (毫秒)
