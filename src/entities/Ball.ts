@@ -384,8 +384,6 @@ export class Ball extends Phaser.Physics.Matter.Image {
     }
 
     onPaddleHit(paddle: Paddle) {
-        const v = this.getVelocityPxPerSec();
-
         const now = this.scene.time.now;
         if (now - this.lastPaddleHitTime < GameConfig.PADDLE_HIT_COOLDOWN) return;
         this.lastPaddleHitTime = now;
@@ -393,22 +391,26 @@ export class Ball extends Phaser.Physics.Matter.Image {
         const hitFactor = Phaser.Math.Clamp((this.x - paddle.x) / (paddle.displayWidth / 2), -1, 1);
         const speed = this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED;
 
-        // Base reflection angle (-90 deg is straight up)
+        // 基础反射角度
         let angle = Phaser.Math.DegToRad(-90 + (hitFactor * 60));
 
-        // Add paddle velocity influence ("English" / Momentum Transfer)
-        // We normalize paddle.velocityX (px/frame) to px/sec by multiplying by 60 for framerate independence.
-        // Sensitivity 0.002 provides a subtle ~10-15 degree shift at high speeds.
-        const paddleVelocityPxPerSec = paddle.velocityX * 60;
+        // 加入挡板惯性 (搓球效果)
+        // 假设 paddleVelocityPxPerSec 已经是绝对的 像素/秒
+        const paddleVelocityPxPerSec = paddle.velocityX; // 移除硬编码的 * 60
         const angleModifier = Math.atan(0.002 * paddleVelocityPxPerSec);
         angle += angleModifier;
 
+        // 限制角度，防止水平死循环或向下钻
         let deg = Phaser.Math.RadToDeg(angle);
         deg = Phaser.Math.Clamp(deg, -170, -10);
 
         const finalAngle = Phaser.Math.DegToRad(deg);
+
+        // 赋予新速度，并强制 Y 轴向上
         this.setVelocityPxPerSec(speed * Math.cos(finalAngle), -Math.abs(speed * Math.sin(finalAngle)));
-        this.applyJitter(1.0);
+
+        // 如果有微小扰动逻辑
+        this.applyJitter(2.0);
 
         audioManager.play('paddle');
     }
