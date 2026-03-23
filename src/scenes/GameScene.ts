@@ -795,7 +795,9 @@ export class GameScene extends Phaser.Scene {
                 const totalMultiplier = this.activeSpeedMultipliers.reduce((acc, m) => acc * m, 1);
 
                 const b = this.ballPool.get();
-                b.setPosition(this.paddle.x, DESIGN_HEIGHT * GameConfig.PADDLE_Y_POSITION - 50);
+                // Position ball above paddle center (consistent with Ball.update())
+                const ballY = this.paddle.y - this.paddle.displayHeight / 2 - b.displayHeight / 2;
+                b.setPosition(this.paddle.x, ballY);
                 b.setData('targetSpeed', baseSpeed * totalMultiplier);
                 if (this.isFireballActive) b.activeFire(true);
                 this.balls.push(b);

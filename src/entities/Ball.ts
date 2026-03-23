@@ -427,6 +427,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
             this.setVisible(false);
             this.setVelocity(0, 0);
             this.isLocked = false;
+            this.prevFramePos = { x: 0, y: 0 };
         } else {
             this.setActive(true);
             this.setVisible(true);
