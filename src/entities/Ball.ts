@@ -3,6 +3,7 @@ import { GameConfig } from '../config/GameConfig';
 import { Paddle } from './Paddle';
 import { audioManager } from '../audio/AudioManager';
 import { GameScene } from '../scenes/GameScene';
+import { Brick } from './Brick';
 
 export class Ball extends Phaser.Physics.Matter.Image {
     public isFireball: boolean = false;
@@ -16,6 +17,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
     public lastHitTime: number = 0;
     private _radius: number = GameConfig.BALL_RADIUS;
     private isLocked: boolean = false;
+    private prevFramePos: { x: number, y: number } = { x: 0, y: 0 };
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         // Create with a circular Matter body matching the ball radius
@@ -145,7 +147,8 @@ export class Ball extends Phaser.Physics.Matter.Image {
     setBallRadius(radius: number) {
         this._radius = radius;
         
-        // Phaser 3 Matter automatically scales the underlying physics body when display size/scale changes
+        // Phaser 3 Matter automatically scales the underlying physics body when display size/scale changes.
+        // Retain native display size scaling to avoid desyncing the 256x256 texture origin from the body.
         this.setDisplaySize(radius * 2, radius * 2);
 
         this.trailScale = (radius * 2) / 32;
@@ -217,6 +220,169 @@ export class Ball extends Phaser.Physics.Matter.Image {
         this.setVelocityPxPerSec(Math.cos(newRad) * currentSpeed, Math.sin(newRad) * currentSpeed);
     }
 
+    /**
+     * Performs a Custom Swept Circle Continuous Collision Detection (CCD)
+     * checking the ball's trajectory against the paddle and bricks.
+     * Fixes tunneling caused by paddle teleportation or massive frame drops.
+     */
+    public performSweptCircleCCD(paddle: Paddle, bricks: Brick[]) {
+        const state = this.getData('state');
+        if (state !== 'MOVING') {
+            this.prevFramePos = { x: this.x, y: this.y };
+            return;
+        }
+
+        const p1 = this.prevFramePos;
+        const p2 = { x: this.x, y: this.y };
+
+        const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
+        const radius = this.displayWidth / 2;
+
+        // Skip if movement is small (Matter.js can handle it) or initial frame
+        if (dist < radius * 0.5 || (p1.x === 0 && p1.y === 0)) {
+            this.prevFramePos = { x: this.x, y: this.y };
+            return;
+        }
+
+        const pathLine = new Phaser.Geom.Line(p1.x, p1.y, p2.x, p2.y);
+        let earliestHit: any = null;
+
+        // 1. Paddle Sweep Check
+        // Expand the paddle bounds to include its previous position (for teleportation coverage)
+        const paddleW = paddle.displayWidth;
+        const paddleH = paddle.displayHeight;
+        const padMinX = Math.min(paddle.previousX, paddle.x) - paddleW / 2 - radius;
+        const padMaxX = Math.max(paddle.previousX, paddle.x) + paddleW / 2 + radius;
+        const padMinY = paddle.y - paddleH / 2 - radius;
+        const padMaxY = paddle.y + paddleH / 2 + radius;
+
+        const expandedPaddle = new Phaser.Geom.Rectangle(padMinX, padMinY, padMaxX - padMinX, padMaxY - padMinY);
+        
+        if (Phaser.Geom.Intersects.LineToRectangle(pathLine, expandedPaddle)) {
+            const hit = this.getLineRectangleIntersection(pathLine, padMinX, padMinY, padMaxX, padMaxY);
+            if (hit && (!earliestHit || hit.t < earliestHit.t)) {
+                earliestHit = { ...hit, entity: paddle };
+            }
+        }
+
+        // 2. Brick Sweep Check
+        for (const brick of bricks) {
+            if (!brick.active || !brick.visible) continue;
+            
+            const bMinX = brick.x - brick.displayWidth / 2 - radius;
+            const bMaxX = brick.x + brick.displayWidth / 2 + radius;
+            const bMinY = brick.y - brick.displayHeight / 2 - radius;
+            const bMaxY = brick.y + brick.displayHeight / 2 + radius;
+            
+            const expandedRect = new Phaser.Geom.Rectangle(bMinX, bMinY, bMaxX - bMinX, bMaxY - bMinY);
+            if (Phaser.Geom.Intersects.LineToRectangle(pathLine, expandedRect)) {
+                const hit = this.getLineRectangleIntersection(pathLine, bMinX, bMinY, bMaxX, bMaxY);
+                if (hit && (!earliestHit || hit.t < earliestHit.t)) {
+                    earliestHit = { ...hit, entity: brick };
+                }
+            }
+        }
+
+        if (earliestHit) {
+            // Retroactively correct tunneling!
+            const hitPoint = earliestHit.point;
+            const normal = earliestHit.normal;
+            
+            // Move ball to point of impact (pull back microscopically to prevent snagging)
+            this.setPosition(hitPoint.x + normal.x * 0.1, hitPoint.y + normal.y * 0.1);
+            
+            // Reflect velocity
+            const v = this.getVelocityPxPerSec();
+            const dot = v.x * normal.x + v.y * normal.y;
+            
+            // Only reflect if moving towards the surface
+            if (dot < 0) {
+                const newVx = v.x - 2 * dot * normal.x;
+                const newVy = v.y - 2 * dot * normal.y;
+                this.setVelocityPxPerSec(newVx, newVy);
+                this.applyJitter(1.0);
+                this.enforceMinimumVerticalAngle();
+            }
+
+            // Trigger actual game logic
+            if (earliestHit.entity instanceof Paddle) {
+                this.onPaddleHit(earliestHit.entity as Paddle);
+            } else if (earliestHit.entity instanceof Brick) {
+                const gameScene = this.scene as GameScene;
+                const brickEntity = earliestHit.entity as Brick;
+                gameScene.handleBrickHit(this, brickEntity);
+            }
+        }
+
+        // Save position for next frame's comparison
+        this.prevFramePos = { x: this.x, y: this.y };
+    }
+
+    /**
+     * Custom Slab-method raycast for Swept Circle AABB checking.
+     */
+    private getLineRectangleIntersection(line: Phaser.Geom.Line, left: number, top: number, right: number, bottom: number): { t: number, point: {x:number, y:number}, normal: {x:number, y:number} } | null {
+        const p1x = line.x1;
+        const p1y = line.y1;
+        const dx = line.x2 - line.x1;
+        const dy = line.y2 - line.y1;
+
+        let tMin = -Infinity;
+        let tMax = Infinity;
+        let normalMin = { x: 0, y: 0 };
+        
+        if (Math.abs(dx) < 0.0001) {
+            if (p1x < left || p1x > right) return null;
+        } else {
+            let t1 = (left - p1x) / dx;
+            let t2 = (right - p1x) / dx;
+            let n1 = { x: -1, y: 0 };
+            let n2 = { x: 1, y: 0 };
+
+            if (t1 > t2) {
+                const temp = t1; t1 = t2; t2 = temp;
+                const tempN = n1; n1 = n2; n2 = tempN;
+            }
+
+            if (t1 > tMin) { tMin = t1; normalMin = n1; }
+            if (t2 < tMax) tMax = t2;
+            if (tMin > tMax) return null;
+        }
+
+        if (Math.abs(dy) < 0.0001) {
+            if (p1y < top || p1y > bottom) return null;
+        } else {
+            let t1 = (top - p1y) / dy;
+            let t2 = (bottom - p1y) / dy;
+            let n1 = { x: 0, y: -1 };
+            let n2 = { x: 0, y: 1 };
+
+            if (t1 > t2) {
+                const temp = t1; t1 = t2; t2 = temp;
+                const tempN = n1; n1 = n2; n2 = tempN;
+            }
+
+            if (t1 > tMin) { 
+                tMin = t1; 
+                normalMin = n1; 
+            }
+            if (t2 < tMax) tMax = t2;
+            if (tMin > tMax) return null;
+        }
+
+        // Intersection must be exactly within the swept line segment
+        if (tMin < 0 || tMin > 1) return null;
+
+        return {
+            t: tMin,
+            point: {
+                x: p1x + dx * tMin,
+                y: p1y + dy * tMin
+            },
+            normal: normalMin
+        };
+    }
+
     onPaddleHit(paddle: Paddle) {
         const v = this.getVelocityPxPerSec();
 
@@ -248,7 +414,6 @@ export class Ball extends Phaser.Physics.Matter.Image {
         return (this.body as MatterJS.BodyType).isSensor;
     }
 
-    // Pool methods
     setPoolActive(active: boolean): void {
         this.isPooledActive = active;
         if (!active) {

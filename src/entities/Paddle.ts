@@ -115,6 +115,10 @@ export class Paddle extends Phaser.Physics.Matter.Image {
         return this._velocityX;
     }
 
+    get previousX(): number {
+        return this.prevX;
+    }
+
     setLocked(locked: boolean) {
         this.isLocked = locked;
         if (locked) this.wasPointerDown = false;

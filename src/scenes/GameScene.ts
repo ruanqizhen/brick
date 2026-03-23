@@ -301,6 +301,13 @@ export class GameScene extends Phaser.Scene {
             }
         }
 
+        // Perform Swept Circle CCD for all active balls
+        for (const ball of this.balls) {
+            if (ball.active && ball.getData('state') === 'MOVING') {
+                ball.performSweptCircleCCD(this.paddle, this.bricks);
+            }
+        }
+
         // Check world bounds manually for balls (since Matter walls are static)
         for (const ball of this.balls) {
             if (!ball.active || ball.getData('state') !== 'MOVING') continue;
@@ -311,7 +318,7 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    private handleBrickHit(ball: Ball, brick: Brick) {
+    public handleBrickHit(ball: Ball, brick: Brick) {
         try {
             const isFireball = ball.isFireball;
             const isIndestructible = brick.isIndestructible;
