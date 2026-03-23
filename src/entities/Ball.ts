@@ -393,8 +393,14 @@ export class Ball extends Phaser.Physics.Matter.Image {
         const hitFactor = Phaser.Math.Clamp((this.x - paddle.x) / (paddle.displayWidth / 2), -1, 1);
         const speed = this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED;
 
+        // Base reflection angle (-90 deg is straight up)
         let angle = Phaser.Math.DegToRad(-90 + (hitFactor * 60));
-        const angleModifier = - Math.atan(0.1 * paddle.velocityX);
+
+        // Add paddle velocity influence ("English" / Momentum Transfer)
+        // We normalize paddle.velocityX (px/frame) to px/sec by multiplying by 60 for framerate independence.
+        // Sensitivity 0.002 provides a subtle ~10-15 degree shift at high speeds.
+        const paddleVelocityPxPerSec = paddle.velocityX * 60;
+        const angleModifier = Math.atan(0.002 * paddleVelocityPxPerSec);
         angle += angleModifier;
 
         let deg = Phaser.Math.RadToDeg(angle);
