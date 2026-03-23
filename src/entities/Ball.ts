@@ -146,7 +146,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
 
     setBallRadius(radius: number) {
         this._radius = radius;
-        
+
         // Phaser 3 Matter automatically scales the underlying physics body when display size/scale changes.
         // Retain native display size scaling to avoid desyncing the 256x256 texture origin from the body.
         this.setDisplaySize(radius * 2, radius * 2);
@@ -206,7 +206,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
         let deg = Phaser.Math.RadToDeg(angle);
 
         // Define a safe vertical zone (at least 15 degrees away from perfectly horizontal)
-        const minAngle = 15; 
+        const minAngle = 15;
 
         if (v.y <= 0) {
             // Moving UP: Avoid -180 and 0. Clamp between -180 + minAngle and -minAngle.
@@ -257,7 +257,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
         const padMaxY = paddle.y + paddleH / 2 + radius;
 
         const expandedPaddle = new Phaser.Geom.Rectangle(padMinX, padMinY, padMaxX - padMinX, padMaxY - padMinY);
-        
+
         if (Phaser.Geom.Intersects.LineToRectangle(pathLine, expandedPaddle)) {
             const hit = this.getLineRectangleIntersection(pathLine, padMinX, padMinY, padMaxX, padMaxY);
             if (hit && (!earliestHit || hit.t < earliestHit.t)) {
@@ -268,12 +268,12 @@ export class Ball extends Phaser.Physics.Matter.Image {
         // 2. Brick Sweep Check
         for (const brick of bricks) {
             if (!brick.active || !brick.visible) continue;
-            
+
             const bMinX = brick.x - brick.displayWidth / 2 - radius;
             const bMaxX = brick.x + brick.displayWidth / 2 + radius;
             const bMinY = brick.y - brick.displayHeight / 2 - radius;
             const bMaxY = brick.y + brick.displayHeight / 2 + radius;
-            
+
             const expandedRect = new Phaser.Geom.Rectangle(bMinX, bMinY, bMaxX - bMinX, bMaxY - bMinY);
             if (Phaser.Geom.Intersects.LineToRectangle(pathLine, expandedRect)) {
                 const hit = this.getLineRectangleIntersection(pathLine, bMinX, bMinY, bMaxX, bMaxY);
@@ -287,14 +287,14 @@ export class Ball extends Phaser.Physics.Matter.Image {
             // Retroactively correct tunneling!
             const hitPoint = earliestHit.point;
             const normal = earliestHit.normal;
-            
+
             // Move ball to point of impact (pull back microscopically to prevent snagging)
             this.setPosition(hitPoint.x + normal.x * 0.1, hitPoint.y + normal.y * 0.1);
-            
+
             // Reflect velocity
             const v = this.getVelocityPxPerSec();
             const dot = v.x * normal.x + v.y * normal.y;
-            
+
             // Only reflect if moving towards the surface
             if (dot < 0) {
                 const newVx = v.x - 2 * dot * normal.x;
@@ -321,7 +321,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
     /**
      * Custom Slab-method raycast for Swept Circle AABB checking.
      */
-    private getLineRectangleIntersection(line: Phaser.Geom.Line, left: number, top: number, right: number, bottom: number): { t: number, point: {x:number, y:number}, normal: {x:number, y:number} } | null {
+    private getLineRectangleIntersection(line: Phaser.Geom.Line, left: number, top: number, right: number, bottom: number): { t: number, point: { x: number, y: number }, normal: { x: number, y: number } } | null {
         const p1x = line.x1;
         const p1y = line.y1;
         const dx = line.x2 - line.x1;
@@ -330,7 +330,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
         let tMin = -Infinity;
         let tMax = Infinity;
         let normalMin = { x: 0, y: 0 };
-        
+
         if (Math.abs(dx) < 0.0001) {
             if (p1x < left || p1x > right) return null;
         } else {
@@ -362,9 +362,9 @@ export class Ball extends Phaser.Physics.Matter.Image {
                 const tempN = n1; n1 = n2; n2 = tempN;
             }
 
-            if (t1 > tMin) { 
-                tMin = t1; 
-                normalMin = n1; 
+            if (t1 > tMin) {
+                tMin = t1;
+                normalMin = n1;
             }
             if (t2 < tMax) tMax = t2;
             if (tMin > tMax) return null;
@@ -386,9 +386,6 @@ export class Ball extends Phaser.Physics.Matter.Image {
     onPaddleHit(paddle: Paddle) {
         const v = this.getVelocityPxPerSec();
 
-        // Only handle ball coming down towards paddle
-        if (v.y < 0) return;
-
         const now = this.scene.time.now;
         if (now - this.lastPaddleHitTime < GameConfig.PADDLE_HIT_COOLDOWN) return;
         this.lastPaddleHitTime = now;
@@ -397,7 +394,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
         const speed = this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED;
 
         let angle = Phaser.Math.DegToRad(-90 + (hitFactor * 60));
-        const angleModifier = Math.atan(0.1 * paddle.velocityX);
+        const angleModifier = - Math.atan(0.1 * paddle.velocityX);
         angle += angleModifier;
 
         let deg = Phaser.Math.RadToDeg(angle);
