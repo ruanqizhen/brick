@@ -19,6 +19,10 @@ export class Ball extends Phaser.Physics.Matter.Image {
     private isLocked: boolean = false;
     private prevFramePos: { x: number, y: number } = { x: 0, y: 0 };
 
+    // Persistent geometry objects for GC-friendly Swept Circle CCD
+    private ccdPathLine: Phaser.Geom.Line = new Phaser.Geom.Line();
+    private ccdExpandedRect: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle();
+
     constructor(scene: Phaser.Scene, x: number, y: number) {
         // Create with a circular Matter body matching the ball radius
         super(scene.matter.world, x, y, 'ball', undefined, {
@@ -244,7 +248,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
             return;
         }
 
-        const pathLine = new Phaser.Geom.Line(p1.x, p1.y, p2.x, p2.y);
+        this.ccdPathLine.setTo(p1.x, p1.y, p2.x, p2.y);
         let earliestHit: any = null;
 
         // 1. Paddle Sweep Check
@@ -256,10 +260,10 @@ export class Ball extends Phaser.Physics.Matter.Image {
         const padMinY = paddle.y - paddleH / 2 - radius;
         const padMaxY = paddle.y + paddleH / 2 + radius;
 
-        const expandedPaddle = new Phaser.Geom.Rectangle(padMinX, padMinY, padMaxX - padMinX, padMaxY - padMinY);
+        this.ccdExpandedRect.setTo(padMinX, padMinY, padMaxX - padMinX, padMaxY - padMinY);
 
-        if (Phaser.Geom.Intersects.LineToRectangle(pathLine, expandedPaddle)) {
-            const hit = this.getLineRectangleIntersection(pathLine, padMinX, padMinY, padMaxX, padMaxY);
+        if (Phaser.Geom.Intersects.LineToRectangle(this.ccdPathLine, this.ccdExpandedRect)) {
+            const hit = this.getLineRectangleIntersection(this.ccdPathLine, padMinX, padMinY, padMaxX, padMaxY);
             if (hit && (!earliestHit || hit.t < earliestHit.t)) {
                 earliestHit = { ...hit, entity: paddle };
             }
@@ -274,9 +278,9 @@ export class Ball extends Phaser.Physics.Matter.Image {
             const bMinY = brick.y - brick.displayHeight / 2 - radius;
             const bMaxY = brick.y + brick.displayHeight / 2 + radius;
 
-            const expandedRect = new Phaser.Geom.Rectangle(bMinX, bMinY, bMaxX - bMinX, bMaxY - bMinY);
-            if (Phaser.Geom.Intersects.LineToRectangle(pathLine, expandedRect)) {
-                const hit = this.getLineRectangleIntersection(pathLine, bMinX, bMinY, bMaxX, bMaxY);
+            this.ccdExpandedRect.setTo(bMinX, bMinY, bMaxX - bMinX, bMaxY - bMinY);
+            if (Phaser.Geom.Intersects.LineToRectangle(this.ccdPathLine, this.ccdExpandedRect)) {
+                const hit = this.getLineRectangleIntersection(this.ccdPathLine, bMinX, bMinY, bMaxX, bMaxY);
                 if (hit && (!earliestHit || hit.t < earliestHit.t)) {
                     earliestHit = { ...hit, entity: brick };
                 }

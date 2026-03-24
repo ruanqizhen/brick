@@ -64,11 +64,11 @@ export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
             matter: {
                 gravity: { x: 0, y: 0 },
                 debug: false,
-                positionIterations: 30,
-                velocityIterations: 30,
+                positionIterations: 8,
+                velocityIterations: 6,
                 enableSleeping: false,
                 runner: {
-                    subSteps: 3
+                    subSteps: 2
                 }
             }
         },
