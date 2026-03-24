@@ -36,7 +36,12 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
         scene.add.existing(this);
         this.setCircle(25);
         if (this.body) {
-            (this.body as MatterJS.BodyType).label = 'powerup';
+            const b = this.body as MatterJS.BodyType;
+            b.label = 'powerup';
+            b.restitution = 1;
+            b.friction = 0;
+            b.frictionAir = 0;
+            b.frictionStatic = 0;
             this.setSensor(true); // Start as sensor while pooled
             this.setIgnoreGravity(true);
         }
