@@ -7,10 +7,13 @@ export class HUD extends Phaser.GameObjects.Container {
     private lvValue!: Phaser.GameObjects.Text;
     private stLabel!: Phaser.GameObjects.Text;
     private stValue!: Phaser.GameObjects.Text;
+    private dgLabel!: Phaser.GameObjects.Text;
+    private dgValue!: Phaser.GameObjects.Text;
     
     private scBg!: Phaser.GameObjects.Graphics;
     private lvBg!: Phaser.GameObjects.Graphics;
     private stBg!: Phaser.GameObjects.Graphics;
+    private dgBg!: Phaser.GameObjects.Graphics;
 
     private score: number = 0;
     private lives: number = 3;
@@ -34,9 +37,14 @@ export class HUD extends Phaser.GameObjects.Container {
         };
 
         // --- Panel Backdrops ---
-        this.scBg = this.createPanelBg(scene, 20, 10, 200, 50);
-        this.lvBg = this.createPanelBg(scene, scene.cameras.main.width / 2 - 100, 10, 200, 50);
-        this.stBg = this.createPanelBg(scene, scene.cameras.main.width - 320, 10, 300, 50);
+        const panelWidth = 200;
+        const totalGap = scene.cameras.main.width - (panelWidth * 4 + 40); // 40 = 20px padding on each side
+        const spacing = totalGap / 3;
+
+        this.scBg = this.createPanelBg(scene, 20, 10, panelWidth, 50);
+        this.dgBg = this.createPanelBg(scene, 20 + panelWidth + spacing, 10, panelWidth, 50);
+        this.lvBg = this.createPanelBg(scene, 20 + (panelWidth + spacing) * 2, 10, panelWidth, 50);
+        this.stBg = this.createPanelBg(scene, scene.cameras.main.width - 20 - panelWidth, 10, panelWidth, 50);
 
         // --- Score Panel ---
         this.scLabel = scene.add.text(35, 22, '得分记录', LABEL_STYLE);
@@ -47,14 +55,21 @@ export class HUD extends Phaser.GameObjects.Container {
         this.lvValue = scene.add.text(scene.cameras.main.width / 2, 36, '关卡 01', { ...VALUE_STYLE, color: '#00d4ff' }).setOrigin(0.5, 0);
 
         // --- Status Panel ---
-        this.stLabel = scene.add.text(scene.cameras.main.width - 35, 22, '游戏状态', LABEL_STYLE).setOrigin(1, 0);
-        this.stValue = scene.add.text(scene.cameras.main.width - 35, 36, '简单模式 | ♥ 3', VALUE_STYLE).setOrigin(1, 0);
+        const stX = scene.cameras.main.width - 35;
+        this.stLabel = scene.add.text(stX, 22, '游戏状态', LABEL_STYLE).setOrigin(1, 0);
+        this.stValue = scene.add.text(stX, 36, '简单模式 | ♥ 3', VALUE_STYLE).setOrigin(1, 0);
+
+        // --- Diagnostics Panel (New) ---
+        const dgX = 20 + panelWidth + spacing + 15;
+        this.dgLabel = scene.add.text(dgX, 22, '系统监测', LABEL_STYLE);
+        this.dgValue = scene.add.text(dgX, 36, '--- P/S | -- FPS', { ...VALUE_STYLE, fontSize: '18px', color: '#00ffaa' });
 
         this.add([
-            this.scBg, this.lvBg, this.stBg,
+            this.scBg, this.lvBg, this.stBg, this.dgBg,
             this.scLabel, this.scValue,
             this.lvLabel, this.lvValue,
-            this.stLabel, this.stValue
+            this.stLabel, this.stValue,
+            this.dgLabel, this.dgValue
         ]);
 
         scene.add.existing(this);
@@ -99,10 +114,16 @@ export class HUD extends Phaser.GameObjects.Container {
         this.updateStatusText();
     }
 
+    updateDiagnostics(speed: number, fps: number) {
+        const roundedSpeed = Math.round(speed);
+        const roundedFPS = Math.round(fps);
+        this.dgValue.setText(`${roundedSpeed} P/S | ${roundedFPS} FPS`);
+    }
+
     private updateStatusText() {
         const mode = this.difficulty === 'HARD' ? '困难' : '简单';
-        const hearts = '♥'.repeat(Math.max(0, this.lives));
-        this.stValue.setText(`${mode}模式 | ${hearts} ${this.lives}`);
+        // Simplified status for 4-panel layout to ensure it fits
+        this.stValue.setText(`${mode} | ♥ ${this.lives}`);
         
         // Color mode specifically
         const color = this.difficulty === 'HARD' ? '#ff3366' : '#00d4ff';
@@ -111,26 +132,38 @@ export class HUD extends Phaser.GameObjects.Container {
 
     private handleResize(gameSize: Phaser.Structs.Size): void {
         const width = gameSize.width;
+        const panelWidth = 200;
+        const totalGap = width - (panelWidth * 4 + 40);
+        const spacing = totalGap / 3;
 
         // Reposition backgrounds
         this.scBg.clear();
-        this.createPanelBgInto(this.scBg, 20, 10, 200, 50);
+        this.createPanelBgInto(this.scBg, 20, 10, panelWidth, 50);
         
+        this.dgBg.clear();
+        this.createPanelBgInto(this.dgBg, 20 + panelWidth + spacing, 10, panelWidth, 50);
+
         this.lvBg.clear();
-        this.createPanelBgInto(this.lvBg, width / 2 - 100, 10, 200, 50);
+        this.createPanelBgInto(this.lvBg, 20 + (panelWidth + spacing) * 2, 10, panelWidth, 50);
         
         this.stBg.clear();
-        this.createPanelBgInto(this.stBg, width - 320, 10, 300, 50);
+        this.createPanelBgInto(this.stBg, width - 20 - panelWidth, 10, panelWidth, 50);
 
         // Reposition text
         this.scLabel.x = 35;
         this.scValue.x = 35;
         
-        this.lvLabel.x = width / 2;
-        this.lvValue.x = width / 2;
+        const dgX = 20 + panelWidth + spacing + 15;
+        this.dgLabel.x = dgX;
+        this.dgValue.x = dgX;
+
+        const lvX = 20 + (panelWidth + spacing) * 2 + panelWidth / 2;
+        this.lvLabel.x = lvX;
+        this.lvValue.x = lvX;
         
-        this.stLabel.x = width - 35;
-        this.stValue.x = width - 35;
+        const stX = width - 35;
+        this.stLabel.x = stX;
+        this.stValue.x = stX;
     }
 
     private createPanelBgInto(graphics: Phaser.GameObjects.Graphics, x: number, y: number, w: number, h: number) {

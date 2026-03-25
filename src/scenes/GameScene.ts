@@ -42,6 +42,7 @@ export class GameScene extends Phaser.Scene {
     private speedDownTimer: Phaser.Time.TimerEvent | null = null;
     private isFireballActive: boolean = false;
     private lastHitstopTime: number = 0;
+    private lastHUDDiagUpdateTime: number = 0;
 
     // Boundary wall labels
     private static readonly WALL_TOP = 'wall_top';
@@ -282,6 +283,22 @@ export class GameScene extends Phaser.Scene {
     update(time: number, delta: number) {
         if (this.starfield) this.starfield.update();
         if (this.paddle) this.paddle.update(time, delta);
+
+        // Update HUD diagnostics (Speed & FPS) - Throttled every 200ms
+        if (time - this.lastHUDDiagUpdateTime > 200) {
+            this.lastHUDDiagUpdateTime = time;
+            const fps = 1000 / delta;
+            let totalSpeed = 0;
+            let activeCount = 0;
+            this.balls.forEach(b => {
+                if (b.active && b.getData('state') === 'MOVING') {
+                    totalSpeed += b.getSpeedPxPerSec();
+                    activeCount++;
+                }
+            });
+            const avgSpeed = activeCount > 0 ? totalSpeed / activeCount : 0;
+            this.hud.updateDiagnostics(avgSpeed, fps);
+        }
 
         // Update balls
         for (let i = 0; i < this.balls.length; i++) {
