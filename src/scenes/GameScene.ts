@@ -41,6 +41,7 @@ export class GameScene extends Phaser.Scene {
     private speedUpTimer: Phaser.Time.TimerEvent | null = null;
     private speedDownTimer: Phaser.Time.TimerEvent | null = null;
     private isFireballActive: boolean = false;
+    private lastHitstopTime: number = 0;
 
     // Boundary wall labels
     private static readonly WALL_TOP = 'wall_top';
@@ -395,7 +396,7 @@ export class GameScene extends Phaser.Scene {
                     ScreenShake.shake(this.cameras.main, res.destroyed ? 0.005 : 0.002, 100);
                 }
 
-                this.triggerHitstop(res.destroyed ? 60 : 30);
+                this.triggerHitstop(res.destroyed ? 25 : 15);
 
                 if (res.destroyed) {
                     const dropChance = this.difficulty === 'HARD' ? 0.5 : GameConfig.POWERUPS.DROP_CHANCE;
@@ -415,7 +416,7 @@ export class GameScene extends Phaser.Scene {
 
     private triggerExplosion(cx: number, cy: number) {
         ScreenShake.shake(this.cameras.main, 0.015, 200);
-        this.triggerHitstop(60);
+        this.triggerHitstop(25);
 
         if (this.particles && this.particles.spawnExplosion) {
             this.particles.spawnExplosion(cx, cy);
@@ -655,8 +656,10 @@ export class GameScene extends Phaser.Scene {
     }
 
     private triggerHitstop(duration: number) {
-        // Matter doesn't have a timeScale for the world easily; we pause/resume the world
-        // Simple delay for visual feel
+        const now = this.time.now;
+        if (now - this.lastHitstopTime < 100) return; // 100ms cooldown
+        this.lastHitstopTime = now;
+
         this.matter.world.enabled = false;
         this.time.delayedCall(duration, () => {
             this.matter.world.enabled = true;
