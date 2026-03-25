@@ -23,7 +23,7 @@ export const LEVELS: LevelConfig[] = [
     // --- EASY (1-10) ---
     {
         id: 1,
-        name: '入门之路',
+        name: '初始化序列',
         difficulty: 'easy',
         cols: 7,
         rows: 3,
@@ -40,7 +40,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 2,
-        name: '尖锐阶梯',
+        name: '阶梯负载',
         difficulty: 'easy',
         cols: 10,
         rows: 6,
@@ -60,7 +60,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 3,
-        name: '心形回响',
+        name: '情感核心',
         difficulty: 'easy',
         cols: 9,
         rows: 5,
@@ -79,7 +79,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 4,
-        name: '双重防线',
+        name: '双重冗余',
         difficulty: 'easy',
         cols: 8,
         rows: 4,
@@ -97,7 +97,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 5,
-        name: '黑钻',
+        name: '晶格节点',
         difficulty: 'easy',
         cols: 11,
         rows: 7,
@@ -118,7 +118,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 6,
-        name: '双螺旋',
+        name: '螺旋代码',
         difficulty: 'easy',
         cols: 10,
         rows: 8,
@@ -140,7 +140,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 7,
-        name: '四象限',
+        name: '逻辑象限',
         difficulty: 'easy',
         cols: 10,
         rows: 6,
@@ -160,7 +160,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 8,
-        name: '致命交叉',
+        name: '交叉校验',
         difficulty: 'easy',
         cols: 10,
         rows: 6,
@@ -180,7 +180,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 9,
-        name: '之字走廊',
+        name: '之字算法',
         difficulty: 'easy',
         cols: 11,
         rows: 6,
@@ -200,7 +200,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 10,
-        name: '护卫墙',
+        name: '防火墙 Alpha',
         difficulty: 'easy',
         cols: 12,
         rows: 4,
@@ -220,7 +220,7 @@ export const LEVELS: LevelConfig[] = [
     // --- MEDIUM (11-20) ---
     {
         id: 11,
-        name: '无限循环',
+        name: '递归死循环',
         difficulty: 'medium',
         cols: 10,
         rows: 6,
@@ -240,7 +240,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 12,
-        name: '矩阵重组',
+        name: '矩阵拓扑',
         difficulty: 'medium',
         cols: 10,
         rows: 6,
@@ -260,7 +260,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 13,
-        name: '波浪谷',
+        name: '波形调制',
         difficulty: 'medium',
         cols: 11,
         rows: 7,
@@ -281,7 +281,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 14,
-        name: '中庭',
+        name: '枢纽终端',
         difficulty: 'medium',
         cols: 10,
         rows: 7,
@@ -302,7 +302,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 15,
-        name: '能量环',
+        name: '等离子环',
         difficulty: 'medium',
         cols: 12,
         rows: 6,
@@ -322,7 +322,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 16,
-        name: '波动',
+        name: '光量子涨落',
         difficulty: 'medium',
         cols: 12,
         rows: 5,
@@ -341,7 +341,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 17,
-        name: '对角线',
+        name: '对角向量',
         difficulty: 'medium',
         cols: 11,
         rows: 8,
@@ -363,7 +363,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 18,
-        name: '棋盘格',
+        name: '加密网格',
         difficulty: 'medium',
         cols: 10,
         rows: 8,
@@ -385,7 +385,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 19,
-        name: '同心圆',
+        name: '向心引力',
         difficulty: 'medium',
         cols: 12,
         rows: 10,
@@ -409,7 +409,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 20,
-        name: '星形排列',
+        name: '星际星云',
         difficulty: 'medium',
         cols: 11,
         rows: 9,
@@ -434,7 +434,7 @@ export const LEVELS: LevelConfig[] = [
     // --- HARD (21-30) ---
     {
         id: 21,
-        name: '迷宫中心',
+        name: '内存陷阱',
         difficulty: 'hard',
         cols: 10,
         rows: 10,
@@ -458,7 +458,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 22,
-        name: '极光闪耀',
+        name: '极光衍射',
         difficulty: 'hard',
         cols: 11,
         rows: 7,
@@ -479,7 +479,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 23,
-        name: '沙漏',
+        name: '数据沙漏',
         difficulty: 'hard',
         cols: 11,
         rows: 9,
@@ -502,7 +502,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 24,
-        name: '齿轮核心',
+        name: '机械核心',
         difficulty: 'hard',
         cols: 10,
         rows: 9,
@@ -525,7 +525,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 25,
-        name: '最终巅峰',
+        name: '负载巅峰',
         difficulty: 'hard',
         cols: 12,
         rows: 10,
@@ -549,7 +549,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 26,
-        name: '能量增幅器',
+        name: '增幅协议',
         difficulty: 'hard',
         cols: 12,
         rows: 7,
@@ -570,7 +570,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 27,
-        name: '三塔',
+        name: '量子方尖碑',
         difficulty: 'hard',
         cols: 12,
         rows: 7,
@@ -591,7 +591,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 28,
-        name: '钢铁防线',
+        name: '重防扇区',
         difficulty: 'hard',
         cols: 10,
         rows: 8,
@@ -613,7 +613,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 29,
-        name: '星辰破碎',
+        name: '超新星遗迹',
         difficulty: 'hard',
         cols: 12,
         rows: 9,
@@ -636,7 +636,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 30,
-        name: '坚固堡垒',
+        name: '铁幕壁垒',
         difficulty: 'hard',
         cols: 12,
         rows: 8,
@@ -660,7 +660,7 @@ export const LEVELS: LevelConfig[] = [
     // --- EXPERT (31-40) ---
     {
         id: 31,
-        name: '审判之刃',
+        name: '达摩克利斯',
         difficulty: 'expert',
         cols: 11,
         rows: 8,
@@ -682,7 +682,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 32,
-        name: '幻影迷宫',
+        name: '镜像维度',
         difficulty: 'expert',
         cols: 10,
         rows: 10,
@@ -706,7 +706,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 33,
-        name: '混沌空间',
+        name: '熵增热寂',
         difficulty: 'expert',
         cols: 11,
         rows: 10,
@@ -730,7 +730,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 34,
-        name: '湮灭核心',
+        name: '奇点核心',
         difficulty: 'expert',
         cols: 11,
         rows: 11,
@@ -755,7 +755,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 35,
-        name: '蜂巢结构',
+        name: '神经网络',
         difficulty: 'expert',
         cols: 12,
         rows: 10,
@@ -779,7 +779,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 36,
-        name: '维度裂缝',
+        name: '时空断层',
         difficulty: 'expert',
         cols: 10,
         rows: 12,
@@ -805,7 +805,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 37,
-        name: '护城河',
+        name: '绝对防御圈',
         difficulty: 'expert',
         cols: 12,
         rows: 8,
@@ -827,7 +827,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 38,
-        name: '最终之墙',
+        name: '终焉阻断',
         difficulty: 'expert',
         cols: 12,
         rows: 10,
@@ -851,7 +851,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 39,
-        name: '永恒领域',
+        name: '无限疆界',
         difficulty: 'expert',
         cols: 12,
         rows: 13,
@@ -878,7 +878,7 @@ export const LEVELS: LevelConfig[] = [
     },
     {
         id: 40,
-        name: '锁死网格',
+        name: '系统崩溃',
         difficulty: 'expert',
         cols: 10,
         rows: 10,
