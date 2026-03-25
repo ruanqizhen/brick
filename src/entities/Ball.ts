@@ -89,10 +89,9 @@ export class Ball extends Phaser.Physics.Matter.Image {
         const speed = this.getData('targetSpeed') || GameConfig.BALL_BASE_SPEED;
         const angle = Phaser.Math.DegToRad(-90 + Phaser.Math.Between(-15, 15));
 
-        // Matter uses pixels/second but set via setVelocity which takes pixels/step (60fps base)
         const vx = Math.cos(angle) * speed;
         const vy = Math.sin(angle) * speed;
-        this.setVelocity(vx / 60, vy / 60);
+        this.setVelocityPxPerSec(vx, vy);
     }
 
     override update() {
@@ -115,7 +114,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
     private updateTrailEffect() {
         const vx = (this.body as MatterJS.BodyType).velocity.x;
         const vy = (this.body as MatterJS.BodyType).velocity.y;
-        const currentSpeed = Math.sqrt(vx * vx + vy * vy) * 60; // Convert from per-step to px/s
+        const currentSpeed = Math.sqrt(vx * vx + vy * vy) * this.getStepsPerSecond(); // Convert from per-step to px/s
         let color = 0x4FC3F7;
 
         if (this.isFireball) {
@@ -134,13 +133,25 @@ export class Ball extends Phaser.Physics.Matter.Image {
         this.trailEmitter.setParticleTint(color);
     }
 
+    private getStepsPerSecond(): number {
+        const delta = this.scene.game.loop.delta;
+        if (delta <= 0) return 60; // Fallback
+        
+        // Matter.js runner config in our GameConfig uses subSteps: 2
+        // Total steps per second = (1000 / frameDelta) * subSteps
+        const subSteps = (this.scene.matter.world as any).runner?.subSteps || 1;
+        return (1000 / delta) * subSteps;
+    }
+
     getVelocityPxPerSec(): { x: number, y: number } {
         const b = this.body as MatterJS.BodyType;
-        return { x: b.velocity.x * 60, y: b.velocity.y * 60 };
+        const stepsPerSec = this.getStepsPerSecond();
+        return { x: b.velocity.x * stepsPerSec, y: b.velocity.y * stepsPerSec };
     }
 
     setVelocityPxPerSec(vx: number, vy: number) {
-        this.setVelocity(vx / 60, vy / 60);
+        const stepsPerSec = this.getStepsPerSecond();
+        this.setVelocity(vx / stepsPerSec, vy / stepsPerSec);
     }
 
     getSpeedPxPerSec(): number {
@@ -179,9 +190,15 @@ export class Ball extends Phaser.Physics.Matter.Image {
             const angle = Phaser.Math.DegToRad(-90 + Phaser.Math.Between(-30, 30));
             this.setVelocityPxPerSec(Math.cos(angle) * clampedTarget, Math.sin(angle) * clampedTarget);
         } else {
-            const factor = clampedTarget / currentSpeed;
-            const v = this.getVelocityPxPerSec();
-            this.setVelocityPxPerSec(v.x * factor, v.y * factor);
+            // Apply speed normalization with a soft "lerp" factor to prevent jitter
+            // at different frame rates or during micro-stutters.
+            const ratio = clampedTarget / currentSpeed;
+            if (Math.abs(ratio - 1) > 0.001) {
+                // Smoothly nudge the velocity towards target speed (10% correction per frame)
+                const smoothRatio = 1 + (ratio - 1) * 0.1;
+                const v = this.getVelocityPxPerSec();
+                this.setVelocityPxPerSec(v.x * smoothRatio, v.y * smoothRatio);
+            }
         }
     }
 
@@ -399,9 +416,10 @@ export class Ball extends Phaser.Physics.Matter.Image {
         let angle = Phaser.Math.DegToRad(-90 + (hitFactor * 60));
 
         // 加入挡板惯性 (搓球效果)
-        // 假设 paddleVelocityPxPerSec 已经是绝对的 像素/秒
-        const paddleVelocityPxPerSec = paddle.velocityX; // 移除硬编码的 * 60
-        const angleModifier = Math.atan(0.002 * paddleVelocityPxPerSec);
+        // 使用当前 delta 将挡板位移 (px/frame) 转换为 px/sec
+        const delta = this.scene.game.loop.delta || 16.6;
+        const paddleVelocityPxPerSec = paddle.velocityX * (1000 / delta);
+        const angleModifier = Math.atan(0.0002 * paddleVelocityPxPerSec);
         angle += angleModifier;
 
         // 限制角度，防止水平死循环或向下钻
@@ -409,9 +427,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
         deg = Phaser.Math.Clamp(deg, -170, -10);
 
         const finalAngle = Phaser.Math.DegToRad(deg);
-
-        // 赋予新速度，并强制 Y 轴向上
-        this.setVelocityPxPerSec(speed * Math.cos(finalAngle), -Math.abs(speed * Math.sin(finalAngle)));
+        this.setVelocityPxPerSec(Math.cos(finalAngle) * speed, Math.sin(finalAngle) * speed);
 
         // 如果有微小扰动逻辑
         this.applyJitter(2.0);
