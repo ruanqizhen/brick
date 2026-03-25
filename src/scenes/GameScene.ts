@@ -34,6 +34,7 @@ export class GameScene extends Phaser.Scene {
     private lives: number = 3;
     private currentLevelIndex: number = 0;
     private activeSpeedMultipliers: number[] = [];
+    private speedTweens: Phaser.Tweens.Tween[] = [];
     private difficulty: 'SIMPLE' | 'HARD' = 'SIMPLE';
 
     // Timed powerup trackers
@@ -655,13 +656,19 @@ export class GameScene extends Phaser.Scene {
     }
 
     private applyCurrentSpeedModifiers() {
+        // Kill all previous speed tweens to prevent unbounded accumulation
+        for (const tw of this.speedTweens) {
+            if (tw && tw.isPlaying()) tw.stop();
+        }
+        this.speedTweens = [];
+
         const totalMultiplier = this.activeSpeedMultipliers.reduce((acc, m) => acc * m, 1);
         const baseSpeed = this.getBaseSpeedForLevel(this.currentLevelIndex);
         const targetValue = baseSpeed * totalMultiplier;
 
         for (const ball of this.balls) {
             const currentTarget = ball.getData('targetSpeed') || baseSpeed;
-            this.tweens.addCounter({
+            const tw = this.tweens.addCounter({
                 from: currentTarget,
                 to: targetValue,
                 duration: 2000,
@@ -669,6 +676,7 @@ export class GameScene extends Phaser.Scene {
                     ball.setData('targetSpeed', tween.getValue());
                 }
             });
+            this.speedTweens.push(tw);
         }
     }
 
@@ -956,12 +964,22 @@ export class GameScene extends Phaser.Scene {
         if (this.speedUpTimer) { this.speedUpTimer.remove(); this.speedUpTimer = null; }
         if (this.speedDownTimer) { this.speedDownTimer.remove(); this.speedDownTimer = null; }
 
+        // Kill all tracked speed tweens
+        for (const tw of this.speedTweens) {
+            if (tw && tw.isPlaying()) tw.stop();
+        }
+        this.speedTweens = [];
+
+        // Clear ALL pending delayedCall timers to prevent stale callbacks
+        this.time.removeAllEvents();
+
         if (this.paddle) this.paddle.cleanupEventListeners();
         if (this.hud) this.hud.shutdown();
         if (this.particles) this.particles.destroy();
 
         if (this.matter && this.matter.world) {
             this.matter.world.off('collisionstart', this.handleMatterCollision, this);
+            this.matter.world.off('collisionactive', this.handleMatterCollisionActive, this);
         }
 
         if (this.ballPool) { this.ballPool.releaseAll(); this.ballPool.destroy(); }

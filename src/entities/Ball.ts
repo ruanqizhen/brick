@@ -466,7 +466,10 @@ export class Ball extends Phaser.Physics.Matter.Image {
         this.setPosition(0, -100);
         this.setSensor(true);
         this.setActive(false);
+        this.setVisible(false);
         this.setVelocity(0, 0);
+        this.trailEmitter.stop();
+        this.fireEmitter.stop();
     }
 
     isPoolActive(): boolean {
