@@ -42,8 +42,8 @@ export class HUD extends Phaser.GameObjects.Container {
         const spacing = totalGap / 3;
 
         this.scBg = this.createPanelBg(scene, 20, 10, panelWidth, 50);
-        this.dgBg = this.createPanelBg(scene, 20 + panelWidth + spacing, 10, panelWidth, 50);
-        this.lvBg = this.createPanelBg(scene, 20 + (panelWidth + spacing) * 2, 10, panelWidth, 50);
+        this.lvBg = this.createPanelBg(scene, 20 + panelWidth + spacing, 10, panelWidth, 50);
+        this.dgBg = this.createPanelBg(scene, 20 + (panelWidth + spacing) * 2, 10, panelWidth, 50);
         this.stBg = this.createPanelBg(scene, scene.cameras.main.width - 20 - panelWidth, 10, panelWidth, 50);
 
         // --- Score Panel ---
@@ -51,18 +51,19 @@ export class HUD extends Phaser.GameObjects.Container {
         this.scValue = scene.add.text(35, 36, '0', { ...VALUE_STYLE, color: '#ffcc00' });
 
         // --- Level Panel ---
-        this.lvLabel = scene.add.text(scene.cameras.main.width / 2, 22, '当前关卡', LABEL_STYLE).setOrigin(0.5, 0);
-        this.lvValue = scene.add.text(scene.cameras.main.width / 2, 36, '关卡 01', { ...VALUE_STYLE, color: '#00d4ff' }).setOrigin(0.5, 0);
+        const lvX = 20 + panelWidth + spacing + panelWidth / 2;
+        this.lvLabel = scene.add.text(lvX, 22, '当前关卡', LABEL_STYLE).setOrigin(0.5, 0);
+        this.lvValue = scene.add.text(lvX, 36, '关卡 01', { ...VALUE_STYLE, color: '#00d4ff' }).setOrigin(0.5, 0);
+
+        // --- Diagnostics Panel ---
+        const dgX = 20 + (panelWidth + spacing) * 2 + 15;
+        this.dgLabel = scene.add.text(dgX, 22, '性能监测', LABEL_STYLE);
+        this.dgValue = scene.add.text(dgX, 36, '--- P/S | -- FPS', { ...VALUE_STYLE, fontSize: '18px', color: '#00ffaa' });
 
         // --- Status Panel ---
         const stX = scene.cameras.main.width - 35;
         this.stLabel = scene.add.text(stX, 22, '游戏状态', LABEL_STYLE).setOrigin(1, 0);
         this.stValue = scene.add.text(stX, 36, '简单模式 | ♥ 3', VALUE_STYLE).setOrigin(1, 0);
-
-        // --- Diagnostics Panel (New) ---
-        const dgX = 20 + panelWidth + spacing + 15;
-        this.dgLabel = scene.add.text(dgX, 22, '系统监测', LABEL_STYLE);
-        this.dgValue = scene.add.text(dgX, 36, '--- P/S | -- FPS', { ...VALUE_STYLE, fontSize: '18px', color: '#00ffaa' });
 
         this.add([
             this.scBg, this.lvBg, this.stBg, this.dgBg,
@@ -104,9 +105,17 @@ export class HUD extends Phaser.GameObjects.Container {
         this.updateStatusText();
     }
 
-    updateLevel(level: number) {
+    updateLevel(level: number, name: string = '') {
         const lvStr = level < 10 ? `0${level}` : `${level}`;
-        this.lvValue.setText(`关卡 ${lvStr}`);
+        const displayName = name ? `第 ${lvStr} 关: ${name}` : `第 ${lvStr} 关`;
+        this.lvValue.setText(displayName);
+        
+        // Adjust font size if name is long
+        if (displayName.length > 12) {
+            this.lvValue.setFontSize(18);
+        } else {
+            this.lvValue.setFontSize(24);
+        }
     }
 
     setDifficulty(difficulty: 'SIMPLE' | 'HARD') {
@@ -153,13 +162,13 @@ export class HUD extends Phaser.GameObjects.Container {
         this.scLabel.x = 35;
         this.scValue.x = 35;
         
-        const dgX = 20 + panelWidth + spacing + 15;
-        this.dgLabel.x = dgX;
-        this.dgValue.x = dgX;
-
-        const lvX = 20 + (panelWidth + spacing) * 2 + panelWidth / 2;
+        const lvX = 20 + panelWidth + spacing + panelWidth / 2;
         this.lvLabel.x = lvX;
         this.lvValue.x = lvX;
+
+        const dgX = 20 + (panelWidth + spacing) * 2 + 15;
+        this.dgLabel.x = dgX;
+        this.dgValue.x = dgX;
         
         const stX = width - 35;
         this.stLabel.x = stX;

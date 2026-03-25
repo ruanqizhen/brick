@@ -93,8 +93,9 @@ export class GameScene extends Phaser.Scene {
             console.warn('Bloom not supported:', e);
         }
 
+        const levelData = LEVELS[this.currentLevelIndex];
         this.hud = new HUD(this);
-        this.hud.updateLevel(this.currentLevelIndex + 1);
+        this.hud.updateLevel(this.currentLevelIndex + 1, levelData.name);
         this.hud.updateLives(this.lives);
         this.hud.setDifficulty(this.difficulty);
         this.particles = new ParticleSystem(this);
