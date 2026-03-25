@@ -199,8 +199,8 @@ export class GameScene extends Phaser.Scene {
             }
 
             // Ball hit side/top walls
-            const isWall = [GameScene.WALL_LEFT, GameScene.WALL_RIGHT, GameScene.WALL_TOP].includes(labelA as any) || 
-                           [GameScene.WALL_LEFT, GameScene.WALL_RIGHT, GameScene.WALL_TOP].includes(labelB as any);
+            const isWall = [GameScene.WALL_LEFT, GameScene.WALL_RIGHT, GameScene.WALL_TOP].includes(labelA as any) ||
+                [GameScene.WALL_LEFT, GameScene.WALL_RIGHT, GameScene.WALL_TOP].includes(labelB as any);
             if (isWall && (labelA === 'ball' || labelB === 'ball')) {
                 const ballBody = labelA === 'ball' ? bodyA : bodyB;
                 const ball = ballBody.gameObject as Ball;
@@ -397,8 +397,11 @@ export class GameScene extends Phaser.Scene {
 
                 this.triggerHitstop(res.destroyed ? 60 : 30);
 
-                if (res.destroyed && Math.random() < GameConfig.POWERUPS.DROP_CHANCE) {
-                    this.spawnPowerUp(brickX, brickY);
+                if (res.destroyed) {
+                    const dropChance = this.difficulty === 'HARD' ? 0.5 : GameConfig.POWERUPS.DROP_CHANCE;
+                    if (Math.random() < dropChance) {
+                        this.spawnPowerUp(brickX, brickY);
+                    }
                 }
             }
 
@@ -534,8 +537,8 @@ export class GameScene extends Phaser.Scene {
         const DURATION = GameConfig.POWERUP_DURATION;
 
         switch (type) {
-            case 'PADDLE_EXPAND': this.updatePaddleWidth(1.5); break;
-            case 'PADDLE_SHRINK': this.updatePaddleWidth(0.6); break;
+            case 'PADDLE_EXPAND': this.updatePaddleWidth(1.3); break;
+            case 'PADDLE_SHRINK': this.updatePaddleWidth(0.8); break;
             case 'FIREBALL':
                 if (this.fireballTimer) { this.fireballTimer.remove(); this.fireballTimer = null; }
                 this.setFireball(true);
@@ -671,16 +674,16 @@ export class GameScene extends Phaser.Scene {
 
     private handleWin() {
         this.matter.world.enabled = false;
-        
+
         // Freeze all moving entities immediately
         this.balls.forEach(ball => {
             ball.setLocked(true);
         });
-        
+
         this.powerUps.forEach(pu => {
             if (pu.active) pu.setLocked(true);
         });
-        
+
         if (this.paddle) {
             this.paddle.setLocked(true);
         }
@@ -694,10 +697,10 @@ export class GameScene extends Phaser.Scene {
                 this.showWinOverlay(completedLevel, this.hud.getScore);
             } else {
                 const finalScore = this.hud.getScore;
-                this.scene.start(SCENE_KEYS.GAME_OVER, { 
-                    score: finalScore, 
+                this.scene.start(SCENE_KEYS.GAME_OVER, {
+                    score: finalScore,
                     level: completedLevel,
-                    difficulty: this.difficulty 
+                    difficulty: this.difficulty
                 });
             }
         });
@@ -785,8 +788,8 @@ export class GameScene extends Phaser.Scene {
             if (this.lives <= 0) {
                 audioManager.play('lose');
                 const finalScore = this.hud.getScore;
-                this.scene.start(SCENE_KEYS.GAME_OVER, { 
-                    score: finalScore, 
+                this.scene.start(SCENE_KEYS.GAME_OVER, {
+                    score: finalScore,
                     level: this.currentLevelIndex + 1,
                     difficulty: this.difficulty
                 });
