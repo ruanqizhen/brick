@@ -65,19 +65,23 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
         this.setVisible(active);
         this.setActive(active);
         if (this.body) {
-            // In SIMPLE mode, it's always a sensor when active.
-            // In HARD mode, it's a physical body when active.
-            // Always a sensor when inactive (pooled).
-            const targetSensor = active ? (this.difficulty === 'SIMPLE') : true;
-            this.setSensor(targetSensor);
+            if (!active) {
+                // Freeze the physics body to remove it from dynamic simulation
+                this.setSensor(true);
+                this.setStatic(true);
+                this.setPosition(0, -200);
+                this.setVelocity(0, 0);
+            } else {
+                // Re-enable dynamic physics
+                this.setStatic(false);
+                const targetSensor = this.difficulty === 'SIMPLE';
+                this.setSensor(targetSensor);
+                this.setVelocity(0, 3);
+            }
+        } else if (!active) {
+            this.setPosition(0, -200);
         }
-        if (!active) {
-            this.setPosition(0, -100);
-            this.setVelocity(0, 0);
-            this.isLocked = false;
-        } else {
-            this.setVelocity(0, 3);
-        }
+        this.isLocked = false;
     }
 
     setLocked(locked: boolean): void {
@@ -89,9 +93,7 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
     }
 
     onRelease(): void {
-        this.setPosition(0, -100);
-        this.setVisible(false);
-        this.setActive(false);
+        this.setPoolActive(false);
     }
 
     isPoolActive(): boolean {
