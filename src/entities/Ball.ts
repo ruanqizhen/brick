@@ -121,12 +121,16 @@ export class Ball extends Phaser.Physics.Matter.Image {
             color = 0xffaa00;
         } else {
             const baseSpeed = GameConfig.BALL_BASE_SPEED;
-            if (currentSpeed >= baseSpeed * 2.0) {
-                color = 0xFF1744;
-            } else if (currentSpeed >= baseSpeed * 1.5) {
-                color = 0xFF8C00;
-            } else if (currentSpeed >= baseSpeed * 1.0) {
+            if (currentSpeed <= baseSpeed) {
                 color = 0xFFFFFF;
+            } else {
+                // Smoothly transition from White to Cyber Blue (0x00D4FF) based on speed.
+                // Reaches max blue at 2x base speed.
+                const t = Phaser.Math.Clamp((currentSpeed - baseSpeed) / baseSpeed, 0, 1);
+                const r = Math.floor(255 * (1 - t));
+                const g = Math.floor(255 - (43 * t)); // 255 -> 212
+                const b = 255;
+                color = Phaser.Display.Color.GetColor(r, g, b);
             }
         }
 
