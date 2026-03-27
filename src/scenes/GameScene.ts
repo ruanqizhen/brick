@@ -80,6 +80,11 @@ export class GameScene extends Phaser.Scene {
         this.powerUps = [];
         this.bricks = [];
         this.isFireballActive = false;
+        this.activeSpeedMultipliers = [];
+        if (this.speedUpTimer) { this.speedUpTimer.remove(); this.speedUpTimer = null; }
+        if (this.speedDownTimer) { this.speedDownTimer.remove(); this.speedDownTimer = null; }
+        this.speedTweens.forEach(tw => tw?.stop());
+        this.speedTweens = [];
 
         this.starfield = new Starfield(this);
 
@@ -619,7 +624,11 @@ export class GameScene extends Phaser.Scene {
             newBall.isFireball = ball.isFireball;
             if (this.isFireballActive) newBall.activeFire(true);
             newBall.setTint(ball.isFireball ? 0xffaa00 : 0xffffff);
-            newBall.setData('targetSpeed', ball.getData('targetSpeed'));
+            
+            // Set initial speed based on current modifiers
+            const currentBase = this.getBaseSpeedForLevel(this.currentLevelIndex);
+            newBall.setData('targetSpeed', currentBase * this.getCurrentMultiplier());
+            
             newBall.launch();
             // Mirror x velocity
             const v = ball.getVelocityPxPerSec();
@@ -639,9 +648,24 @@ export class GameScene extends Phaser.Scene {
     }
 
     private updateBallsSpeed(multiplier: number, duration: number) {
+        // Find and remove existing instance of this multiplier to prevent "leaks"
+        const existingIdx = this.activeSpeedMultipliers.indexOf(multiplier);
+        if (existingIdx !== -1) {
+            this.activeSpeedMultipliers.splice(existingIdx, 1);
+        }
+        
         this.activeSpeedMultipliers.push(multiplier);
         this.applyCurrentSpeedModifiers();
-
+        
+        // Remove ANY existing timer for this multiplier type to prevent overlapping callbacks
+        if (multiplier === 1.3 && this.speedUpTimer) {
+            this.speedUpTimer.remove();
+            this.speedUpTimer = null;
+        } else if (multiplier === 0.7 && this.speedDownTimer) {
+            this.speedDownTimer.remove();
+            this.speedDownTimer = null;
+        }
+        
         const timer = this.time.delayedCall(duration, () => {
             const index = this.activeSpeedMultipliers.indexOf(multiplier);
             if (index !== -1) {
@@ -656,6 +680,10 @@ export class GameScene extends Phaser.Scene {
         else if (multiplier === 0.7) this.speedDownTimer = timer;
     }
 
+    private getCurrentMultiplier(): number {
+        return this.activeSpeedMultipliers.reduce((acc, m) => acc * m, 1);
+    }
+
     private applyCurrentSpeedModifiers() {
         // Kill all previous speed tweens to prevent unbounded accumulation
         for (const tw of this.speedTweens) {
@@ -663,7 +691,7 @@ export class GameScene extends Phaser.Scene {
         }
         this.speedTweens = [];
 
-        const totalMultiplier = this.activeSpeedMultipliers.reduce((acc, m) => acc * m, 1);
+        const totalMultiplier = this.getCurrentMultiplier();
         const baseSpeed = this.getBaseSpeedForLevel(this.currentLevelIndex);
         const targetValue = baseSpeed * totalMultiplier;
 
@@ -672,7 +700,7 @@ export class GameScene extends Phaser.Scene {
             const tw = this.tweens.addCounter({
                 from: currentTarget,
                 to: targetValue,
-                duration: 2000,
+                duration: 4000, // 4 seconds per user request
                 onUpdate: (tween) => {
                     ball.setData('targetSpeed', tween.getValue());
                 }
@@ -824,8 +852,7 @@ export class GameScene extends Phaser.Scene {
                 });
             } else {
                 const baseSpeed = this.getBaseSpeedForLevel(this.currentLevelIndex);
-                const totalMultiplier = this.activeSpeedMultipliers.reduce((acc, m) => acc * m, 1);
-
+                const totalMultiplier = this.getCurrentMultiplier();
                 const b = this.ballPool.get();
                 // Position ball above paddle center (consistent with Ball.update())
                 const ballY = this.paddle.y - this.paddle.displayHeight / 2 - b.displayHeight / 2;
@@ -884,8 +911,14 @@ export class GameScene extends Phaser.Scene {
 
     private handleBallLaunch() {
         let launched = false;
+        const currentMultiplier = this.getCurrentMultiplier();
+        const currentBase = this.getBaseSpeedForLevel(this.currentLevelIndex);
+        const targetSpeed = currentBase * currentMultiplier;
+
         for (const ball of this.balls) {
             if (ball.getData('state') === 'READY') {
+                // Ensure ball starts with the correct modified speed
+                ball.setData('targetSpeed', targetSpeed);
                 ball.launch();
                 audioManager.play('launch');
                 launched = true;
