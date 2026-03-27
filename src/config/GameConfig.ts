@@ -68,16 +68,17 @@ export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
                 velocityIterations: 6,
                 enableSleeping: false,
                 runner: {
-                    subSteps: 2
+                    isFixed: true,    // Use fixed timestep for physics stability
+                    delta: 1000 / 60, // 60Hz physics update rate
+                    subSteps: 2       // 2 sub-steps per physics update (120 total steps/sec)
                 }
             }
         },
         fps: {
+            min: 10,
             target: 60,
-            limit: 60,
-            min: 60,
             smoothStep: true,
-            forceSetTimeOut: true  // Prevents rAF from locking to native 120Hz on mobile
+            forceSetTimeOut: false
         },
         backgroundColor: GameConfig.COLORS.BG,
         antialias: true,

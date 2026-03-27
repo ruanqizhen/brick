@@ -134,13 +134,13 @@ export class Ball extends Phaser.Physics.Matter.Image {
     }
 
     private getStepsPerSecond(): number {
-        const delta = this.scene.game.loop.delta;
-        if (delta <= 0) return 60; // Fallback
+        // We now use a FIXED physics delta (60Hz) decoupled from the render frame rate.
+        // This ensures consistent speed on 60Hz and 120Hz displays.
+        const fixedDelta = 1000 / 60; 
         
-        // Matter.js runner config in our GameConfig uses subSteps: 2
-        // Total steps per second = (1000 / frameDelta) * subSteps
+        // Matter.js runner config is set to subSteps: 2
         const subSteps = (this.scene.matter.world as any).runner?.subSteps || 1;
-        return (1000 / delta) * subSteps;
+        return (1000 / fixedDelta) * subSteps;
     }
 
     getVelocityPxPerSec(): { x: number, y: number } {

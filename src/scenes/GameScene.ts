@@ -293,8 +293,10 @@ export class GameScene extends Phaser.Scene {
 
         // Update HUD diagnostics (Speed & FPS) - Throttled every 200ms
         if (time - this.lastHUDDiagUpdateTime > 200) {
+            const elapsed = time - this.lastHUDDiagUpdateTime;
+            const avgFPS = (this.game.loop.actualFps + (1000 / delta)) / 2; // Mixed smoothing
             this.lastHUDDiagUpdateTime = time;
-            const fps = 1000 / delta;
+            
             let totalSpeed = 0;
             let activeCount = 0;
             this.balls.forEach(b => {
@@ -304,7 +306,7 @@ export class GameScene extends Phaser.Scene {
                 }
             });
             const avgSpeed = activeCount > 0 ? totalSpeed / activeCount : 0;
-            this.hud.updateDiagnostics(avgSpeed, fps);
+            this.hud.updateDiagnostics(avgSpeed, avgFPS);
         }
 
         // Update balls
