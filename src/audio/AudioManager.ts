@@ -3,7 +3,7 @@
  * Enhanced with richer synthesis, reverb, and dynamic effects
  */
 
-export type SoundVariant = 'normal' | 'hard' | 'indestructible' | 'paddle' | 'powerup' | 'ballLost' | 'launch' | 'win' | 'lose';
+export type SoundVariant = 'normal' | 'hard' | 'indestructible' | 'paddle' | 'ball' | 'powerup' | 'ballLost' | 'launch' | 'win' | 'lose';
 
 export class AudioManager {
     private ctx: AudioContext | null = null;
@@ -64,6 +64,9 @@ export class AudioManager {
                 break;
             case 'paddle':
                 this.playPaddleHit();
+                break;
+            case 'ball':
+                this.playBallHit();
                 break;
             case 'powerup':
                 this.playPowerUpCollect();
@@ -178,6 +181,16 @@ export class AudioManager {
 
         osc.start(now);
         osc.stop(now + 0.12);
+    }
+
+    /**
+     * Play ball-to-ball hit sound - light high-frequency tick
+     */
+    private playBallHit(): void {
+        if (!this.ctx || !this.masterGain) return;
+        const now = this.ctx.currentTime;
+        // Light high tick
+        this.playSynthNote(1200, 1500, 'sine', now, 0.05, [1, 0.2]);
     }
 
     /**

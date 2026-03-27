@@ -40,7 +40,6 @@ export class Ball extends Phaser.Physics.Matter.Image {
 
         this.setDisplaySize(GameConfig.BALL_RADIUS * 2, GameConfig.BALL_RADIUS * 2);
         this.setFixedRotation();
-        this.setCollisionGroup(-1); // Balls don't collide with each other
         this.setSensor(false);
         this.setStatic(false);
 

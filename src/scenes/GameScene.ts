@@ -187,6 +187,11 @@ export class GameScene extends Phaser.Scene {
             const labelA = getLabel(bodyA);
             const labelB = getLabel(bodyB);
 
+            // Ball hit ball
+            if (labelA === 'ball' && labelB === 'ball') {
+                audioManager.play('ball');
+            }
+
             // Ball hit bottom wall → lost
             if ((labelA === 'ball' && labelB === GameScene.WALL_BOTTOM) ||
                 (labelB === 'ball' && labelA === GameScene.WALL_BOTTOM)) {
