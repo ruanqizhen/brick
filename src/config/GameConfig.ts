@@ -73,9 +73,11 @@ export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
             }
         },
         fps: {
+            target: 60,
+            limit: 60,
             min: 60,
             smoothStep: true,
-            forceSetTimeOut: false
+            forceSetTimeOut: true  // Prevents rAF from locking to native 120Hz on mobile
         },
         backgroundColor: GameConfig.COLORS.BG,
         antialias: true,
