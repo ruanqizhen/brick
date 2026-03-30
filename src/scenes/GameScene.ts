@@ -44,6 +44,10 @@ export class GameScene extends Phaser.Scene {
     private isFireballActive: boolean = false;
     private lastHitstopTime: number = 0;
     private lastHUDDiagUpdateTime: number = 0;
+    
+    // Stuck protection trackers
+    private lastProgressTime: number = 0;
+    private helpPowerUpSpawned: boolean = false;
 
     // Boundary wall labels
     private static readonly WALL_TOP = 'wall_top';
@@ -85,6 +89,8 @@ export class GameScene extends Phaser.Scene {
         if (this.speedDownTimer) { this.speedDownTimer.remove(); this.speedDownTimer = null; }
         this.speedTweens.forEach(tw => tw?.stop());
         this.speedTweens = [];
+        this.lastProgressTime = this.time.now;
+        this.helpPowerUpSpawned = false;
 
         this.starfield = new Starfield(this);
 
@@ -378,6 +384,13 @@ export class GameScene extends Phaser.Scene {
 
             if (isIndestructible) {
                 audioManager.play('indestructible');
+                
+                // Stuck protection: If no brick destroyed in 20s, hitting indestructible drops a FIREBALL
+                if (!this.helpPowerUpSpawned && !this.isFireballActive && this.time.now - this.lastProgressTime > 20000) {
+                    this.spawnPowerUp(brick.x, brick.y, 'FIREBALL');
+                    this.helpPowerUpSpawned = true;
+                }
+
                 if (isFireball) {
                     const bx = brick.x;
                     const by = brick.y;
@@ -404,6 +417,10 @@ export class GameScene extends Phaser.Scene {
                 if (res.destroyed) {
                     this.bricks.splice(this.bricks.indexOf(brick), 1);
                     this.brickPool.release(brick);
+
+                    // Reset stuck protection on progress
+                    this.lastProgressTime = this.time.now;
+                    this.helpPowerUpSpawned = false;
 
                     if (brick.brickType === '4') {
                         this.time.delayedCall(10, () => {
@@ -524,32 +541,35 @@ export class GameScene extends Phaser.Scene {
         return base;
     }
 
-    private spawnPowerUp(x: number, y: number) {
-        const positives: PowerUpType[] = ['PADDLE_EXPAND', 'FIREBALL', 'MULTI_BALL', 'BALL_ENLARGE', 'SPEED_DOWN', 'EXTRA_LIFE'];
-        const negatives: PowerUpType[] = ['PADDLE_SHRINK', 'BALL_SHRINK', 'SPEED_UP'];
+    private spawnPowerUp(x: number, y: number, forcedType?: PowerUpType) {
+        let selectedType: PowerUpType = forcedType || 'EXTRA_LIFE';
 
-        const progress = Math.min(this.currentLevelIndex / 19, 1);
-        const posWeight = Phaser.Math.Linear(5, 1, progress);
-        const negWeight = Phaser.Math.Linear(0.5, 4, progress);
+        if (!forcedType) {
+            const positives: PowerUpType[] = ['PADDLE_EXPAND', 'FIREBALL', 'MULTI_BALL', 'BALL_ENLARGE', 'SPEED_DOWN', 'EXTRA_LIFE'];
+            const negatives: PowerUpType[] = ['PADDLE_SHRINK', 'BALL_SHRINK', 'SPEED_UP'];
 
-        const totalWeight = (positives.length * posWeight) + (negatives.length * negWeight);
-        let rand = Math.random() * totalWeight;
-        let selectedType: PowerUpType = 'EXTRA_LIFE';
+            const progress = Math.min(this.currentLevelIndex / 19, 1);
+            const posWeight = Phaser.Math.Linear(5, 1, progress);
+            const negWeight = Phaser.Math.Linear(0.5, 4, progress);
 
-        for (const type of positives) {
-            if (rand < posWeight) { selectedType = type; break; }
-            rand -= posWeight;
-        }
+            const totalWeight = (positives.length * posWeight) + (negatives.length * negWeight);
+            let rand = Math.random() * totalWeight;
 
-        if (selectedType === 'EXTRA_LIFE' && rand > 0) {
-            for (const type of negatives) {
-                if (rand < negWeight) { selectedType = type; break; }
-                rand -= negWeight;
+            for (const type of positives) {
+                if (rand < posWeight) { selectedType = type; break; }
+                rand -= posWeight;
             }
-        }
 
-        if (selectedType === 'EXTRA_LIFE' && Math.random() < 0.95) {
-            selectedType = 'SPEED_UP';
+            if (selectedType === 'EXTRA_LIFE' && rand > 0) {
+                for (const type of negatives) {
+                    if (rand < negWeight) { selectedType = type; break; }
+                    rand -= negWeight;
+                }
+            }
+
+            if (selectedType === 'EXTRA_LIFE' && Math.random() < 0.95) {
+                selectedType = 'SPEED_UP';
+            }
         }
 
         const pu = this.powerUpPool.get();
