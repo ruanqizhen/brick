@@ -507,7 +507,7 @@ export class GameScene extends Phaser.Scene {
     private handleExplosionHit(brick: Brick) {
         if (!brick.active || !brick.visible) return;
 
-        const res = brick.hit(true);
+        const res = brick.hit(true, true);
         const brickX = brick.x;
         const brickY = brick.y;
         const color = (brick.tintTopLeft === 0xffffff) ? 0x00d4ff : brick.tintTopLeft;

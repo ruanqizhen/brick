@@ -45,12 +45,12 @@ export class Brick extends Phaser.Physics.Matter.Image {
         this.setPoolActive(false);
     }
 
-    hit(instant: boolean = false): { destroyed: boolean, points: number } {
-        if (this.brickType === '8') {
+    hit(instant: boolean = false, force: boolean = false): { destroyed: boolean, points: number } {
+        if (this.brickType === '8' && !force) {
             return { destroyed: false, points: 0 };
         }
 
-        if (instant) {
+        if (instant || force) {
             this._hp = 0;
         } else {
             this._hp--;
