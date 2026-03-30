@@ -76,8 +76,7 @@ export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
         },
         fps: {
             min: 10,
-            target: 60,
-            smoothStep: true,
+            smoothStep: false,
             forceSetTimeOut: false
         },
         backgroundColor: GameConfig.COLORS.BG,

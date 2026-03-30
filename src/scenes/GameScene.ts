@@ -44,6 +44,7 @@ export class GameScene extends Phaser.Scene {
     private isFireballActive: boolean = false;
     private lastHitstopTime: number = 0;
     private lastHUDDiagUpdateTime: number = 0;
+    private framesSinceLastHUDUpdate: number = 0;
     
     // Stuck protection trackers
     private lastProgressTime: number = 0;
@@ -302,11 +303,14 @@ export class GameScene extends Phaser.Scene {
         if (this.starfield) this.starfield.update();
         if (this.paddle) this.paddle.update(time, delta);
 
+        this.framesSinceLastHUDUpdate++;
+
         // Update HUD diagnostics (Speed & FPS) - Throttled every 200ms
         if (time - this.lastHUDDiagUpdateTime > 200) {
             const elapsed = time - this.lastHUDDiagUpdateTime;
-            const avgFPS = (this.game.loop.actualFps + (1000 / delta)) / 2; // Mixed smoothing
+            const actualFPS = (this.framesSinceLastHUDUpdate * 1000) / elapsed;
             this.lastHUDDiagUpdateTime = time;
+            this.framesSinceLastHUDUpdate = 0;
             
             let totalSpeed = 0;
             let activeCount = 0;
@@ -317,7 +321,7 @@ export class GameScene extends Phaser.Scene {
                 }
             });
             const avgSpeed = activeCount > 0 ? totalSpeed / activeCount : 0;
-            this.hud.updateDiagnostics(avgSpeed, avgFPS);
+            this.hud.updateDiagnostics(avgSpeed, actualFPS);
         }
 
         // Update balls
