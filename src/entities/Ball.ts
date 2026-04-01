@@ -19,6 +19,11 @@ export class Ball extends Phaser.Physics.Matter.Image {
     private isLocked: boolean = false;
     private prevFramePos: { x: number, y: number } = { x: 0, y: 0 };
 
+    // Cached physics constants (avoids repeated property lookups per frame)
+    private cachedStepsPerSec: number = 120; // 60Hz * 2 substeps
+    // Reusable velocity object (avoids GC pressure from per-call allocations)
+    private _velPxPerSec: { x: number, y: number } = { x: 0, y: 0 };
+
     // Persistent geometry objects for GC-friendly Swept Circle CCD
     private ccdPathLine: Phaser.Geom.Line = new Phaser.Geom.Line();
     private ccdExpandedRect: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle();
@@ -137,23 +142,18 @@ export class Ball extends Phaser.Physics.Matter.Image {
     }
 
     private getStepsPerSecond(): number {
-        // We now use a FIXED physics delta (60Hz) decoupled from the render frame rate.
-        // This ensures consistent speed on 60Hz and 120Hz displays.
-        const fixedDelta = 1000 / 60; 
-        
-        // Matter.js runner config is set to subSteps: 2
-        const subSteps = (this.scene.matter.world as any).runner?.subSteps || 1;
-        return (1000 / fixedDelta) * subSteps;
+        return this.cachedStepsPerSec;
     }
 
     getVelocityPxPerSec(): { x: number, y: number } {
         const b = this.body as MatterJS.BodyType;
-        const stepsPerSec = this.getStepsPerSecond();
-        return { x: b.velocity.x * stepsPerSec, y: b.velocity.y * stepsPerSec };
+        this._velPxPerSec.x = b.velocity.x * this.cachedStepsPerSec;
+        this._velPxPerSec.y = b.velocity.y * this.cachedStepsPerSec;
+        return this._velPxPerSec;
     }
 
     setVelocityPxPerSec(vx: number, vy: number) {
-        const stepsPerSec = this.getStepsPerSecond();
+        const stepsPerSec = this.cachedStepsPerSec;
         this.setVelocity(vx / stepsPerSec, vy / stepsPerSec);
     }
 
