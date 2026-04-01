@@ -36,6 +36,7 @@ export class GameScene extends Phaser.Scene {
     private activeSpeedMultipliers: number[] = [];
     private speedTweens: Phaser.Tweens.Tween[] = [];
     private difficulty: 'SIMPLE' | 'HARD' = 'SIMPLE';
+    private remainingDestructibleCount: number = 0;
 
     // Timed powerup trackers
     private fireballTimer: Phaser.Time.TimerEvent | null = null;
@@ -401,8 +402,7 @@ export class GameScene extends Phaser.Scene {
                     this.hud.updateScore(500);
                     this.particles.spawnBrickParticles(bx, by, 0xaaaaaa);
                     ScreenShake.shake(this.cameras.main, 0.008, 150);
-                    this.bricks.splice(this.bricks.indexOf(brick), 1);
-                    this.brickPool.release(brick);
+                    this.removeBrick(brick);
                 }
                 return;
             }
@@ -419,8 +419,7 @@ export class GameScene extends Phaser.Scene {
                 const soundType = isHardSound ? 'hard' : 'normal';
 
                 if (res.destroyed) {
-                    this.bricks.splice(this.bricks.indexOf(brick), 1);
-                    this.brickPool.release(brick);
+                    this.removeBrick(brick);
 
                     // Reset stuck protection on progress
                     this.lastProgressTime = this.time.now;
@@ -515,8 +514,7 @@ export class GameScene extends Phaser.Scene {
         this.hud.updateScore(res.points);
 
         if (res.destroyed) {
-            this.bricks.splice(this.bricks.indexOf(brick), 1);
-            this.brickPool.release(brick);
+            this.removeBrick(brick);
 
             if (brick.brickType === '4') {
                 this.time.delayedCall(10, () => {
@@ -751,13 +749,24 @@ export class GameScene extends Phaser.Scene {
         });
     }
 
-    private checkWin() {
-        for (const brick of this.bricks) {
-            if (!brick.isIndestructible && brick.visible) {
-                return false;
-            }
+    /** O(1) win check using pre-tracked counter */
+    private checkWin(): boolean {
+        return this.remainingDestructibleCount <= 0;
+    }
+
+    /** O(1) brick removal via swap-and-pop + counter update */
+    private removeBrick(brick: Brick): void {
+        const idx = this.bricks.indexOf(brick);
+        if (idx !== -1) {
+            // Swap with last element and pop — O(1) instead of O(n) splice
+            const last = this.bricks[this.bricks.length - 1];
+            this.bricks[idx] = last;
+            this.bricks.pop();
         }
-        return true;
+        if (!brick.isIndestructible) {
+            this.remainingDestructibleCount--;
+        }
+        this.brickPool.release(brick);
     }
 
     private handleWin() {
@@ -1011,6 +1020,7 @@ export class GameScene extends Phaser.Scene {
             }
         }
 
+        this.remainingDestructibleCount = 0;
         gridCopied.forEach((row, rI) => {
             row.forEach((type, cI) => {
                 if (type === '0') return;
@@ -1020,6 +1030,7 @@ export class GameScene extends Phaser.Scene {
                 brick.reset(x, y, type);
                 brick.setDisplaySize(conf.brickWidth, conf.brickHeight);
                 this.bricks.push(brick);
+                if (type !== '8') this.remainingDestructibleCount++;
             });
         });
     }

@@ -289,14 +289,25 @@ export class Ball extends Phaser.Physics.Matter.Image {
             }
         }
 
-        // 2. Brick Sweep Check
+        // 2. Brick Sweep Check — with AABB pre-filter
+        const sweepMinX = Math.min(p1.x, p2.x) - radius;
+        const sweepMaxX = Math.max(p1.x, p2.x) + radius;
+        const sweepMinY = Math.min(p1.y, p2.y) - radius;
+        const sweepMaxY = Math.max(p1.y, p2.y) + radius;
+
         for (const brick of bricks) {
             if (!brick.active || !brick.visible) continue;
 
-            const bMinX = brick.x - brick.displayWidth / 2 - radius;
-            const bMaxX = brick.x + brick.displayWidth / 2 + radius;
-            const bMinY = brick.y - brick.displayHeight / 2 - radius;
-            const bMaxY = brick.y + brick.displayHeight / 2 + radius;
+            // Coarse AABB reject: skip bricks far from the swept path
+            const bHalfW = brick.displayWidth / 2;
+            const bHalfH = brick.displayHeight / 2;
+            if (brick.x + bHalfW < sweepMinX - 10 || brick.x - bHalfW > sweepMaxX + 10) continue;
+            if (brick.y + bHalfH < sweepMinY - 10 || brick.y - bHalfH > sweepMaxY + 10) continue;
+
+            const bMinX = brick.x - bHalfW - radius;
+            const bMaxX = brick.x + bHalfW + radius;
+            const bMinY = brick.y - bHalfH - radius;
+            const bMaxY = brick.y + bHalfH + radius;
 
             this.ccdExpandedRect.setTo(bMinX, bMinY, bMaxX - bMinX, bMaxY - bMinY);
             if (Phaser.Geom.Intersects.LineToRectangle(this.ccdPathLine, this.ccdExpandedRect)) {
