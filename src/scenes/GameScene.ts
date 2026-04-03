@@ -14,6 +14,7 @@ import { PauseMenu } from './PauseMenu';
 import { saveManager } from '../storage/SaveManager';
 import { Starfield } from '../systems/Starfield';
 import { ObjectPool } from '../utils/ObjectPool';
+import { SpatialHash } from '../utils/SpatialHash';
 import { GAME_EVENTS, SCENE_KEYS } from '../config/EventConstants';
 
 // Silence unused import warnings
@@ -31,6 +32,7 @@ export class GameScene extends Phaser.Scene {
     private hud!: HUD;
     private particles!: ParticleSystem;
     private starfield!: Starfield;
+    private spatialHash!: SpatialHash;
     private lives: number = 3;
     private currentLevelIndex: number = 0;
     private activeSpeedMultipliers: number[] = [];
@@ -95,6 +97,7 @@ export class GameScene extends Phaser.Scene {
         this.helpPowerUpSpawned = false;
 
         this.starfield = new Starfield(this);
+        this.spatialHash = new SpatialHash(DESIGN_WIDTH, DESIGN_HEIGHT, 120);
 
         // Bloom post-processing
         try {
@@ -344,10 +347,13 @@ export class GameScene extends Phaser.Scene {
             }
         }
 
+        // Rebuild spatial hash for this frame's CCD queries
+        this.spatialHash.rebuild(this.bricks);
+
         // Perform Swept Circle CCD for all active balls
         for (const ball of this.balls) {
             if (ball.active && ball.getData('state') === 'MOVING') {
-                ball.performSweptCircleCCD(this.paddle, this.bricks);
+                ball.performSweptCircleCCD(this.paddle, this.spatialHash);
             }
         }
 

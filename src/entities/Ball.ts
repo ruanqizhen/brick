@@ -4,6 +4,7 @@ import { Paddle } from './Paddle';
 import { audioManager } from '../audio/AudioManager';
 import { GameScene } from '../scenes/GameScene';
 import { Brick } from './Brick';
+import { SpatialHash } from '../utils/SpatialHash';
 
 export class Ball extends Phaser.Physics.Matter.Image {
     public isFireball: boolean = false;
@@ -27,6 +28,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
     // Persistent geometry objects for GC-friendly Swept Circle CCD
     private ccdPathLine: Phaser.Geom.Line = new Phaser.Geom.Line();
     private ccdExpandedRect: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle();
+    private ccdCandidateBricks: Set<Brick> = new Set();
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         // Create with a circular Matter body matching the ball radius
@@ -248,8 +250,9 @@ export class Ball extends Phaser.Physics.Matter.Image {
      * Performs a Custom Swept Circle Continuous Collision Detection (CCD)
      * checking the ball's trajectory against the paddle and bricks.
      * Fixes tunneling caused by paddle teleportation or massive frame drops.
+     * Uses spatial hash for O(1) average-case brick lookups.
      */
-    public performSweptCircleCCD(paddle: Paddle, bricks: Brick[]) {
+    public performSweptCircleCCD(paddle: Paddle, spatialHash: SpatialHash) {
         const state = this.getData('state');
         if (state !== 'MOVING') {
             this.prevFramePos = { x: this.x, y: this.y };
@@ -289,13 +292,17 @@ export class Ball extends Phaser.Physics.Matter.Image {
             }
         }
 
-        // 2. Brick Sweep Check — with AABB pre-filter
+        // 2. Brick Sweep Check — using spatial hash for O(1) lookup
         const sweepMinX = Math.min(p1.x, p2.x) - radius;
         const sweepMaxX = Math.max(p1.x, p2.x) + radius;
         const sweepMinY = Math.min(p1.y, p2.y) - radius;
         const sweepMaxY = Math.max(p1.y, p2.y) + radius;
 
-        for (const brick of bricks) {
+        // Query spatial hash for candidate bricks near the sweep path
+        this.ccdCandidateBricks.clear();
+        spatialHash.query(sweepMinX - 10, sweepMinY - 10, sweepMaxX + 10, sweepMaxY + 10, this.ccdCandidateBricks);
+
+        for (const brick of this.ccdCandidateBricks) {
             if (!brick.active || !brick.visible) continue;
 
             // Coarse AABB reject: skip bricks far from the swept path
