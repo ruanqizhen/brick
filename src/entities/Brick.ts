@@ -1,6 +1,10 @@
 import Phaser from 'phaser';
 import { BrickType } from '../config/LevelData';
 import { GameConfig } from '../config/GameConfig';
+import { CrackRenderer, CrackSegment } from '../systems/CrackRenderer';
+
+// Auto-incrementing unique ID for each brick instance
+let nextBrickId = 0;
 
 export class Brick extends Phaser.Physics.Matter.Image {
     public brickType: BrickType;
@@ -11,7 +15,14 @@ export class Brick extends Phaser.Physics.Matter.Image {
     private baseTextureKey: string;
     private shadeVal: number;
     private damageVariantSeed: number;
-    private crackGraphics: Phaser.GameObjects.Graphics;
+    private crackRenderer: CrackRenderer | null = null;
+    private crackSegments: CrackSegment[] = [];
+    private _uniqueId: number;
+
+    /** Unique key for the batched crack renderer */
+    private get crackKey(): string {
+        return String(this._uniqueId);
+    }
 
     constructor(scene: Phaser.Scene, x: number, y: number, type: BrickType) {
         super(scene.matter.world, x, y, 'brick', undefined, {
@@ -26,6 +37,9 @@ export class Brick extends Phaser.Physics.Matter.Image {
         });
         this.sceneRef = scene;
 
+        // Assign a unique ID for crack renderer keying
+        this._uniqueId = nextBrickId++;
+
         // Initialize with default values. reset() will override these.
         this.brickType = type;
         this._hp = 1;
@@ -33,12 +47,9 @@ export class Brick extends Phaser.Physics.Matter.Image {
         this.baseTextureKey = 'brick';
         this.shadeVal = 1;
         this.damageVariantSeed = 0;
+        this.crackSegments = [];
 
         scene.add.existing(this);
-
-        // Graphics for rendering dynamic cracks over the brick
-        this.crackGraphics = scene.add.graphics();
-        this.crackGraphics.setDepth(this.depth + 0.1);
 
         // Call reset to setup the actual properties
         this.reset(x, y, type);
@@ -58,7 +69,7 @@ export class Brick extends Phaser.Physics.Matter.Image {
 
         if (this._hp <= 0) {
             this.setVisible(false);
-            this.crackGraphics.setVisible(false);
+            if (this.crackRenderer) this.crackRenderer.removeBrick(this.crackKey);
             return { destroyed: true, points: 100 };
         }
 
@@ -73,7 +84,7 @@ export class Brick extends Phaser.Physics.Matter.Image {
 
         this.updateAppearance();
         if (!this.isIndestructible) {
-            this.drawRandomCracks(2);
+            this.generateCracks(2);
         }
 
         return { destroyed: false, points: 50 };
@@ -103,16 +114,16 @@ export class Brick extends Phaser.Physics.Matter.Image {
         const varIndex = Math.floor(Math.random() * 5);
         this.baseTextureKey = `brick_var_${varIndex}`;
         this.damageVariantSeed = Math.floor(Math.random() * 5);
+        this.crackSegments = [];
 
         this.setPosition(x, y);
-        this.crackGraphics.setPosition(x, y);
-        this.crackGraphics.clear();
-        this.crackGraphics.setVisible(true);
         this.setPoolActive(true);
 
         // Reset specific behavioral effects
         this.sceneRef.tweens.killTweensOf(this);
         this.setAlpha(this.brickType === '5' ? 0 : 1);
+
+        if (this.crackRenderer) this.crackRenderer.removeBrick(this.crackKey);
 
         if (this.brickType === '6') {
             this.x -= 30;
@@ -125,7 +136,9 @@ export class Brick extends Phaser.Physics.Matter.Image {
                 ease: 'Sine.easeInOut',
                 onUpdate: () => {
                     this.setPosition(this.x, this.y);
-                    this.crackGraphics.setPosition(this.x, this.y);
+                    if (this.crackRenderer && this.crackSegments.length > 0) {
+                        this.crackRenderer.markDirty(this.crackKey);
+                    }
                 }
             });
         }
@@ -181,19 +194,21 @@ export class Brick extends Phaser.Physics.Matter.Image {
         this.setTint(tintedColor);
     }
 
-    private drawRandomCracks(count: number) {
-        if (!this.crackGraphics) return;
+    /**
+     * Generate crack line data in local brick space and register with the batch renderer.
+     */
+    private generateCracks(count: number) {
+        if (!this.crackRenderer) return;
 
         const bW = this.displayWidth;
         const bH = this.displayHeight;
         const halfW = bW / 2;
         const halfH = bH / 2;
 
-        for (let j = 0; j < count; j++) {
-            this.crackGraphics.lineStyle(2 + Math.random() * 1.5, 0x000000, 0.7 + Math.random() * 0.3);
-            this.crackGraphics.beginPath();
+        this.crackSegments = [];
 
-            let startX, startY;
+        for (let j = 0; j < count; j++) {
+            let startX: number, startY: number;
             if (Math.random() > 0.5) {
                 startX = (Math.random() * bW) - halfW;
                 startY = Math.random() > 0.5 ? -halfH : halfH;
@@ -206,10 +221,7 @@ export class Brick extends Phaser.Physics.Matter.Image {
             let currY = startY;
             const steps = 3 + Math.floor(Math.random() * 3);
 
-            this.crackGraphics.moveTo(currX, currY);
-
-            const pointsX = [currX];
-            const pointsY = [currY];
+            const points: { x: number; y: number }[] = [{ x: currX, y: currY }];
 
             const targetX = (Math.random() - 0.5) * halfW;
             const targetY = (Math.random() - 0.5) * halfH;
@@ -221,37 +233,53 @@ export class Brick extends Phaser.Physics.Matter.Image {
                 currX = Math.max(-halfW + 2, Math.min(halfW - 2, currX));
                 currY = Math.max(-halfH + 2, Math.min(halfH - 2, currY));
 
-                this.crackGraphics.lineTo(currX, currY);
-                pointsX.push(currX);
-                pointsY.push(currY);
+                points.push({ x: currX, y: currY });
             }
 
-            this.crackGraphics.strokePath();
+            // Main dark crack line
+            this.crackSegments.push({
+                points,
+                color: 0x000000,
+                alpha: 0.7 + Math.random() * 0.3,
+                lineWidth: 2 + Math.random() * 1.5
+            });
 
-            this.crackGraphics.lineStyle(1.5, 0xffffff, 0.6 + Math.random() * 0.4);
-            this.crackGraphics.beginPath();
-            this.crackGraphics.moveTo(pointsX[0] + 1.5, pointsY[0]);
-            for (let i = 1; i < pointsX.length; i++) {
-                this.crackGraphics.lineTo(pointsX[i] + 1.5, pointsY[i]);
-            }
-            this.crackGraphics.strokePath();
+            // White highlight offset
+            const highlightPoints = points.map(p => ({ x: p.x + 1.5, y: p.y }));
+            this.crackSegments.push({
+                points: highlightPoints,
+                color: 0xffffff,
+                alpha: 0.6 + Math.random() * 0.4,
+                lineWidth: 1.5
+            });
 
-            if (Math.random() > 0.5 && pointsX.length > 2) {
-                const splitIdx = Math.floor(pointsX.length / 2);
-                this.crackGraphics.lineStyle(1.5, 0x000000, 0.6);
-                this.crackGraphics.beginPath();
-                this.crackGraphics.moveTo(pointsX[splitIdx], pointsY[splitIdx]);
+            // Optional branch
+            if (Math.random() > 0.5 && points.length > 2) {
+                const splitIdx = Math.floor(points.length / 2);
+                const branchPoints: { x: number; y: number }[] = [
+                    { x: points[splitIdx].x, y: points[splitIdx].y }
+                ];
 
-                let branchX = pointsX[splitIdx] + (Math.random() > 0.5 ? 15 : -15);
-                let branchY = pointsY[splitIdx] + (Math.random() > 0.5 ? 10 : -10);
+                let branchX = points[splitIdx].x + (Math.random() > 0.5 ? 15 : -15);
+                let branchY = points[splitIdx].y + (Math.random() > 0.5 ? 10 : -10);
 
                 branchX = Math.max(-halfW + 2, Math.min(halfW - 2, branchX));
                 branchY = Math.max(-halfH + 2, Math.min(halfH - 2, branchY));
 
-                this.crackGraphics.lineTo(branchX, branchY);
-                this.crackGraphics.strokePath();
+                branchPoints.push({ x: branchX, y: branchY });
+
+                this.crackSegments.push({
+                    points: branchPoints,
+                    color: 0x000000,
+                    alpha: 0.6,
+                    lineWidth: 1.5
+                });
             }
         }
+
+        // Register with the batch renderer
+        this.crackRenderer.setCracks(this.crackKey, this.crackSegments);
+        this.crackRenderer.registerBrick(this.crackKey, this);
     }
 
     get isIndestructible(): boolean {
@@ -267,7 +295,11 @@ export class Brick extends Phaser.Physics.Matter.Image {
         this.isPooledActive = active;
         this.setVisible(active);
         this.setActive(active);
-        this.crackGraphics.setVisible(active);
+        if (this.crackRenderer) {
+            if (!active) {
+                this.crackRenderer.removeBrick(this.crackKey);
+            }
+        }
         if (this.body) {
             (this.body as MatterJS.BodyType).isSensor = !active;
         }
@@ -275,6 +307,8 @@ export class Brick extends Phaser.Physics.Matter.Image {
 
     onRelease(): void {
         this.setPosition(0, -100);
+        if (this.crackRenderer) this.crackRenderer.removeBrick(this.crackKey);
+        this.crackSegments = [];
     }
 
     isPoolActive(): boolean {
@@ -285,10 +319,14 @@ export class Brick extends Phaser.Physics.Matter.Image {
         return this.sceneRef;
     }
 
+    setCrackRenderer(renderer: CrackRenderer | null): void {
+        this.crackRenderer = renderer;
+    }
+
     override destroy(fromScene?: boolean): void {
         if (!this.sceneRef) return;
-        if (this.crackGraphics) {
-            this.crackGraphics.destroy();
+        if (this.crackRenderer) {
+            this.crackRenderer.removeBrick(this.crackKey);
         }
         super.destroy(fromScene);
     }

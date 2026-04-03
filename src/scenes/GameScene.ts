@@ -7,6 +7,7 @@ import { PowerUp, PowerUpType } from '../entities/PowerUp';
 import { HUD } from '../ui/HUD';
 import { LEVELS } from '../config/LevelData';
 import { ParticleSystem } from '../systems/ParticleSystem';
+import { CrackRenderer } from '../systems/CrackRenderer';
 import { ScreenShake } from '../systems/ScreenShake';
 import { audioManager } from '../audio/AudioManager';
 import { GameOverScene } from './GameOverScene';
@@ -32,6 +33,7 @@ export class GameScene extends Phaser.Scene {
     private hud!: HUD;
     private particles!: ParticleSystem;
     private starfield!: Starfield;
+    private crackRenderer!: CrackRenderer;
     private spatialHash!: SpatialHash;
     private lives: number = 3;
     private currentLevelIndex: number = 0;
@@ -97,6 +99,7 @@ export class GameScene extends Phaser.Scene {
         this.helpPowerUpSpawned = false;
 
         this.starfield = new Starfield(this);
+        this.crackRenderer = new CrackRenderer(this);
         this.spatialHash = new SpatialHash(DESIGN_WIDTH, DESIGN_HEIGHT, 120);
 
         // Bloom post-processing
@@ -126,7 +129,11 @@ export class GameScene extends Phaser.Scene {
             3
         );
         this.brickPool = new ObjectPool<Brick>(
-            () => new Brick(this, 0, 0, '1'),
+            () => {
+                const brick = new Brick(this, 0, 0, '1');
+                brick.setCrackRenderer(this.crackRenderer);
+                return brick;
+            },
             200
         );
 
@@ -349,6 +356,9 @@ export class GameScene extends Phaser.Scene {
 
         // Rebuild spatial hash for this frame's CCD queries
         this.spatialHash.rebuild(this.bricks);
+
+        // Render batched cracks (only if dirty)
+        this.crackRenderer.render();
 
         // Perform Swept Circle CCD for all active balls
         for (const ball of this.balls) {
@@ -1058,6 +1068,7 @@ export class GameScene extends Phaser.Scene {
         if (this.paddle) this.paddle.cleanupEventListeners();
         if (this.hud) this.hud.shutdown();
         if (this.particles) this.particles.destroy();
+        if (this.crackRenderer) this.crackRenderer.destroy();
 
         if (this.matter && this.matter.world) {
             this.matter.world.off('collisionstart', this.handleMatterCollision, this);
