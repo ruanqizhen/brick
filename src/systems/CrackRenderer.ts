@@ -49,6 +49,7 @@ export class CrackRenderer {
 
     /**
      * Set crack data for a brick (in local brick space).
+     * The brick sends its full accumulated crack set — we replace.
      */
     setCracks(brickId: string, segments: CrackSegment[]): void {
         if (segments.length === 0) {

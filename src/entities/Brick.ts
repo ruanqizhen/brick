@@ -196,6 +196,7 @@ export class Brick extends Phaser.Physics.Matter.Image {
 
     /**
      * Generate crack line data in local brick space and register with the batch renderer.
+     * New cracks are appended to existing ones (accumulates across hits).
      */
     private generateCracks(count: number) {
         if (!this.crackRenderer) return;
@@ -205,7 +206,7 @@ export class Brick extends Phaser.Physics.Matter.Image {
         const halfW = bW / 2;
         const halfH = bH / 2;
 
-        this.crackSegments = [];
+        // Do NOT clear existing cracks — append new ones for accumulation
 
         for (let j = 0; j < count; j++) {
             let startX: number, startY: number;
