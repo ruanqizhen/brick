@@ -29,6 +29,19 @@ export class Ball extends Phaser.Physics.Matter.Image {
     private ccdPathLine: Phaser.Geom.Line = new Phaser.Geom.Line();
     private ccdExpandedRect: Phaser.Geom.Rectangle = new Phaser.Geom.Rectangle();
     private ccdCandidateBricks: Set<Brick> = new Set();
+    
+    // Pre-allocated CCD structures for GC-free operations
+    private ccdPenetratedBricks: { brick: Brick, t: number }[] = [];
+    private ccdPenetratedCount: number = 0;
+    private ccdHitResult = { t: 0, point: { x: 0, y: 0 }, normal: { x: 0, y: 0 }, valid: false };
+    private ccdEarliestHit = { t: 0, point: { x: 0, y: 0 }, normal: { x: 0, y: 0 }, entity: null as any };
+    private hasEarliestHit: boolean = false;
+    
+    // Extracted static normals for GC-free checks
+    private static readonly N_LEFT = { x: -1, y: 0 };
+    private static readonly N_RIGHT = { x: 1, y: 0 };
+    private static readonly N_UP = { x: 0, y: -1 };
+    private static readonly N_DOWN = { x: 0, y: 1 };
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         // Create with a circular Matter body matching the ball radius
@@ -255,25 +268,27 @@ export class Ball extends Phaser.Physics.Matter.Image {
     public performSweptCircleCCD(paddle: Paddle, spatialHash: SpatialHash) {
         const state = this.getData('state');
         if (state !== 'MOVING') {
-            this.prevFramePos = { x: this.x, y: this.y };
+            this.prevFramePos.x = this.x; this.prevFramePos.y = this.y;
             return;
         }
 
-        const p1 = this.prevFramePos;
-        const p2 = { x: this.x, y: this.y };
+        const p1x = this.prevFramePos.x;
+        const p1y = this.prevFramePos.y;
+        const p2x = this.x;
+        const p2y = this.y;
 
-        const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
+        const dist = Phaser.Math.Distance.Between(p1x, p1y, p2x, p2y);
         const radius = this.displayWidth / 2;
 
         // Skip if movement is small (Matter.js can handle it) or initial frame
-        if (dist < radius * 0.5 || (p1.x === 0 && p1.y === 0)) {
-            this.prevFramePos = { x: this.x, y: this.y };
+        if (dist < radius * 0.5 || (p1x === 0 && p1y === 0)) {
+            this.prevFramePos.x = this.x; this.prevFramePos.y = this.y;
             return;
         }
 
-        this.ccdPathLine.setTo(p1.x, p1.y, p2.x, p2.y);
-        let earliestHit: any = null;
-        const penetratedBricks: { brick: Brick, t: number }[] = [];
+        this.ccdPathLine.setTo(p1x, p1y, p2x, p2y);
+        this.hasEarliestHit = false;
+        this.ccdPenetratedCount = 0;
 
         // 1. Paddle Sweep Check
         // Expand the paddle bounds to include its previous position (for teleportation coverage)
@@ -287,17 +302,22 @@ export class Ball extends Phaser.Physics.Matter.Image {
         this.ccdExpandedRect.setTo(padMinX, padMinY, padMaxX - padMinX, padMaxY - padMinY);
 
         if (Phaser.Geom.Intersects.LineToRectangle(this.ccdPathLine, this.ccdExpandedRect)) {
-            const hit = this.getLineRectangleIntersection(this.ccdPathLine, padMinX, padMinY, padMaxX, padMaxY);
-            if (hit && (!earliestHit || hit.t < earliestHit.t)) {
-                earliestHit = { ...hit, entity: paddle };
+            this.getLineRectangleIntersection(this.ccdPathLine, padMinX, padMinY, padMaxX, padMaxY);
+            if (this.ccdHitResult.valid && (!this.hasEarliestHit || this.ccdHitResult.t < this.ccdEarliestHit.t)) {
+                this.ccdEarliestHit.t = this.ccdHitResult.t;
+                this.ccdEarliestHit.point.x = this.ccdHitResult.point.x;
+                this.ccdEarliestHit.point.y = this.ccdHitResult.point.y;
+                this.ccdEarliestHit.normal = this.ccdHitResult.normal;
+                this.ccdEarliestHit.entity = paddle;
+                this.hasEarliestHit = true;
             }
         }
 
         // 2. Brick Sweep Check — using spatial hash for O(1) lookup
-        const sweepMinX = Math.min(p1.x, p2.x) - radius;
-        const sweepMaxX = Math.max(p1.x, p2.x) + radius;
-        const sweepMinY = Math.min(p1.y, p2.y) - radius;
-        const sweepMaxY = Math.max(p1.y, p2.y) + radius;
+        const sweepMinX = Math.min(p1x, p2x) - radius;
+        const sweepMaxX = Math.max(p1x, p2x) + radius;
+        const sweepMinY = Math.min(p1y, p2y) - radius;
+        const sweepMaxY = Math.max(p1y, p2y) + radius;
 
         // Query spatial hash for candidate bricks near the sweep path
         this.ccdCandidateBricks.clear();
@@ -319,12 +339,23 @@ export class Ball extends Phaser.Physics.Matter.Image {
 
             this.ccdExpandedRect.setTo(bMinX, bMinY, bMaxX - bMinX, bMaxY - bMinY);
             if (Phaser.Geom.Intersects.LineToRectangle(this.ccdPathLine, this.ccdExpandedRect)) {
-                const hit = this.getLineRectangleIntersection(this.ccdPathLine, bMinX, bMinY, bMaxX, bMaxY);
-                if (hit) {
+                this.getLineRectangleIntersection(this.ccdPathLine, bMinX, bMinY, bMaxX, bMaxY);
+                if (this.ccdHitResult.valid) {
                     if (this.isFireball && !brick.isIndestructible) {
-                        penetratedBricks.push({ brick, t: hit.t });
-                    } else if (!earliestHit || hit.t < earliestHit.t) {
-                        earliestHit = { ...hit, entity: brick };
+                        if (this.ccdPenetratedCount >= this.ccdPenetratedBricks.length) {
+                            this.ccdPenetratedBricks.push({ brick, t: this.ccdHitResult.t });
+                        } else {
+                            this.ccdPenetratedBricks[this.ccdPenetratedCount].brick = brick;
+                            this.ccdPenetratedBricks[this.ccdPenetratedCount].t = this.ccdHitResult.t;
+                        }
+                        this.ccdPenetratedCount++;
+                    } else if (!this.hasEarliestHit || this.ccdHitResult.t < this.ccdEarliestHit.t) {
+                        this.ccdEarliestHit.t = this.ccdHitResult.t;
+                        this.ccdEarliestHit.point.x = this.ccdHitResult.point.x;
+                        this.ccdEarliestHit.point.y = this.ccdHitResult.point.y;
+                        this.ccdEarliestHit.normal = this.ccdHitResult.normal;
+                        this.ccdEarliestHit.entity = brick;
+                        this.hasEarliestHit = true;
                     }
                 }
             }
@@ -333,17 +364,18 @@ export class Ball extends Phaser.Physics.Matter.Image {
         const gameScene = this.scene as GameScene;
 
         // Process penetrated bricks first
-        for (const p of penetratedBricks) {
+        for (let i = 0; i < this.ccdPenetratedCount; i++) {
+            const p = this.ccdPenetratedBricks[i];
             // Only process if it is before the earliest reflection hit
-            if (!earliestHit || p.t <= earliestHit.t) {
+            if (!this.hasEarliestHit || p.t <= this.ccdEarliestHit.t) {
                 gameScene.handleBrickHit(this, p.brick);
             }
         }
 
-        if (earliestHit) {
+        if (this.hasEarliestHit) {
             // Retroactively correct tunneling!
-            const hitPoint = earliestHit.point;
-            const normal = earliestHit.normal;
+            const hitPoint = this.ccdEarliestHit.point;
+            const normal = this.ccdEarliestHit.normal;
 
             // Move ball to point of impact (pull back microscopically to prevent snagging)
             this.setPosition(hitPoint.x + normal.x * 0.1, hitPoint.y + normal.y * 0.1);
@@ -362,22 +394,22 @@ export class Ball extends Phaser.Physics.Matter.Image {
             }
 
             // Trigger actual game logic
-            if (earliestHit.entity instanceof Paddle) {
-                this.onPaddleHit(earliestHit.entity as Paddle);
-            } else if (earliestHit.entity instanceof Brick) {
-                const brickEntity = earliestHit.entity as Brick;
-                gameScene.handleBrickHit(this, brickEntity);
+            if (this.ccdEarliestHit.entity instanceof Paddle) {
+                this.onPaddleHit(this.ccdEarliestHit.entity);
+            } else if (this.ccdEarliestHit.entity instanceof Brick) {
+                gameScene.handleBrickHit(this, this.ccdEarliestHit.entity);
             }
         }
 
         // Save position for next frame's comparison
-        this.prevFramePos = { x: this.x, y: this.y };
+        this.prevFramePos.x = this.x; this.prevFramePos.y = this.y;
     }
 
     /**
      * Custom Slab-method raycast for Swept Circle AABB checking.
      */
-    private getLineRectangleIntersection(line: Phaser.Geom.Line, left: number, top: number, right: number, bottom: number): { t: number, point: { x: number, y: number }, normal: { x: number, y: number } } | null {
+    private getLineRectangleIntersection(line: Phaser.Geom.Line, left: number, top: number, right: number, bottom: number): void {
+        this.ccdHitResult.valid = false;
         const p1x = line.x1;
         const p1y = line.y1;
         const dx = line.x2 - line.x1;
@@ -385,15 +417,15 @@ export class Ball extends Phaser.Physics.Matter.Image {
 
         let tMin = -Infinity;
         let tMax = Infinity;
-        let normalMin = { x: 0, y: 0 };
+        let normalMin = Ball.N_LEFT;
 
         if (Math.abs(dx) < 0.0001) {
-            if (p1x < left || p1x > right) return null;
+            if (p1x < left || p1x > right) return;
         } else {
             let t1 = (left - p1x) / dx;
             let t2 = (right - p1x) / dx;
-            let n1 = { x: -1, y: 0 };
-            let n2 = { x: 1, y: 0 };
+            let n1 = Ball.N_LEFT;
+            let n2 = Ball.N_RIGHT;
 
             if (t1 > t2) {
                 const temp = t1; t1 = t2; t2 = temp;
@@ -402,16 +434,16 @@ export class Ball extends Phaser.Physics.Matter.Image {
 
             if (t1 > tMin) { tMin = t1; normalMin = n1; }
             if (t2 < tMax) tMax = t2;
-            if (tMin > tMax) return null;
+            if (tMin > tMax) return;
         }
 
         if (Math.abs(dy) < 0.0001) {
-            if (p1y < top || p1y > bottom) return null;
+            if (p1y < top || p1y > bottom) return;
         } else {
             let t1 = (top - p1y) / dy;
             let t2 = (bottom - p1y) / dy;
-            let n1 = { x: 0, y: -1 };
-            let n2 = { x: 0, y: 1 };
+            let n1 = Ball.N_UP;
+            let n2 = Ball.N_DOWN;
 
             if (t1 > t2) {
                 const temp = t1; t1 = t2; t2 = temp;
@@ -423,20 +455,17 @@ export class Ball extends Phaser.Physics.Matter.Image {
                 normalMin = n1;
             }
             if (t2 < tMax) tMax = t2;
-            if (tMin > tMax) return null;
+            if (tMin > tMax) return;
         }
 
         // Intersection must be exactly within the swept line segment
-        if (tMin < 0 || tMin > 1) return null;
+        if (tMin < 0 || tMin > 1) return;
 
-        return {
-            t: tMin,
-            point: {
-                x: p1x + dx * tMin,
-                y: p1y + dy * tMin
-            },
-            normal: normalMin
-        };
+        this.ccdHitResult.t = tMin;
+        this.ccdHitResult.point.x = p1x + dx * tMin;
+        this.ccdHitResult.point.y = p1y + dy * tMin;
+        this.ccdHitResult.normal = normalMin;
+        this.ccdHitResult.valid = true;
     }
 
     onPaddleHit(paddle: Paddle) {
@@ -490,7 +519,8 @@ export class Ball extends Phaser.Physics.Matter.Image {
             this.setVisible(false);
             this.setVelocity(0, 0);
             this.isLocked = false;
-            this.prevFramePos = { x: 0, y: 0 };
+            this.prevFramePos.x = 0; this.prevFramePos.y = 0;
+            this.ccdPenetratedCount = 0;
         } else {
             this.setActive(true);
             this.setVisible(true);
