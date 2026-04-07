@@ -12,6 +12,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
     private fireEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
     private trailScale: number = (GameConfig.BALL_RADIUS * 2) / 32;
     private lastPaddleHitTime: number = 0;
+    private lastTrailColor: number = -1;
     private isPooledActive: boolean = false;
     private sceneRef: Phaser.Scene;
     public lastHitBrickId: string | null = null;
@@ -131,29 +132,33 @@ export class Ball extends Phaser.Physics.Matter.Image {
     }
 
     private updateTrailEffect() {
-        const vx = (this.body as MatterJS.BodyType).velocity.x;
-        const vy = (this.body as MatterJS.BodyType).velocity.y;
-        const currentSpeed = Math.sqrt(vx * vx + vy * vy) * this.getStepsPerSecond(); // Convert from per-step to px/s
-        let color = 0x4FC3F7;
-
         if (this.isFireball) {
-            color = 0xffaa00;
-        } else {
-            const baseSpeed = GameConfig.BALL_BASE_SPEED;
-            if (currentSpeed <= baseSpeed) {
-                color = 0xFFFFFF;
-            } else {
-                // Smoothly transition from White to Cyber Blue (0x00D4FF) based on speed.
-                // Reaches max blue at 2x base speed.
-                const t = Phaser.Math.Clamp((currentSpeed - baseSpeed) / baseSpeed, 0, 1);
-                const r = Math.floor(255 * (1 - t));
-                const g = Math.floor(255 - (43 * t)); // 255 -> 212
-                const b = 255;
-                color = Phaser.Display.Color.GetColor(r, g, b);
+            if (this.lastTrailColor !== 0xffaa00) {
+                this.trailEmitter.setParticleTint(0xffaa00);
+                this.lastTrailColor = 0xffaa00;
             }
+            return;
         }
 
-        this.trailEmitter.setParticleTint(color);
+        const vx = (this.body as MatterJS.BodyType).velocity.x;
+        const vy = (this.body as MatterJS.BodyType).velocity.y;
+        const currentSpeed = Math.sqrt(vx * vx + vy * vy) * this.cachedStepsPerSec;
+        const baseSpeed = GameConfig.BALL_BASE_SPEED;
+        let color = 0xFFFFFF;
+
+        if (currentSpeed > baseSpeed) {
+            // Smoothly transition from White to Cyber Blue (0x00D4FF) based on speed.
+            // Reaches max blue at 2x base speed. Math.min is faster for bounding positive fractions.
+            const t = Math.min((currentSpeed - baseSpeed) / baseSpeed, 1);
+            const r = (255 * (1 - t)) | 0;
+            const g = (255 - (43 * t)) | 0; // 255 -> 212
+            color = (r << 16) | (g << 8) | 255;
+        }
+
+        if (this.lastTrailColor !== color) {
+            this.trailEmitter.setParticleTint(color);
+            this.lastTrailColor = color;
+        }
     }
 
     private getStepsPerSecond(): number {
@@ -521,6 +526,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
             this.isLocked = false;
             this.prevFramePos.x = 0; this.prevFramePos.y = 0;
             this.ccdPenetratedCount = 0;
+            this.lastTrailColor = -1;
         } else {
             this.setActive(true);
             this.setVisible(true);
