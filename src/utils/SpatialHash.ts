@@ -22,9 +22,11 @@ export class SpatialHash {
         this.rows = Math.ceil(height / cellSize);
     }
 
-    /** Clear all entries and rebuild from scratch */
+    /** Clear all entries without destroying the arrays */
     clear(): void {
-        this.grid.clear();
+        this.grid.forEach(cell => {
+            cell.length = 0;
+        });
     }
 
     /** Insert a brick into the spatial hash based on its current position */
@@ -78,7 +80,11 @@ export class SpatialHash {
 
     /** Rebuild the entire spatial hash from the current brick list */
     rebuild(bricks: Brick[]): void {
-        this.grid.clear();
+        // Clear lengths of existing arrays to prevent Garbage Collection allocation overhead
+        this.grid.forEach(cell => {
+            cell.length = 0;
+        });
+
         for (let i = 0; i < bricks.length; i++) {
             const brick = bricks[i];
             if (!brick.active || !brick.visible) continue;
