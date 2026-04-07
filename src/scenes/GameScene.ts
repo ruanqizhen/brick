@@ -55,6 +55,11 @@ export class GameScene extends Phaser.Scene {
     private lastProgressTime: number = 0;
     private helpPowerUpSpawned: boolean = false;
 
+    // Deferred actions for avoiding GC spikes in Matter Collision
+    private pendingPowerUpPickups: PowerUp[] = [];
+    private pendingBallLost: Ball[] = [];
+    private pendingAngleEnforcements: Ball[] = [];
+
     // Boundary wall labels
     private static readonly WALL_TOP = 'wall_top';
     private static readonly WALL_LEFT = 'wall_left';
@@ -97,6 +102,10 @@ export class GameScene extends Phaser.Scene {
         this.speedTweens = [];
         this.lastProgressTime = this.time.now;
         this.helpPowerUpSpawned = false;
+
+        this.pendingPowerUpPickups.length = 0;
+        this.pendingBallLost.length = 0;
+        this.pendingAngleEnforcements.length = 0;
 
         this.starfield = new Starfield(this);
         this.crackRenderer = new CrackRenderer(this);
@@ -216,7 +225,7 @@ export class GameScene extends Phaser.Scene {
                 const ballBody = labelA === 'ball' ? bodyA : bodyB;
                 const ball = ballBody.gameObject as Ball;
                 if (ball) {
-                    this.time.delayedCall(0, () => this.handleBallLost(ball));
+                    if (!this.pendingBallLost.includes(ball)) this.pendingBallLost.push(ball);
                 }
             }
 
@@ -237,10 +246,7 @@ export class GameScene extends Phaser.Scene {
                 const ballBody = labelA === 'ball' ? bodyA : bodyB;
                 const ball = ballBody.gameObject as Ball;
                 if (ball) {
-                    // Slight delay to let the physics engine process the initial bounce
-                    this.time.delayedCall(10, () => {
-                        if (ball.active) ball.enforceMinimumVerticalAngle();
-                    });
+                    if (!this.pendingAngleEnforcements.includes(ball)) this.pendingAngleEnforcements.push(ball);
                 }
             }
 
@@ -275,7 +281,7 @@ export class GameScene extends Phaser.Scene {
                 const puBody = labelA === 'powerup' ? bodyA : bodyB;
                 const pu = puBody.gameObject as PowerUp;
                 if (pu && pu.isPoolActive()) {
-                    this.time.delayedCall(0, () => this.handlePowerUpPickup(pu));
+                    if (!this.pendingPowerUpPickups.includes(pu)) this.pendingPowerUpPickups.push(pu);
                 }
             }
         }
@@ -313,6 +319,32 @@ export class GameScene extends Phaser.Scene {
     update(time: number, delta: number) {
         if (this.starfield) this.starfield.update();
         if (this.paddle) this.paddle.update(time, delta);
+
+        // Execute pending actions dynamically delayed from previous physics loop
+        if (this.pendingPowerUpPickups.length > 0) {
+            for (let i = 0; i < this.pendingPowerUpPickups.length; i++) {
+                if (this.pendingPowerUpPickups[i].isPoolActive()) {
+                    this.handlePowerUpPickup(this.pendingPowerUpPickups[i]);
+                }
+            }
+            this.pendingPowerUpPickups.length = 0;
+        }
+
+        if (this.pendingBallLost.length > 0) {
+            for (let i = 0; i < this.pendingBallLost.length; i++) {
+                // Ignore types here to avoid Typescript warning if handleBallLost doesn't exist on interface
+                (this as any).handleBallLost(this.pendingBallLost[i]);
+            }
+            this.pendingBallLost.length = 0;
+        }
+
+        if (this.pendingAngleEnforcements.length > 0) {
+            for (let i = 0; i < this.pendingAngleEnforcements.length; i++) {
+                const ball = this.pendingAngleEnforcements[i];
+                if (ball.active) ball.enforceMinimumVerticalAngle();
+            }
+            this.pendingAngleEnforcements.length = 0;
+        }
 
         this.framesSinceLastHUDUpdate++;
 
@@ -398,9 +430,7 @@ export class GameScene extends Phaser.Scene {
                 // Matter Physics handles the bounce automatically with restitution:1
                 // Add jitter to avoid infinite loops and enforce minimum vertical angle
                 ball.applyJitter(1.0);
-                this.time.delayedCall(10, () => {
-                    if (ball.active) ball.enforceMinimumVerticalAngle();
-                });
+                if (!this.pendingAngleEnforcements.includes(ball)) this.pendingAngleEnforcements.push(ball);
             }
 
             if (isIndestructible) {
