@@ -273,6 +273,7 @@ export class Ball extends Phaser.Physics.Matter.Image {
 
         this.ccdPathLine.setTo(p1.x, p1.y, p2.x, p2.y);
         let earliestHit: any = null;
+        const penetratedBricks: { brick: Brick, t: number }[] = [];
 
         // 1. Paddle Sweep Check
         // Expand the paddle bounds to include its previous position (for teleportation coverage)
@@ -319,9 +320,23 @@ export class Ball extends Phaser.Physics.Matter.Image {
             this.ccdExpandedRect.setTo(bMinX, bMinY, bMaxX - bMinX, bMaxY - bMinY);
             if (Phaser.Geom.Intersects.LineToRectangle(this.ccdPathLine, this.ccdExpandedRect)) {
                 const hit = this.getLineRectangleIntersection(this.ccdPathLine, bMinX, bMinY, bMaxX, bMaxY);
-                if (hit && (!earliestHit || hit.t < earliestHit.t)) {
-                    earliestHit = { ...hit, entity: brick };
+                if (hit) {
+                    if (this.isFireball && !brick.isIndestructible) {
+                        penetratedBricks.push({ brick, t: hit.t });
+                    } else if (!earliestHit || hit.t < earliestHit.t) {
+                        earliestHit = { ...hit, entity: brick };
+                    }
                 }
+            }
+        }
+
+        const gameScene = this.scene as GameScene;
+
+        // Process penetrated bricks first
+        for (const p of penetratedBricks) {
+            // Only process if it is before the earliest reflection hit
+            if (!earliestHit || p.t <= earliestHit.t) {
+                gameScene.handleBrickHit(this, p.brick);
             }
         }
 
@@ -350,7 +365,6 @@ export class Ball extends Phaser.Physics.Matter.Image {
             if (earliestHit.entity instanceof Paddle) {
                 this.onPaddleHit(earliestHit.entity as Paddle);
             } else if (earliestHit.entity instanceof Brick) {
-                const gameScene = this.scene as GameScene;
                 const brickEntity = earliestHit.entity as Brick;
                 gameScene.handleBrickHit(this, brickEntity);
             }
