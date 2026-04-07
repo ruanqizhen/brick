@@ -7,7 +7,7 @@ import { Brick } from '../entities/Brick';
  */
 export class SpatialHash {
     private cellSize: number;
-    private grid: Map<string, Brick[]> = new Map();
+    private grid: Brick[][];
     private cols: number;
     private rows: number;
 
@@ -20,13 +20,20 @@ export class SpatialHash {
         this.cellSize = cellSize;
         this.cols = Math.ceil(width / cellSize);
         this.rows = Math.ceil(height / cellSize);
+        
+        const totalCells = this.cols * this.rows;
+        this.grid = new Array(totalCells);
+        for (let i = 0; i < totalCells; i++) {
+            this.grid[i] = [];
+        }
     }
 
     /** Clear all entries without destroying the arrays */
     clear(): void {
-        this.grid.forEach(cell => {
-            cell.length = 0;
-        });
+        const len = this.cols * this.rows;
+        for (let i = 0; i < len; i++) {
+            this.grid[i].length = 0;
+        }
     }
 
     /** Insert a brick into the spatial hash based on its current position */
@@ -36,21 +43,20 @@ export class SpatialHash {
         const halfW = brick.displayWidth / 2;
         const halfH = brick.displayHeight / 2;
 
-        // Determine which cells this brick overlaps
-        const minCol = this.worldToGrid(brick.x - halfW);
-        const maxCol = this.worldToGrid(brick.x + halfW);
-        const minRow = this.worldToGrid(brick.y - halfH);
-        const maxRow = this.worldToGrid(brick.y + halfH);
+        let minCol = (brick.x - halfW) / this.cellSize | 0;
+        let maxCol = (brick.x + halfW) / this.cellSize | 0;
+        let minRow = (brick.y - halfH) / this.cellSize | 0;
+        let maxRow = (brick.y + halfH) / this.cellSize | 0;
+
+        if (minCol < 0) minCol = 0;
+        if (maxCol >= this.cols) maxCol = this.cols - 1;
+        if (minRow < 0) minRow = 0;
+        if (maxRow >= this.rows) maxRow = this.rows - 1;
 
         for (let row = minRow; row <= maxRow; row++) {
             for (let col = minCol; col <= maxCol; col++) {
-                const key = this.hashKey(col, row);
-                let cell = this.grid.get(key);
-                if (!cell) {
-                    cell = [];
-                    this.grid.set(key, cell);
-                }
-                cell.push(brick);
+                const index = row * this.cols + col;
+                this.grid[index].push(brick);
             }
         }
     }
@@ -60,19 +66,22 @@ export class SpatialHash {
      * Returns a deduplicated set of bricks.
      */
     query(minX: number, minY: number, maxX: number, maxY: number, result: Set<Brick>): void {
-        const minCol = this.worldToGrid(minX);
-        const maxCol = this.worldToGrid(maxX);
-        const minRow = this.worldToGrid(minY);
-        const maxRow = this.worldToGrid(maxY);
+        let minCol = minX / this.cellSize | 0;
+        let maxCol = maxX / this.cellSize | 0;
+        let minRow = minY / this.cellSize | 0;
+        let maxRow = maxY / this.cellSize | 0;
+
+        if (minCol < 0) minCol = 0;
+        if (maxCol >= this.cols) maxCol = this.cols - 1;
+        if (minRow < 0) minRow = 0;
+        if (maxRow >= this.rows) maxRow = this.rows - 1;
 
         for (let row = minRow; row <= maxRow; row++) {
             for (let col = minCol; col <= maxCol; col++) {
-                const key = this.hashKey(col, row);
-                const cell = this.grid.get(key);
-                if (cell) {
-                    for (let i = 0; i < cell.length; i++) {
-                        result.add(cell[i]);
-                    }
+                const index = row * this.cols + col;
+                const cell = this.grid[index];
+                for (let i = 0; i < cell.length; i++) {
+                    result.add(cell[i]);
                 }
             }
         }
@@ -81,9 +90,10 @@ export class SpatialHash {
     /** Rebuild the entire spatial hash from the current brick list */
     rebuild(bricks: Brick[]): void {
         // Clear lengths of existing arrays to prevent Garbage Collection allocation overhead
-        this.grid.forEach(cell => {
-            cell.length = 0;
-        });
+        const len = this.cols * this.rows;
+        for (let i = 0; i < len; i++) {
+            this.grid[i].length = 0;
+        }
 
         for (let i = 0; i < bricks.length; i++) {
             const brick = bricks[i];
@@ -92,30 +102,22 @@ export class SpatialHash {
             const halfW = brick.displayWidth / 2;
             const halfH = brick.displayHeight / 2;
 
-            const minCol = this.worldToGrid(brick.x - halfW);
-            const maxCol = this.worldToGrid(brick.x + halfW);
-            const minRow = this.worldToGrid(brick.y - halfH);
-            const maxRow = this.worldToGrid(brick.y + halfH);
+            let minCol = (brick.x - halfW) / this.cellSize | 0;
+            let maxCol = (brick.x + halfW) / this.cellSize | 0;
+            let minRow = (brick.y - halfH) / this.cellSize | 0;
+            let maxRow = (brick.y + halfH) / this.cellSize | 0;
+
+            if (minCol < 0) minCol = 0;
+            if (maxCol >= this.cols) maxCol = this.cols - 1;
+            if (minRow < 0) minRow = 0;
+            if (maxRow >= this.rows) maxRow = this.rows - 1;
 
             for (let row = minRow; row <= maxRow; row++) {
                 for (let col = minCol; col <= maxCol; col++) {
-                    const key = this.hashKey(col, row);
-                    let cell = this.grid.get(key);
-                    if (!cell) {
-                        cell = [];
-                        this.grid.set(key, cell);
-                    }
-                    cell.push(brick);
+                    const index = row * this.cols + col;
+                    this.grid[index].push(brick);
                 }
             }
         }
-    }
-
-    private worldToGrid(worldCoord: number): number {
-        return Math.floor(worldCoord / this.cellSize);
-    }
-
-    private hashKey(col: number, row: number): string {
-        return col + ',' + row;
     }
 }
