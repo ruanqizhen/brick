@@ -107,12 +107,12 @@ export class BootScene extends Phaser.Scene {
             // 3. Draw curved baseball seams
             // We'll draw two large arcs to simulate the stitching groove
             graphics.lineStyle(12, 0x88bb66, 0.8);
-            
+
             // Draw BOTH seams symmetrically
             // TL seam center: (0.45, 0.45) -> (57.6, 57.6)
             // BR seam center: (1.55, 1.55) -> (198.4, 198.4)
-            const seamDist = radius * 0.55; 
-            
+            const seamDist = radius * 0.55;
+
             // TL Arc
             graphics.beginPath();
             graphics.arc(radius - seamDist, radius - seamDist, radius * 0.8, -Math.PI * 0.15, Math.PI * 0.65);
@@ -138,7 +138,7 @@ export class BootScene extends Phaser.Scene {
                     const angle = startAngle + (endAngle - startAngle) * (i / stitchCount);
                     const sx = cx + Math.cos(angle) * r;
                     const sy = cy + Math.sin(angle) * r;
-                    
+
                     // Draw a subtle shadow for the stitch first
                     graphics.lineStyle(12, 0x000000, 0.3);
                     graphics.beginPath();
@@ -161,7 +161,7 @@ export class BootScene extends Phaser.Scene {
             // 5. Specular top-right highlight (Glossy finish)
             graphics.fillStyle(0xffffff, 0.4);
             graphics.fillEllipse(radius * 1.4, radius * 0.6, radius * 0.4, radius * 0.25);
-            
+
             graphics.fillStyle(0xffffff, 0.25);
             graphics.fillCircle(radius * 1.5, radius * 0.5, radius * 0.1);
 

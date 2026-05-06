@@ -157,7 +157,6 @@ export class MenuScene extends Phaser.Scene {
 
         easyBtn.hitZone.on('pointerdown', () => updateSelection('SIMPLE'));
         hardBtn.hitZone.on('pointerdown', () => updateSelection('HARD'));
-hardBtn.hitZone.on('pointerdown', () => updateSelection('HARD'));
 
         // ============================================
         // BUTTONS
@@ -185,7 +184,7 @@ hardBtn.hitZone.on('pointerdown', () => updateSelection('HARD'));
                     isPrimary: false,
                     onClick: () => {
                         audioManager.play('launch');
-                        this.scene.start('GameScene', { level: 0, difficulty: selectedDifficulty });
+                        this.scene.start(SCENE_KEYS.GAME, { level: 0, difficulty: selectedDifficulty });
                     }
                 });
                 this.add.existing(this.restartBtn);
@@ -203,7 +202,7 @@ hardBtn.hitZone.on('pointerdown', () => updateSelection('HARD'));
                 audioManager.play('launch');
                 // If saved level is > 1, start from that level (index is level-1)
                 const targetIdx = this.savedLevel > 1 ? this.savedLevel - 1 : 0;
-                this.scene.start('GameScene', { level: targetIdx, difficulty: selectedDifficulty });
+                this.scene.start(SCENE_KEYS.GAME, { level: targetIdx, difficulty: selectedDifficulty });
             }
         });
         this.add.existing(this.startBtn);

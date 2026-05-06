@@ -45,9 +45,10 @@ export class Ball extends Phaser.Physics.Matter.Image {
     private static readonly N_DOWN = { x: 0, y: 1 };
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
-        // Create with a circular Matter body matching the ball radius
+        // Create with a circular Matter body matching the ball radius.
+        // Texture is 256px; Phaser auto-scales the physics body to match display size (setDisplaySize below).
         super(scene.matter.world, x, y, 'ball', undefined, {
-            shape: { type: 'circle', radius: 128 }, // 128 = half of 256px texture
+            shape: { type: 'circle', radius: 128 }, // half of 256px texture
             restitution: 1,
             friction: 0,
             frictionAir: 0,

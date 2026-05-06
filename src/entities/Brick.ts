@@ -3,8 +3,10 @@ import { BrickType } from '../config/LevelData';
 import { GameConfig } from '../config/GameConfig';
 import { CrackRenderer, CrackSegment } from '../systems/CrackRenderer';
 
-// Auto-incrementing unique ID for each brick instance
+// Auto-incrementing unique ID for each brick instance.
+// Wraps at a safe ceiling to avoid floating-point precision loss in string keys.
 let nextBrickId = 0;
+const BRICK_ID_MAX = 0x7fffffff; // ~2 billion, well within safe integer range
 
 export class Brick extends Phaser.Physics.Matter.Image {
     public brickType: BrickType;
@@ -38,7 +40,8 @@ export class Brick extends Phaser.Physics.Matter.Image {
         this.sceneRef = scene;
 
         // Assign a unique ID for crack renderer keying
-        this._uniqueId = nextBrickId++;
+        this._uniqueId = nextBrickId;
+        nextBrickId = (nextBrickId + 1) % BRICK_ID_MAX;
 
         // Initialize with default values. reset() will override these.
         this.brickType = type;

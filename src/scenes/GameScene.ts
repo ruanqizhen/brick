@@ -86,9 +86,15 @@ export class GameScene extends Phaser.Scene {
     }
 
     create() {
-        // Essential Arcade Physics Fix: Prevent Matter.js from killing velocity on shallow collisions
-        if ((Phaser.Physics.Matter as any).Matter?.Resolver) {
-            (Phaser.Physics.Matter as any).Matter.Resolver._restingThresh = 0.001;
+        // Essential Arcade Physics Fix: Prevent Matter.js from killing velocity on shallow collisions.
+        // Uses internal Matter.js API — guarded against future breaking changes.
+        try {
+            const matterModule = (Phaser.Physics.Matter as any).Matter;
+            if (matterModule?.Resolver) {
+                matterModule.Resolver._restingThresh = 0.001;
+            }
+        } catch (e) {
+            console.warn('Could not configure Matter.js resting threshold:', e);
         }
 
         this.balls = [];
@@ -332,8 +338,7 @@ export class GameScene extends Phaser.Scene {
 
         if (this.pendingBallLost.length > 0) {
             for (let i = 0; i < this.pendingBallLost.length; i++) {
-                // Ignore types here to avoid Typescript warning if handleBallLost doesn't exist on interface
-                (this as any).handleBallLost(this.pendingBallLost[i]);
+                this.handleBallLost(this.pendingBallLost[i]);
             }
             this.pendingBallLost.length = 0;
         }
