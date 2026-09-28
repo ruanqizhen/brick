@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { DESIGN_WIDTH, DESIGN_HEIGHT, GameConfig } from '../config/GameConfig';
+import { DESIGN_WIDTH, DESIGN_HEIGHT, GameConfig, shouldEnableBloom } from '../config/GameConfig';
 import { Paddle } from '../entities/Paddle';
 import { Ball } from '../entities/Ball';
 import { Brick } from '../entities/Brick';
@@ -117,10 +117,10 @@ export class GameScene extends Phaser.Scene {
         this.crackRenderer = new CrackRenderer(this);
         this.spatialHash = new SpatialHash(DESIGN_WIDTH, DESIGN_HEIGHT, 120);
 
-        // Bloom post-processing
+        // Bloom post-processing（桌面端开启，移动端关闭以省电）
         try {
             const BloomPipeline = (Phaser.Renderer.WebGL.Pipelines.FX as any)?.Bloom;
-            if (BloomPipeline) {
+            if (shouldEnableBloom() && BloomPipeline) {
                 this.cameras.main.setPostPipeline(BloomPipeline, { intensity: 0.3 });
             }
         } catch (e) {

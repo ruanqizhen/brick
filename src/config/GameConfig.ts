@@ -48,13 +48,56 @@ export const GameConfig = {
     }
 };
 
+/** 是否为移动设备（UA + 粗指针双重判断） */
+export function isMobileDevice(): boolean {
+    if (typeof navigator !== 'undefined') {
+        const ua = navigator.userAgent || '';
+        if (/Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(ua)) return true;
+    }
+    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+        try {
+            if (window.matchMedia('(pointer: coarse)').matches) return true;
+        } catch {
+            // matchMedia 不可用时按桌面处理
+        }
+    }
+    return false;
+}
+
+/** 是否为低端设备（内存/核心数过低的手机） */
+function isLowEndDevice(): boolean {
+    try {
+        const nav = navigator as Navigator & { deviceMemory?: number };
+        if (typeof nav.deviceMemory === 'number' && nav.deviceMemory <= 3) return true;
+        if (isMobileDevice() && typeof nav.hardwareConcurrency === 'number' && nav.hardwareConcurrency <= 4) return true;
+    } catch {
+        // 能力探测失败时按普通设备处理
+    }
+    return false;
+}
+
+/** 按设备分级封顶渲染分辨率：低端机 1，普通手机 1.5，桌面 2 */
+export function getCappedPixelRatio(): number {
+    const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+    if (isLowEndDevice()) return Math.min(dpr, 1);
+    return Math.min(dpr, isMobileDevice() ? 1.5 : 2);
+}
+
+/** 全屏 Bloom 只在桌面端开启，移动端关闭以省 GPU/省电 */
+export function shouldEnableBloom(): boolean {
+    return !isMobileDevice();
+}
+
 export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
+    const cappedResolution = getCappedPixelRatio();
+    // 高像素密度下边缘已足够平滑，关掉 MSAA 省 GPU；低分辨率才开抗锯齿
+    const useAntialias = cappedResolution <= 1.5;
     const config: any = {
         type: Phaser.AUTO,
         parent: 'game-wrapper',
         width: DESIGN_WIDTH,
         height: DESIGN_HEIGHT,
-        resolution: window.devicePixelRatio || 1,
+        resolution: cappedResolution,
         scale: {
             mode: Phaser.Scale.FIT,
             autoCenter: Phaser.Scale.NO_CENTER
@@ -80,10 +123,10 @@ export function createPhaserConfig(): Phaser.Types.Core.GameConfig {
             forceSetTimeOut: false
         },
         backgroundColor: GameConfig.COLORS.BG,
-        antialias: true,
+        antialias: useAntialias,
         render: {
             pixelArt: false,
-            antialias: true,
+            antialias: useAntialias,
             roundPixels: true
         }
     };
