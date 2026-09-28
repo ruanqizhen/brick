@@ -131,7 +131,7 @@ export class HelpScene extends Phaser.Scene {
             { color: 0xff3300, name: '爆炸砖块', desc: '连锁爆炸，清除周围砖块' },
             { color: 0xcc00ff, name: '移动砖块', desc: '半空游走，极难捕捉' },
             { color: 0x33ff99, name: '隐形砖块', desc: '击中前保持幽灵形态' },
-            { texture: 'brick_metal', color: 0xcccccc, name: '金属砖块', desc: '无法被破坏，仅供借力' }
+            { texture: 'brick_metal', color: 0xcccccc, name: '金属砖块', desc: '普通撞击仅借力，火球/爆炸可摧毁' }
         ];
 
         brickTypes.forEach((b) => {
