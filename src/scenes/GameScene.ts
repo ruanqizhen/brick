@@ -323,7 +323,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     update(time: number, delta: number) {
-        if (this.starfield) this.starfield.update();
+        if (this.starfield) this.starfield.update(delta);
         if (this.paddle) this.paddle.update(time, delta);
 
         // Execute pending actions dynamically delayed from previous physics loop
