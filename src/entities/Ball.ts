@@ -5,6 +5,7 @@ import { audioManager } from '../audio/AudioManager';
 import { GameScene } from '../scenes/GameScene';
 import { Brick } from './Brick';
 import { SpatialHash } from '../utils/SpatialHash';
+import { addBodyToWorld, removeBodyFromWorld } from '../utils/MatterPool';
 
 export class Ball extends Phaser.Physics.Matter.Image {
     public isFireball: boolean = false;
@@ -524,11 +525,13 @@ export class Ball extends Phaser.Physics.Matter.Image {
             this.setActive(false);
             this.setVisible(false);
             this.setVelocity(0, 0);
+            removeBodyFromWorld(this);
             this.isLocked = false;
             this.prevFramePos.x = 0; this.prevFramePos.y = 0;
             this.ccdPenetratedCount = 0;
             this.lastTrailColor = -1;
         } else {
+            addBodyToWorld(this);
             this.setActive(true);
             this.setVisible(true);
         }

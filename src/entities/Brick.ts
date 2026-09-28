@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { BrickType } from '../config/LevelData';
 import { GameConfig } from '../config/GameConfig';
 import { CrackRenderer, CrackSegment } from '../systems/CrackRenderer';
+import { addBodyToWorld, removeBodyFromWorld } from '../utils/MatterPool';
 
 // Auto-incrementing unique ID for each brick instance.
 // Wraps at a safe ceiling to avoid floating-point precision loss in string keys.
@@ -304,8 +305,13 @@ export class Brick extends Phaser.Physics.Matter.Image {
                 this.crackRenderer.removeBrick(this.crackKey);
             }
         }
-        if (this.body) {
-            (this.body as MatterJS.BodyType).isSensor = !active;
+        if (active) {
+            addBodyToWorld(this);
+            if (this.body) {
+                (this.body as MatterJS.BodyType).isSensor = false;
+            }
+        } else {
+            removeBodyFromWorld(this);
         }
     }
 

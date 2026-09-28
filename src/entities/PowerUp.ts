@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import Phaser from 'phaser'; import { addBodyToWorld, removeBodyFromWorld } from '../utils/MatterPool';
 
 export type PowerUpType =
     'PADDLE_EXPAND' | 'PADDLE_SHRINK' |
@@ -66,13 +66,13 @@ export class PowerUp extends Phaser.Physics.Matter.Image {
         this.setActive(active);
         if (this.body) {
             if (!active) {
-                // Freeze the physics body to remove it from dynamic simulation
+                removeBodyFromWorld(this);
                 this.setSensor(true);
                 this.setStatic(true);
                 this.setPosition(0, -200);
                 this.setVelocity(0, 0);
             } else {
-                // Re-enable dynamic physics
+                addBodyToWorld(this);
                 this.setStatic(false);
                 const targetSensor = this.difficulty === 'SIMPLE';
                 this.setSensor(targetSensor);
