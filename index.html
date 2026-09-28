@@ -64,12 +64,12 @@
         @keyframes ambient-pulse {
             0% {
                 opacity: 0.6;
-                transform: scale(1);
+
             }
 
             100% {
                 opacity: 1;
-                transform: scale(1.05);
+
             }
         }
 
@@ -128,7 +128,7 @@
         @media (max-width: 768px) {
             #game-wrapper canvas {
                 border-width: 2px;
-                border-radius: 6px;
+                border-radius: 6px; box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
             }
 
             #game-container {
@@ -139,7 +139,7 @@
         @media (max-width: 480px) {
             #game-wrapper canvas {
                 border-width: 1px;
-                border-radius: 4px;
+                border-radius: 4px; box-shadow: none;
             }
         }
     </style>
